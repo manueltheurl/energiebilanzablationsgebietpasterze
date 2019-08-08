@@ -4,7 +4,7 @@ from energy_balance import EnergyBalance
 
 class Test(unittest.TestCase):
     def setUp(self):
-        pass
+        self.energy_balance_singleton = EnergyBalance()
 
     def test_given_values_for_c_star(self):
         z = 1.5  # m
@@ -22,9 +22,9 @@ class Test(unittest.TestCase):
         pressure = 80000  # Pa
         windspeed = 5  # m per second
         temperature = 5  # degree celcius
-        c_star = 0.002
+        self.energy_balance_singleton.c_star = 0.002
 
-        sensible_heat = EnergyBalance.calculate_sensible_heat(pressure, windspeed, temperature, c_star)
+        sensible_heat = self.energy_balance_singleton.calculate_sensible_heat(pressure, windspeed, temperature)
         self.assertTrue(47 < sensible_heat < 53)  # about 50
 
 

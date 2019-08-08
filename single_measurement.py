@@ -7,29 +7,54 @@ class SingleMeasurement:
     Object refers to one single measurement
     Values can be read but NOT be modified
     """
-    def __init__(
-            self, datetime: dt, temperature, rel_moisture, wind_speed, wind_direction, air_pressure, sw_radiation_in,
-            sw_radiation_out, lw_radiation_in, lw_radiation_out, zenith_angle, tiltx, tilty, snow_depth, ablation):
+    energy_balance = EnergyBalance()  # setup EnergyBalance singleton
 
+    def __init__(self,
+                 datetime: dt, temperature, rel_moisture, wind_speed, wind_direction, air_pressure, sw_radiation_in,
+                 sw_radiation_out, lw_radiation_in, lw_radiation_out, zenith_angle, tiltx, tilty, snow_depth, ablation
+                 ):
+
+        self.__energy_balance_components = {
+            "sw_radiation_in": sw_radiation_in,
+            "sw_radiation_out": sw_radiation_out,
+            "lw_radiation_in": lw_radiation_in,
+            "lw_radiation_out": lw_radiation_out,
+            "sensible_heat": 0,
+            "latent_heat": 0,
+            "precipitation_heat": 0,  # sadly there is no information about the rain rate m/s given
+        }
         self.__datetime = datetime
         self.__temperature = temperature
         self.__rel_moisture = rel_moisture  # in percent*100 .. e.g. 67
         self.__wind_speed = wind_speed
         self.__wind_direction = wind_direction
         self.__air_pressure = air_pressure
-        self.__sw_radiation_in = sw_radiation_in
-        self.__sw_radiation_out = sw_radiation_out
-        self.__lw_radiation_in = lw_radiation_in
-        self.__lw_radiation_out = lw_radiation_out
         self.__zenith_angle = zenith_angle
         self.__tiltx = tiltx
         self.__tilty = tilty
         self.__snow_depth = snow_depth
         self.__ablation = ablation
-        self.__energy_balance = None  # not calculated yet
+        self.__total_energy_balance = None  # not calculated yet
 
     def calculate_energy_balance(self):
-        self.__energy_balance = EnergyBalance.calculate_energy_balance(self)
+        if None not in [self.__air_pressure, self.__wind_speed, self.__temperature]:
+            self.__energy_balance_components["sensible_heat"] = self.energy_balance.calculate_sensible_heat(
+                self.__air_pressure,
+                self.__wind_speed,
+                self.__temperature
+            )
+
+        if None not in [self.__temperature, self.__rel_moisture]:
+            self.__energy_balance_components["latent_heat"] = self.energy_balance.calculate_latent_heat(
+                self.__temperature,
+                self.__rel_moisture
+            )
+
+        if None not in [None]:
+            self.__energy_balance_components["precipitation_heat"] = self.energy_balance.calculate_precipitation_heat()
+
+        if None not in self.__energy_balance_components.values():
+            self.__total_energy_balance = sum(self.__energy_balance_components.values())
 
     @property
     def datetime(self):
@@ -57,19 +82,31 @@ class SingleMeasurement:
 
     @property
     def sw_radiation_in(self):
-        return self.__sw_radiation_in
+        return self.__energy_balance_components["sw_radiation_in"]
 
     @property
     def sw_radiation_out(self):
-        return self.__sw_radiation_out
+        return self.__energy_balance_components["sw_radiation_out"]
 
     @property
     def lw_radiation_in(self):
-        return self.__lw_radiation_in
+        return self.__energy_balance_components["lw_radiation_in"]
 
     @property
     def lw_radiation_out(self):
-        return self.__lw_radiation_out
+        return self.__energy_balance_components["lw_radiation_out"]
+
+    @property
+    def sensible_heat(self):
+        return self.__energy_balance_components["sensible_heat"]
+
+    @property
+    def latent_heat(self):
+        return self.__energy_balance_components["latent_heat"]
+
+    @property
+    def precipitation_energy(self):
+        return self.__energy_balance_components["precipitation_heat"]
 
     @property
     def zenith_angle(self):
@@ -92,5 +129,5 @@ class SingleMeasurement:
         return self.__ablation
 
     @property
-    def energy_balance(self):
-        return self.__energy_balance
+    def total_energy_balance(self):
+        return self.__total_energy_balance

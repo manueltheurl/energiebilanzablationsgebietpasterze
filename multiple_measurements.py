@@ -1,5 +1,3 @@
-
-
 class MultipleMeasurements:
     def __init__(self):
         self.__single_measurement_objects = []
@@ -13,3 +11,6 @@ class MultipleMeasurements:
 
     def get_all_of(self, attribute_name):
         return list(map(lambda obj: getattr(obj, attribute_name), self.__single_measurement_objects))
+
+    def get_measurement_amount(self):
+        return len(self.__single_measurement_objects)
