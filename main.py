@@ -32,7 +32,7 @@ class Runner:
 
         visualizer = Visualize(meteorologic_measurements)
 
-        visualizer.plot_energy_balance_components(sensible_heat=True, latent_heat=True)
+        visualizer.plot_energy_balance_components(sw_radiation_out=True)
 
 
 if __name__ == "__main__":

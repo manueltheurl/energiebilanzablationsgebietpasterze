@@ -54,7 +54,14 @@ class SingleMeasurement:
             self.__energy_balance_components["precipitation_heat"] = self.energy_balance.calculate_precipitation_heat()
 
         if None not in self.__energy_balance_components.values():
-            self.__total_energy_balance = sum(self.__energy_balance_components.values())
+            self.__total_energy_balance = sum([self.__energy_balance_components["sw_radiation_in"],
+                                               - self.__energy_balance_components["sw_radiation_out"],
+                                               self.__energy_balance_components["lw_radiation_in"],
+                                               - self.__energy_balance_components["lw_radiation_out"],
+                                               self.__energy_balance_components["sensible_heat"],
+                                               self.__energy_balance_components["latent_heat"],
+                                               self.__energy_balance_components["precipitation_heat"]
+                                               ])
 
     @property
     def datetime(self):

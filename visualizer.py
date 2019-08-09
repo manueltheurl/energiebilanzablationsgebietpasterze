@@ -61,10 +61,7 @@ class Visualize:
     def save_add(first, second):
         if None not in [first, second]:
             return first + second
-        return 0
-
-    def save_add_lists(self, first, second):
-        return list(map(self.save_add, first, second))
+        return None
 
     def plot_energy_balance_components(self,
                                        sw_radiation_in=False, sw_radiation_out=False, lw_radiation_in=False,
@@ -86,14 +83,18 @@ class Visualize:
                  ]):
 
             if component_bool:
-                energy_balance_of_selected_parts = self.save_add_lists(
-                    energy_balance_of_selected_parts,
-                    self.__meteorologic_measurements.get_all_of(component_name)
+                energy_balance_of_selected_parts = list(map(
+                    self.save_add, energy_balance_of_selected_parts,
+                    self.__meteorologic_measurements.get_all_of(component_name))
                 )
 
         self.initialize_plot()
 
-        self.ax.plot(self.__meteorologic_measurements.get_all_of("datetime"), energy_balance_of_selected_parts)
+        self.ax.plot(self.__meteorologic_measurements.get_all_of("datetime"), energy_balance_of_selected_parts,
+                     zorder=3)
+        self.ax.plot(self.__meteorologic_measurements.get_all_of("datetime"),
+                     self.__meteorologic_measurements.get_all_of("total_energy_balance"), color="orange", alpha=0.3,
+                     zorder=2)
 
         self.modify_axes()
         self.save_and_close_plot()
