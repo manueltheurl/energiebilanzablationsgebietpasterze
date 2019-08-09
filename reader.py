@@ -11,9 +11,12 @@ class Reader:
         self.no_data = "NULL"
         self.number_of_data_attributes = 16
 
-    def convert_to_float_or_none(self, data_string):
+    def convert_to_float_or_none(self, data_string, negative=False):
         if self.no_data in data_string:  # can be NULL\n as well
             return None
+
+        if negative:
+            return - float(data_string)
         return float(data_string)
 
     def read_meterologic_file_to_objects(self, multiple_measurements_object: MultipleMeasurements, starttime=None,
@@ -58,9 +61,9 @@ class Reader:
                             wind_direction=self.convert_to_float_or_none(parts[5]),
                             air_pressure=self.convert_to_float_or_none(parts[6]),
                             sw_radiation_in=self.convert_to_float_or_none(parts[7]),
-                            sw_radiation_out=self.convert_to_float_or_none(parts[8]),
+                            sw_radiation_out=self.convert_to_float_or_none(parts[8], negative=True),
                             lw_radiation_in=self.convert_to_float_or_none(parts[9]),
-                            lw_radiation_out=self.convert_to_float_or_none(parts[10]),
+                            lw_radiation_out=self.convert_to_float_or_none(parts[10], negative=True),
                             zenith_angle=self.convert_to_float_or_none(parts[11]),
                             tiltx=self.convert_to_float_or_none(parts[12]),
                             tilty=self.convert_to_float_or_none(parts[13]),

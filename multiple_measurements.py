@@ -14,3 +14,11 @@ class MultipleMeasurements:
 
     def get_measurement_amount(self):
         return len(self.__single_measurement_objects)
+
+    def get_date_of_first_measurement(self):
+        # this presupposes that the measurements are read in sorted ascending by date
+        return self.__single_measurement_objects[0].datetime
+
+    def get_date_of_last_measurement(self):
+        # this presupposes that the measurements are read in sorted ascending by date
+        return self.__single_measurement_objects[-1].datetime

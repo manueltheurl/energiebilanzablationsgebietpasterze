@@ -8,7 +8,8 @@ import matplotlib.ticker as ticker
 from matplotlib.markers import MarkerStyle
 import os
 from matplotlib import patches
-from operator import add
+from operator import sub
+import datetime as dt
 
 
 class Visualize:
@@ -22,7 +23,7 @@ class Visualize:
         self.ax = None
 
     def initialize_plot(self):
-        fig = plt.figure()
+        fig = plt.figure(figsize=(10, 6))
         self.ax = fig.add_subplot(111)
 
     def modify_axes(self):
@@ -31,12 +32,19 @@ class Visualize:
         year_labels = mdates.DateFormatter('%Y')
         month_labels = mdates.DateFormatter('%b')  # Jan, Feb, ..
 
-        self.ax.xaxis.set_major_locator(years)
-        self.ax.xaxis.set_minor_locator(months)
-        self.ax.xaxis.set_major_formatter(year_labels)
-        self.ax.xaxis.set_minor_formatter(month_labels)
+        # calculate time_spawn between first and last measurement
+        time_spawn = dt.timedelta(days=self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
 
-        self.ax.xaxis.set_tick_params(rotation=45)  # only major are rotated
+        self.ax.xaxis.set_major_locator(years)
+        self.ax.xaxis.set_major_formatter(year_labels)
+
+        if dt.timedelta(days=365) < time_spawn:
+            self.ax.xaxis.set_minor_locator(months)
+
+            if dt.timedelta(days=3*365) < time_spawn:
+                self.ax.xaxis.set_minor_formatter(month_labels)
+
+                self.ax.xaxis.set_tick_params(rotation=45)  # only major are rotated
 
         self.ax.set_xlabel("Year")
         self.ax.grid(linestyle="--", alpha=0.5, which='major')

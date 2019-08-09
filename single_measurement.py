@@ -14,6 +14,8 @@ class SingleMeasurement:
                  sw_radiation_out, lw_radiation_in, lw_radiation_out, zenith_angle, tiltx, tilty, snow_depth, ablation
                  ):
 
+        # sw out and lw out are negative here even though they are technically positive .. sum of the dict is actual
+        # energy balance then
         self.__energy_balance_components = {
             "sw_radiation_in": sw_radiation_in,
             "sw_radiation_out": sw_radiation_out,
@@ -55,9 +57,9 @@ class SingleMeasurement:
 
         if None not in self.__energy_balance_components.values():
             self.__total_energy_balance = sum([self.__energy_balance_components["sw_radiation_in"],
-                                               - self.__energy_balance_components["sw_radiation_out"],
+                                               self.__energy_balance_components["sw_radiation_out"],
                                                self.__energy_balance_components["lw_radiation_in"],
-                                               - self.__energy_balance_components["lw_radiation_out"],
+                                               self.__energy_balance_components["lw_radiation_out"],
                                                self.__energy_balance_components["sensible_heat"],
                                                self.__energy_balance_components["latent_heat"],
                                                self.__energy_balance_components["precipitation_heat"]

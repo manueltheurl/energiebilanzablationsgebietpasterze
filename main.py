@@ -17,7 +17,7 @@ from visualizer import Visualize
 class Runner:
     def __init__(self):
         self.path_to_meteorologic_measurements = cfg["DATA_PATH"]
-        self.startTime = "2015-10-18 05:30:00"  # "2012-10-18 05:30:00"
+        self.startTime = "2018-10-18 05:30:00"  # "2012-10-18 05:30:00"
         self.endTime = "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
 
     def run(self):
@@ -32,6 +32,7 @@ class Runner:
 
         visualizer = Visualize(meteorologic_measurements)
 
+        # visualizer.plot_total_energy_balance()
         visualizer.plot_energy_balance_components(sw_radiation_out=True)
 
 
