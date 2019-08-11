@@ -20,10 +20,16 @@ class Reader:
         return float(data_string)
 
     def read_meterologic_file_to_objects(self, multiple_measurements_object: MultipleMeasurements, starttime=None,
-                                         endtime=None):
+                                         endtime=None, resolution_by_percentage=None, resolution_by_time_interval=None):
 
-        starttime = dt.strptime(starttime, "%Y-%m-%d %H:%M:%S")
-        endtime = dt.strptime(endtime, "%Y-%m-%d %H:%M:%S")
+        if starttime is not None:
+            starttime = dt.strptime(starttime, "%Y-%m-%d %H:%M:%S")
+        if endtime is not None:
+            endtime = dt.strptime(endtime, "%Y-%m-%d %H:%M:%S") if endtime is not None else None
+        if resolution_by_percentage is not None:
+            percentage_threshold = 0
+        if resolution_by_time_interval is not None:
+            resolution_reference_time = starttime  # TODO does it matter if startime is widely in the past?
 
         with open(self.__file_path) as file:
             next(file)  # skip first line, contains metadata not actual data
@@ -52,6 +58,20 @@ class Reader:
                     time_condition = False
 
                 if time_condition:
+
+                    if resolution_by_percentage is not None:
+                        percentage_threshold += resolution_by_percentage
+                        if percentage_threshold >= 100:
+                            percentage_threshold = 0
+                        else:
+                            continue
+
+                    if resolution_by_time_interval is not None:
+                        if datetime - resolution_reference_time >= resolution_by_time_interval:
+                            resolution_reference_time = datetime
+                        else:
+                            continue
+
                     multiple_measurements_object.add_single_measurement(
                         SingleMeasurement(
                             datetime=datetime,

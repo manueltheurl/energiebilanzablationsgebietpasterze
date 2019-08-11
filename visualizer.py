@@ -10,6 +10,8 @@ import os
 from matplotlib import patches
 from operator import sub
 import datetime as dt
+# from matplotlib import rc
+# rc('text', usetex=True)
 
 
 class Visualize:
@@ -38,17 +40,19 @@ class Visualize:
         self.ax.xaxis.set_major_locator(years)
         self.ax.xaxis.set_major_formatter(year_labels)
 
-        if dt.timedelta(days=365) < time_spawn:
+        if dt.timedelta(days=365) > time_spawn:
             self.ax.xaxis.set_minor_locator(months)
 
-            if dt.timedelta(days=3*365) < time_spawn:
+            if dt.timedelta(days=3*365) > time_spawn:
                 self.ax.xaxis.set_minor_formatter(month_labels)
 
                 self.ax.xaxis.set_tick_params(rotation=45)  # only major are rotated
 
         self.ax.set_xlabel("Year")
         self.ax.grid(linestyle="--", alpha=0.5, which='major')
-        self.ax.grid(linestyle="--", alpha=0.2, which='minor')
+        self.ax.grid(linestyle="--", alpha=0.4, which='minor')
+
+        self.ax.set_ylabel("W/m^2")
 
     @staticmethod
     def save_and_close_plot():
