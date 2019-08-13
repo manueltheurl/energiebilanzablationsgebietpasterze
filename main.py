@@ -13,9 +13,12 @@ from manage_config import cfg
 from multiple_measurements import MultipleMeasurements
 from visualizer import Visualize
 import datetime as dt
+import os
+from GUI.gui_main import GUImain
+import threading
 
 
-class Runner:
+class Manager:
     def __init__(self):
         self.path_to_meteorologic_measurements = cfg["DATA_PATH"]
         self.startTime = "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
@@ -43,5 +46,15 @@ class Runner:
 
 
 if __name__ == "__main__":
-    runner = Runner()
-    runner.run()
+    manager = Manager()
+    gui = GUImain(manager)
+
+    if os.name != 'posix':
+        gui.lift()
+        try:  # TODO yet to test on all different windows versions
+            gui.state('zoomed')
+        except:
+            pass
+
+    gui_thread = threading.Thread(target=gui.mainloop())
+    gui_thread.start()
