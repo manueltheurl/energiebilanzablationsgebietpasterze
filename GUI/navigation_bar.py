@@ -1,6 +1,7 @@
 import tkinter as tk
 from GUI.frame_plot import PlotFrame
 from GUI.frame_model import ModelFrame
+from GUI.frame_read import ReadFrame
 
 
 class NavigationBar(tk.Frame):
@@ -12,8 +13,11 @@ class NavigationBar(tk.Frame):
         # self.config(bg="yellow")
         self.grid_propagate(False)
 
-        btn_plotframe = tk.Button(self, text="Plot frame", command=lambda: parent.show_main_frame(PlotFrame))
+        btn_plotframe = tk.Button(self, text="Read", command=lambda: parent.show_main_frame(ReadFrame))
         btn_plotframe.pack(side="left")
 
-        btn_modelframe = tk.Button(self, text="Model frame", command=lambda: parent.show_main_frame(ModelFrame))
+        btn_plotframe = tk.Button(self, text="Plot", command=lambda: parent.show_main_frame(PlotFrame))
+        btn_plotframe.pack(side="left")
+
+        btn_modelframe = tk.Button(self, text="Model", command=lambda: parent.show_main_frame(ModelFrame))
         btn_modelframe.pack(side="left")

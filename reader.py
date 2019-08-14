@@ -5,11 +5,14 @@ from multiple_measurements import MultipleMeasurements
 
 
 class Reader:
-    def __init__(self, file_path):
-        self.__file_path = file_path
+    def __init__(self):
+        self.__file_path = None
         self.delimiter = ","
         self.no_data = "NULL"
         self.number_of_data_attributes = 16
+
+    def add_file_path(self, filepath):
+        self.__file_path = filepath
 
     def convert_to_float_or_none(self, data_string, negative=False):
         if self.no_data in data_string:  # can be NULL\n as well
@@ -29,7 +32,7 @@ class Reader:
         if resolution_by_percentage is not None:
             percentage_threshold = 0
         if resolution_by_time_interval is not None:
-            resolution_reference_time = starttime  # TODO does it matter if startime is widely in the past?
+            resolution_reference_time = None  # TODO does it matter if startime is widely in the past?
 
         with open(self.__file_path) as file:
             next(file)  # skip first line, contains metadata not actual data
@@ -67,10 +70,13 @@ class Reader:
                             continue
 
                     if resolution_by_time_interval is not None:
-                        if datetime - resolution_reference_time >= resolution_by_time_interval:
+                        if resolution_reference_time is None:  # first time .. no reference time there
                             resolution_reference_time = datetime
-                        else:
-                            continue
+                        else:  # all the following times
+                            if datetime - resolution_reference_time >= resolution_by_time_interval:
+                                resolution_reference_time = datetime
+                            else:
+                                continue
 
                     multiple_measurements_object.add_single_measurement(
                         SingleMeasurement(

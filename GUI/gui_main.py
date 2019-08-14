@@ -5,6 +5,7 @@ from GUI.frame_plot import PlotFrame
 from GUI.navigation_bar import NavigationBar
 from GUI.read_bar import ReadBar
 from GUI.frame_model import ModelFrame
+from GUI.frame_read import ReadFrame
 
 
 class GUImain(tk.Tk):
@@ -49,15 +50,15 @@ class GUImain(tk.Tk):
 
         self.main_frames = {}
 
-        for F in (ModelFrame, PlotFrame):  # last item here is standard page to show
+        for F in (ModelFrame, PlotFrame, ReadFrame):  # last item here is standard page to show
             frame = F(self.main_frame)
             self.main_frames[F] = frame
 
         self.navigation_bar = NavigationBar(self)
         self.navigation_bar.pack(side="top", fill="both")
 
-        self.read_bar = ReadBar(self)
-        self.read_bar.pack(side="top", fill="both")
+        # self.read_bar = ReadBar(self)
+        # self.read_bar.pack(side="top", fill="both")
 
         # show frames
         for main_frame in self.main_frames.values():
