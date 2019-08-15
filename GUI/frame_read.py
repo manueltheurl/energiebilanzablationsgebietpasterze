@@ -1,19 +1,14 @@
 import tkinter as tk
 from tkinter import filedialog
-from reader import Reader
-from multiple_measurements import MultipleMeasurements
+import reader
+import multiple_measurements
 from tkinter import ttk
 import datetime as dt
 
 
 class ReadFrame(tk.Frame):
-    # static variables/ class variables
-    obj_multipleMeasurement = MultipleMeasurements()
-
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.reader = Reader()
-
         self.grid_propagate(False)
 
         self.file_path = None
@@ -47,11 +42,45 @@ class ReadFrame(tk.Frame):
         self.cmbobox_timeIntervalUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days"], state="disabled")
         self.cmbobox_timeIntervalUnit.pack()
 
+        self.ckbox_startTime_value = tk.IntVar()
+        self.ckbox_startTime = tk.Checkbutton(self,
+                                              command=self.toggle_add_starttime,
+                                              variable=self.ckbox_startTime_value, state="disabled")
+        self.ckbox_startTime.pack()
+        self.lbl_startTime = tk.Label(self, text="Add starttime")
+        self.lbl_startTime.pack()
+        self.entry_startTime = tk.Entry(self, state="disabled")
+        self.entry_startTime.pack()
+
+        self.ckbox_endTime_value = tk.IntVar()
+        self.ckbox_endTime = tk.Checkbutton(self,
+                                            command=self.toggle_add_endtime,
+                                            variable=self.ckbox_endTime_value, state="disabled")
+        self.ckbox_endTime.pack()
+        self.lbl_endTime = tk.Label(self, text="Add endTime")
+        self.lbl_endTime.pack()
+        self.entry_endTime = tk.Entry(self, state="disabled")
+        self.entry_endTime.pack()
+
         self.btn_readFilesToObjects = tk.Button(self,
                                                 text="Read in defined measurements",
                                                 command=self.read_measurements_to_objects,
                                                 state="disabled")
         self.btn_readFilesToObjects.pack()
+
+    def toggle_add_starttime(self):
+        widgets_to_toggle_state = [
+            self.entry_startTime
+        ]
+
+        self.set_widget_state(widgets_to_toggle_state, self.ckbox_startTime_value.get())
+
+    def toggle_add_endtime(self):
+        widgets_to_toggle_state = [
+            self.entry_endTime
+        ]
+
+        self.set_widget_state(widgets_to_toggle_state, self.ckbox_endTime_value.get())
 
     def toggle_resolution_by_percentage(self):
         widgets_to_toggle_state = [
@@ -70,11 +99,11 @@ class ReadFrame(tk.Frame):
 
     @staticmethod
     def set_widget_state(widgets: list, state):
-        if state or state == "normal":
+        if state == 1 or state == "normal":  # actually check if its 1 or 0, cause else "disabled" string is True also
             for widget in widgets:
                 widget["state"] = "normal"
 
-        elif not state or state == "disabled":
+        elif state == 0 or state == "disabled":
             for widget in widgets:
                 widget["state"] = "disabled"
 
@@ -84,40 +113,74 @@ class ReadFrame(tk.Frame):
         if selected_path != "":
             self.file_path = selected_path
             self.lbl_chosenFile['text'] = selected_path
-            self.reader.add_file_path(selected_path)
+            reader.singleton.add_file_path(selected_path)
 
-            # TODO check starttime and endtime and resolution and autofill that values
-
-            # TODO own class for setting normal .. maybe in functions file
             self.set_widget_state([
+                self.ckbox_startTime,
+                self.ckbox_endTime,
                 self.ckbox_percentToRead,
                 self.ckbox_timeInterval,
-                self.btn_readFilesToObjects
+                self.btn_readFilesToObjects,
+
+                # those have to be set normal to fill in a value
+                self.entry_startTime,
+                self.entry_endTime,
+                self.entry_timeInterval,
+                self.entry_percentToRead
             ], "normal")
 
-            self.entry_percentToRead.insert(0, "100")
+        multiple_measurements.singleton.fetch_measurements_metadata()
+
+        self.entry_startTime.insert(
+            0,
+            multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement"))
+        self.entry_endTime.insert(
+            0,
+            multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement"))
+        self.entry_percentToRead.insert(0, "100")
+        self.entry_timeInterval.insert(
+            0,  # no minutes available for next line .. only seconds
+            multiple_measurements.singleton.get_single_measurement_metadata("time_resolution").seconds // 60)
+
+        self.cmbobox_timeIntervalUnit.current(0)  # possible here without state normal first
+
+        self.set_widget_state([
+            # disable them again .. value stays though
+            self.entry_startTime,
+            self.entry_endTime,
+            self.entry_timeInterval,
+            self.entry_percentToRead
+        ], "disabled")
 
     def read_measurements_to_objects(self):
-        percentage = int(self.entry_percentToRead.get()) if self.entry_percentToRead.get().isdigit() else 100
+        start_time = None
+        if self.ckbox_startTime_value.get():
+            start_time = self.entry_startTime.get()
 
-        time_interval = self.entry_timeInterval.get()
+        end_time = None
+        if self.ckbox_endTime_value.get():
+            end_time = self.entry_endTime.get()  # TODO checking if format is correct here or in reader?
 
-        if time_interval.isdigit():
-            time_interval_unit = self.cmbobox_timeIntervalUnit.get()
+        resolution_by_percentage = None
+        if self.ckbox_percentToRead_value.get():
+            if self.entry_percentToRead.get().isdigit():
 
-            if time_interval_unit == "Minutes":
-                time_interval = dt.timedelta(minutes=int(time_interval))
-            elif time_interval_unit == "Hours":
-                time_interval = dt.timedelta(hours=int(time_interval))
-            elif time_interval_unit == "Days":
-                time_interval = dt.timedelta(days=int(time_interval))
-            else:
-                time_interval = None
+                resolution_by_percentage = int(self.entry_percentToRead.get())
 
-        else:
-            time_interval = None
+        resolution_by_time_interval = None
+        if self.ckbox_timeInterval_value.get():
+            if self.entry_timeInterval.get().isdigit():
+                time_interval_unit = self.cmbobox_timeIntervalUnit.get()
 
-        self.reader.read_meterologic_file_to_objects(
-            self.obj_multipleMeasurement,
-            resolution_by_percentage=percentage,
-            resolution_by_time_interval=time_interval)
+                if time_interval_unit == "Minutes":
+                    resolution_by_time_interval = dt.timedelta(minutes=int(self.entry_timeInterval.get()))
+                elif time_interval_unit == "Hours":
+                    resolution_by_time_interval = dt.timedelta(hours=int(self.entry_timeInterval.get()))
+                elif time_interval_unit == "Days":
+                    resolution_by_time_interval = dt.timedelta(days=int(self.entry_timeInterval.get()))
+
+        reader.singleton.read_meterologic_file_to_objects(start_time,
+                                                          end_time,
+                                                          resolution_by_percentage,
+                                                          resolution_by_time_interval
+                                                          )

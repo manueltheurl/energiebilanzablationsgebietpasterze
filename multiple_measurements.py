@@ -1,14 +1,39 @@
 import datetime as dt
+import reader
 
 
 class MultipleMeasurements:
+    singleton_created = False
+
     def __init__(self):
+        if MultipleMeasurements.singleton_created:
+            raise Exception("Reader is a singleton")
+        MultipleMeasurements.singleton_created = True
+
         self.__all_single_measurement_objects = []
         self.__current_index_scope = set()  # current indexes that will be used are saved in here .. all by default
+
+        self.__measurement_metadata = {
+            "time_resolution": None,  # warning: this is determined by the time diff of the first two measurements only
+            "time_of_first_measurement": None,
+            "time_of_last_measurement": None
+        }
 
     def add_single_measurement(self, single_measurement_objects):
         self.__current_index_scope.add(len(self.__all_single_measurement_objects))
         self.__all_single_measurement_objects.append(single_measurement_objects)
+
+    def fetch_measurements_metadata(self):
+        time_resolution, time_of_first_measure, time_of_last_measure = reader.singleton.read_measurements_metadata()
+        self.set_measurement_metadata(time_resolution, time_of_first_measure, time_of_last_measure)
+
+    def set_measurement_metadata(self, time_resolution, time_of_first_measurement, time_of_last_measurement):
+        self.__measurement_metadata["time_resolution"] = time_resolution
+        self.__measurement_metadata["time_of_first_measurement"] = time_of_first_measurement
+        self.__measurement_metadata["time_of_last_measurement"] = time_of_last_measurement
+
+    def get_single_measurement_metadata(self, key):
+        return self.__measurement_metadata[key]
 
     def calculate_energy_balance_for_all(self):
         for obj in self.__all_single_measurement_objects:
@@ -71,3 +96,6 @@ class MultipleMeasurements:
     def get_date_of_last_measurement(self):
         # this presupposes that the measurements are read in sorted ascending by date
         return self.__all_single_measurement_objects[-1].datetime
+
+
+singleton = MultipleMeasurements()

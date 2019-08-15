@@ -1,11 +1,17 @@
 from single_measurement import SingleMeasurement
 from datetime import datetime as dt
 from manage_config import cfg
-from multiple_measurements import MultipleMeasurements
+import multiple_measurements
 
 
 class Reader:
+    singleton_created = False
+
     def __init__(self):
+        if Reader.singleton_created:
+            raise Exception("Reader is a singleton")
+        Reader.singleton_created = True
+
         self.__file_path = None
         self.delimiter = ","
         self.no_data = "NULL"
@@ -22,7 +28,24 @@ class Reader:
             return - float(data_string)
         return float(data_string)
 
-    def read_meterologic_file_to_objects(self, multiple_measurements_object: MultipleMeasurements, starttime=None,
+    def read_measurements_metadata(self):
+        with open(self.__file_path) as file:
+            next(file)  # skip first line, contains no data
+            first_line_parts = next(file).split(self.delimiter)
+            second_line_parts = next(file).split(self.delimiter)
+            last_line_parts = file.readlines()[-2].split(self.delimiter)  # TODO better way to find last actual data line?
+
+            datetime_first_measurement = dt.strptime(first_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
+            datetime_second_measurement = dt.strptime(second_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
+            datetime_last_measurement = dt.strptime(last_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
+
+            return [
+                datetime_second_measurement - datetime_first_measurement,
+                datetime_first_measurement,
+                datetime_last_measurement
+            ]
+
+    def read_meterologic_file_to_objects(self, starttime=None,
                                          endtime=None, resolution_by_percentage=None, resolution_by_time_interval=None):
 
         if starttime is not None:
@@ -35,7 +58,7 @@ class Reader:
             resolution_reference_time = None  # TODO does it matter if startime is widely in the past?
 
         with open(self.__file_path) as file:
-            next(file)  # skip first line, contains metadata not actual data
+            next(file)  # skip first line, contains description of values not actual data
 
             for _ in range(cfg["SKIP_LINES"]):  # TODO just for testing
                 next(file)
@@ -47,7 +70,7 @@ class Reader:
                 if len(parts) < self.number_of_data_attributes:  # plausibility check
                     continue
 
-                datetime = dt.strptime(parts[0], "\"%Y-%m-%d %H:%M:%S\"") # double quotes around date
+                datetime = dt.strptime(parts[0], "\"%Y-%m-%d %H:%M:%S\"")  # double quotes around date
 
                 if starttime is not None and endtime is not None:
                     time_condition = starttime <= datetime <= endtime
@@ -78,7 +101,7 @@ class Reader:
                             else:
                                 continue
 
-                    multiple_measurements_object.add_single_measurement(
+                    multiple_measurements.singleton.add_single_measurement(
                         SingleMeasurement(
                             datetime=datetime,
                             temperature=self.convert_to_float_or_none(parts[2]),
@@ -101,3 +124,6 @@ class Reader:
                 i += 1
 
         # TODO log how many read in .. and which range ..
+
+
+singleton = Reader()

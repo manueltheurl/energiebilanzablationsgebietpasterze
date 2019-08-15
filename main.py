@@ -16,6 +16,7 @@ import datetime as dt
 import os
 from GUI.gui_main import GUImain
 import threading
+import multiple_measurements
 
 
 class Manager:
@@ -25,11 +26,10 @@ class Manager:
         self.endTime = "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
 
     def run(self):
-        reader = Reader(self.path_to_meteorologic_measurements)
+        reader = Reader()
+        reader.add_file_path(self.path_to_meteorologic_measurements)
 
-        meteorologic_measurements = MultipleMeasurements()
-
-        reader.read_meterologic_file_to_objects(meteorologic_measurements, starttime=self.startTime,
+        reader.read_meterologic_file_to_objects(starttime=self.startTime,
                                                 endtime=self.endTime,
                                                 resolution_by_percentage=100,
                                                 resolution_by_time_interval=dt.timedelta(minutes=10))
@@ -37,9 +37,9 @@ class Manager:
         # meteorologic_measurements.change_measurement_resolution_by_percentage(1)
         # meteorologic_measurements.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
 
-        meteorologic_measurements.calculate_energy_balance_for_all()
+        multiple_measurements.singleton.calculate_energy_balance_for_all()
 
-        visualizer = Visualize(meteorologic_measurements)
+        visualizer = Visualize(multiple_measurements.singleton)
 
         # visualizer.plot_total_energy_balance()
         visualizer.plot_energy_balance_components(sw_radiation_out=True)
