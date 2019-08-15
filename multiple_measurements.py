@@ -1,5 +1,6 @@
 import datetime as dt
 import reader
+from summed_measurement import SummedMeasurement
 
 
 class MultipleMeasurements:
@@ -12,6 +13,8 @@ class MultipleMeasurements:
 
         self.__all_single_measurement_objects = []
         self.__current_index_scope = set()  # current indexes that will be used are saved in here .. all by default
+
+        self.__all_summed_measurements = []  # Empty in the beginning .. can later be calculated and used
 
         self.__measurement_metadata = {
             "time_resolution": None,  # warning: this is determined by the time diff of the first two measurements only
@@ -45,6 +48,52 @@ class MultipleMeasurements:
             # set messes with the order, sorted creates a list of the set
             [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]
         ))
+
+    def summed_get_all_of(self, attribute_name):
+        return list(map(lambda obj: getattr(obj, attribute_name), self.__all_summed_measurements))
+
+    def sum_measurements_by_amount(self, amount):
+        self.__all_summed_measurements.clear()
+
+        scoped_measurements = [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]
+
+        multiple_separated_measurements = [
+            scoped_measurements[i:i+amount] for i in range(len(scoped_measurements) - amount + 1)
+        ]
+
+        for separated_measurements in multiple_separated_measurements:
+            summed_measurement = SummedMeasurement()
+
+            for single_measurement in separated_measurements:
+                summed_measurement += single_measurement
+
+            summed_measurement.calculate_mean()
+
+            self.__all_summed_measurements.append(summed_measurement)
+
+    def sum_measurements_by_time_interval(self, time_interval: dt.timedelta):
+        self.__all_summed_measurements.clear()
+
+        resolution_reference_time = None
+        summed_measurement = SummedMeasurement()
+
+        for single_measurement in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]:
+            if resolution_reference_time is None:  # first time .. no reference time there
+                resolution_reference_time = single_measurement.datetime
+
+            # all the following times
+            if single_measurement.datetime - resolution_reference_time >= time_interval:
+                resolution_reference_time = single_measurement.datetime
+
+                summed_measurement.calculate_mean()
+                self.__all_summed_measurements.append(summed_measurement)
+
+                # reset summed_measurement and add current to it
+                summed_measurement = SummedMeasurement()
+                summed_measurement += single_measurement
+
+            else:
+                summed_measurement += single_measurement
 
     def reset_scope_to_all(self):
         self.__current_index_scope = set(range(len(self.__all_single_measurement_objects)))

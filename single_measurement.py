@@ -1,5 +1,5 @@
 from datetime import datetime as dt
-from energy_balance import EnergyBalance
+import energy_balance
 
 
 class SingleMeasurement:
@@ -7,7 +7,6 @@ class SingleMeasurement:
     Object refers to one single measurement
     Values can be read but NOT be modified
     """
-    energy_balance = EnergyBalance()  # setup EnergyBalance singleton
 
     def __init__(self,
                  datetime: dt, temperature, rel_moisture, wind_speed, wind_direction, air_pressure, sw_radiation_in,
@@ -40,20 +39,20 @@ class SingleMeasurement:
 
     def calculate_energy_balance(self):
         if None not in [self.__air_pressure, self.__wind_speed, self.__temperature]:
-            self.__energy_balance_components["sensible_heat"] = self.energy_balance.calculate_sensible_heat(
+            self.__energy_balance_components["sensible_heat"] = energy_balance.singleton.calculate_sensible_heat(
                 self.__air_pressure,
                 self.__wind_speed,
                 self.__temperature
             )
 
         if None not in [self.__temperature, self.__rel_moisture]:
-            self.__energy_balance_components["latent_heat"] = self.energy_balance.calculate_latent_heat(
+            self.__energy_balance_components["latent_heat"] = energy_balance.singleton.calculate_latent_heat(
                 self.__temperature,
                 self.__rel_moisture
             )
 
         if None not in [None]:
-            self.__energy_balance_components["precipitation_heat"] = self.energy_balance.calculate_precipitation_heat()
+            self.__energy_balance_components["precipitation_heat"] = energy_balance.singleton.calculate_precipitation_heat()
 
         if None not in self.__energy_balance_components.values():
             self.__total_energy_balance = sum([self.__energy_balance_components["sw_radiation_in"],

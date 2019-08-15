@@ -3,7 +3,6 @@ import os
 from GUI.main_frame import MainFrame
 from GUI.frame_plot import PlotFrame
 from GUI.navigation_bar import NavigationBar
-from GUI.read_bar import ReadBar
 from GUI.frame_model import ModelFrame
 from GUI.frame_read import ReadFrame
 

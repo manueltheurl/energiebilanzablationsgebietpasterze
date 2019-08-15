@@ -3,7 +3,13 @@ from manage_config import cfg
 
 
 class EnergyBalance:
+    singleton_created = False
+
     def __init__(self):
+        if EnergyBalance.singleton_created:
+            raise Exception("EnergyBalance is a singleton")
+        EnergyBalance.singleton_created = True
+
         k_0 = 0.4
 
         # z_0 - surface roughness parameter (Table 5.4 in Cuffey and Paterson 2010 state: Ice in ablation zone 1-5 mm
@@ -50,9 +56,9 @@ class EnergyBalance:
 
         return 22.2 * self.c_star * v * (e - e_s)
 
-
     def calculate_precipitation_heat(self):
         # not implemented as there sadly is no information given about the rain rate m/s
         return 0
 
 
+singleton = EnergyBalance()
