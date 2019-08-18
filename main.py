@@ -40,26 +40,26 @@ class Manager:
         multiple_measurements.singleton.calculate_energy_balance_for_all()
         # multiple_measurements.singleton.sum_measurements_by_amount(30)
 
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=10))
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=150))
 
         visualizer = Visualize()
         #
         # visualizer.plot_total_energy_balance()
         visualizer.plot_summed_total_energy_balance()
-        # visualizer.plot_energy_balance_components(ablation=True)
+        # visualizer.plot_energy_balance_components(latent_heat=True)
 
 
 if __name__ == "__main__":
     manager = Manager()
-    manager.run()
+    # manager.run()
     gui = GUImain(manager)
 
-    # if os.name != 'posix':
-    #     gui.lift()
-    #     try:  # TODO yet to test on all different windows versions
-    #         gui.state('zoomed')
-    #     except:
-    #         pass
-    #
-    # gui_thread = threading.Thread(target=gui.mainloop())
-    # gui_thread.start()
+    if os.name != 'posix':
+        gui.lift()
+        try:  # TODO yet to test on all different windows versions
+            gui.state('zoomed')
+        except:
+            pass
+
+    gui_thread = threading.Thread(target=gui.mainloop())
+    gui_thread.start()

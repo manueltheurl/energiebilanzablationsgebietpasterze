@@ -2,6 +2,7 @@ from single_measurement import SingleMeasurement
 from datetime import datetime as dt
 from manage_config import cfg
 import multiple_measurements
+import GUI.info_bar as info_bar
 
 
 class Reader:
@@ -121,8 +122,16 @@ class Reader:
                         )
                     )
 
-                i += 1
+                    i += 1
 
+        info_bar_text_list = [
+            "Measurements: " + str(i),
+            "First: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement")),
+            "Last: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement")),
+            "Time resolution: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_resolution").seconds // 60) + " minutes"
+        ]
+
+        info_bar.singleton["text"] = "\t".join(info_bar_text_list)
         # TODO log how many read in .. and which range ..
 
 

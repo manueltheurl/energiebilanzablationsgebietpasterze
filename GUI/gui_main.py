@@ -5,6 +5,8 @@ from GUI.frame_plot import PlotFrame
 from GUI.navigation_bar import NavigationBar
 from GUI.frame_model import ModelFrame
 from GUI.frame_read import ReadFrame
+import GUI.info_bar as info_bar
+import GUI.navigation_bar as nav_bar
 
 
 class GUImain(tk.Tk):
@@ -53,15 +55,17 @@ class GUImain(tk.Tk):
             frame = F(self.main_frame)
             self.main_frames[F] = frame
 
-        self.navigation_bar = NavigationBar(self)
-        self.navigation_bar.pack(side="top", fill="both")
+        nav_bar.singleton = nav_bar.NavigationBar(self)
+        nav_bar.singleton.pack(side="top", fill="both")
 
-        # self.read_bar = ReadBar(self)
-        # self.read_bar.pack(side="top", fill="both")
+        info_bar.singleton = info_bar.InfoBar(self)
+        info_bar.singleton.pack(side="top", fill="both", padx=15, pady=10)
+
+        info_bar.singleton["text"] = "Read in a file"
 
         # show frames
         for main_frame in self.main_frames.values():
-            main_frame.grid(row=0, column=0, sticky="nsew")
+            main_frame.grid(row=0, column=0, sticky="nsew")  # padx=20, pady=20
 
         # self.pack(fill="both", expand=True)
 

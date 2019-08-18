@@ -36,7 +36,7 @@ class EnergyBalance:
 
         return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - t_s)
 
-    def calculate_latent_heat(self, temperature, rel_moisture):  # E_H
+    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed):  # E_H
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
         # or https://books.google.at/books?id=Zi1coMyhlHoC&lpg=PP1&pg=PA350&hl=en&redir_esc=y#v=onepage&q&f=false
@@ -50,7 +50,9 @@ class EnergyBalance:
         e = rel_moisture / 100 * e_s
 
         # v - ?? remember that:  L v/s is the latent heat of vaporization or sublimation  .. so maybe the rel humidity?
-        v = rel_moisture  # TODO is that correct?
+        v = wind_speed  # TODO is that correct?  # ny is not defined in Box_Energybudget paper .. thats why I suppose its a u for windspeed
+        # http://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0016-71692015000400299 PROOFS THAT ITS THE WIND SPEED INDEED
+        # TODO take a look in this article above on eq 14,  there P woiuld be the air pressure which we have, take it?
 
         # e - e_s is actually the vapor Pressure Deficit  -- https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 

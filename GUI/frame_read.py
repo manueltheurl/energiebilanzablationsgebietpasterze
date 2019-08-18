@@ -131,13 +131,18 @@ class ReadFrame(tk.Frame):
 
         multiple_measurements.singleton.fetch_measurements_metadata()
 
+        self.entry_startTime.delete(0, 'end')
         self.entry_startTime.insert(
             0,
             multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement"))
+
+        self.entry_endTime.delete(0, 'end')
         self.entry_endTime.insert(
             0,
             multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement"))
         self.entry_percentToRead.insert(0, "100")
+
+        self.entry_timeInterval.delete(0, 'end')
         self.entry_timeInterval.insert(
             0,  # no minutes available for next line .. only seconds
             multiple_measurements.singleton.get_single_measurement_metadata("time_resolution").seconds // 60)

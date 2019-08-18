@@ -6,9 +6,15 @@ from GUI.frame_read import ReadFrame
 
 class NavigationBar(tk.Frame):
     """
-    Reserves the space for a main frame (3 in total) by creating a frame
+    TODO
     """
+    singleton_created = False
+
     def __init__(self, parent):
+        if NavigationBar.singleton_created:
+            raise Exception("NavigationBar is a singleton")
+        NavigationBar.singleton_created = True
+
         tk.Frame.__init__(self, parent)
         # self.config(bg="yellow")
         self.grid_propagate(False)
@@ -21,3 +27,6 @@ class NavigationBar(tk.Frame):
 
         btn_modelframe = tk.Button(self, text="Model", command=lambda: parent.show_main_frame(ModelFrame))
         btn_modelframe.pack(side="left")
+
+
+singleton = None  # yet to be initialized

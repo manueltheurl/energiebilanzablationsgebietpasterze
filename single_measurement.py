@@ -48,7 +48,8 @@ class SingleMeasurement:
         if None not in [self.__temperature, self.__rel_moisture]:
             self.__energy_balance_components["latent_heat"] = energy_balance.singleton.calculate_latent_heat(
                 self.__temperature,
-                self.__rel_moisture
+                self.__rel_moisture,
+                self.__wind_speed
             )
 
         if None not in [None]:
