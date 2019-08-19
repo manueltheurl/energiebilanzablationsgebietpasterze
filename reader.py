@@ -3,6 +3,8 @@ from datetime import datetime as dt
 from manage_config import cfg
 import multiple_measurements
 import GUI.info_bar as info_bar
+import GUI.gui_main as gui_main
+import GUI.frame_plot as frame_plot
 
 
 class Reader:
@@ -64,7 +66,7 @@ class Reader:
             for _ in range(cfg["SKIP_LINES"]):  # TODO just for testing
                 next(file)
 
-            i = 0
+            i = 0  # number of read in measurements
             for line in file:
                 parts = line.split(self.delimiter)
 
@@ -124,15 +126,8 @@ class Reader:
 
                     i += 1
 
-        info_bar_text_list = [
-            "Measurements: " + str(i),
-            "First: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement")),
-            "Last: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement")),
-            "Time resolution: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_resolution").seconds // 60) + " minutes"
-        ]
-
-        info_bar.singleton["text"] = "\t".join(info_bar_text_list)
-        # TODO log how many read in .. and which range ..
+        multiple_measurements.singleton.calculate_energy_balance_for_all()
+        return i
 
 
 singleton = Reader()

@@ -1,7 +1,7 @@
 from single_measurement import SingleMeasurement
 
 
-class SummedMeasurement:
+class MeanMeasurement:
     """
     Object refers to the sum of multiple single measurements
     Values can be read but NOT be modified

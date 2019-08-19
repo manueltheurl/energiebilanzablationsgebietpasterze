@@ -1,6 +1,6 @@
 import datetime as dt
 import reader
-from summed_measurement import SummedMeasurement
+from mean_measurement import MeanMeasurement
 
 
 class MultipleMeasurements:
@@ -14,7 +14,7 @@ class MultipleMeasurements:
         self.__all_single_measurement_objects = []
         self.__current_index_scope = set()  # current indexes that will be used are saved in here .. all by default
 
-        self.__all_summed_measurements = []  # Empty in the beginning .. can later be calculated and used
+        self.__all_mean_measurements = []  # Empty in the beginning .. can later be calculated and used
 
         self.__measurement_metadata = {
             "time_resolution": None,  # warning: this is determined by the time diff of the first two measurements only
@@ -49,11 +49,11 @@ class MultipleMeasurements:
             [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]
         ))
 
-    def summed_get_all_of(self, attribute_name):
-        return list(map(lambda obj: getattr(obj, attribute_name), self.__all_summed_measurements))
+    def mean_get_all_of(self, attribute_name):
+        return list(map(lambda obj: getattr(obj, attribute_name), self.__all_mean_measurements))
 
     def sum_measurements_by_amount(self, amount):
-        self.__all_summed_measurements.clear()
+        self.__all_mean_measurements.clear()
 
         scoped_measurements = [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]
 
@@ -62,20 +62,20 @@ class MultipleMeasurements:
         ]
 
         for separated_measurements in multiple_separated_measurements:
-            summed_measurement = SummedMeasurement()
+            summed_measurement = MeanMeasurement()
 
             for single_measurement in separated_measurements:
                 summed_measurement += single_measurement
 
             summed_measurement.calculate_mean()
 
-            self.__all_summed_measurements.append(summed_measurement)
+            self.__all_mean_measurements.append(summed_measurement)
 
     def sum_measurements_by_time_interval(self, time_interval: dt.timedelta):
-        self.__all_summed_measurements.clear()
+        self.__all_mean_measurements.clear()
 
         resolution_reference_time = None
-        summed_measurement = SummedMeasurement()
+        summed_measurement = MeanMeasurement()
 
         for single_measurement in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]:
             if resolution_reference_time is None:  # first time .. no reference time there
@@ -86,10 +86,10 @@ class MultipleMeasurements:
                 resolution_reference_time = single_measurement.datetime
 
                 summed_measurement.calculate_mean()
-                self.__all_summed_measurements.append(summed_measurement)
+                self.__all_mean_measurements.append(summed_measurement)
 
                 # reset summed_measurement and add current to it
-                summed_measurement = SummedMeasurement()
+                summed_measurement = MeanMeasurement()
                 summed_measurement += single_measurement
 
             else:
@@ -135,15 +135,21 @@ class MultipleMeasurements:
 
         self.__current_index_scope.difference_update(indexes_to_remove)
 
-    def get_measurement_amount(self):
+    def get_measurement_amount(self, summed=False):
+        if summed:
+            return len(self.__all_mean_measurements)
         return len(self.__all_single_measurement_objects)
 
-    def get_date_of_first_measurement(self):
+    def get_date_of_first_measurement(self, summed=False):
         # this presupposes that the measurements are read in sorted ascending by date
+        if summed:
+            return self.__all_mean_measurements[0].datetime_begin
         return self.__all_single_measurement_objects[0].datetime
 
-    def get_date_of_last_measurement(self):
+    def get_date_of_last_measurement(self, summed=False):
         # this presupposes that the measurements are read in sorted ascending by date
+        if summed:
+            return self.__all_mean_measurements[-1].datetime_begin
         return self.__all_single_measurement_objects[-1].datetime
 
 

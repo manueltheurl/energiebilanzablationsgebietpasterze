@@ -4,6 +4,9 @@ import reader
 import multiple_measurements
 from tkinter import ttk
 import datetime as dt
+import GUI.info_bar as info_bar
+import GUI.gui_main as gui_main
+import GUI.frame_plot as frame_plot
 
 
 class ReadFrame(tk.Frame):
@@ -184,8 +187,20 @@ class ReadFrame(tk.Frame):
                 elif time_interval_unit == "Days":
                     resolution_by_time_interval = dt.timedelta(days=int(self.entry_timeInterval.get()))
 
-        reader.singleton.read_meterologic_file_to_objects(start_time,
-                                                          end_time,
-                                                          resolution_by_percentage,
-                                                          resolution_by_time_interval
-                                                          )
+        read_in_measurements = reader.singleton.read_meterologic_file_to_objects(start_time,
+                                                                                 end_time,
+                                                                                 resolution_by_percentage,
+                                                                                 resolution_by_time_interval
+                                                                                 )
+
+        info_bar_text_list = [
+            "Measurements: " + str(read_in_measurements),
+            "First: " + str(
+                multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement")),
+            "Last: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement")),
+            "Time resolution: " + str(multiple_measurements.singleton.get_single_measurement_metadata(
+                "time_resolution").seconds // 60) + " minutes"
+        ]
+
+        info_bar.singleton["text"] = "\t".join(info_bar_text_list)
+        gui_main.singleton.show_main_frame(frame_plot.PlotFrame)

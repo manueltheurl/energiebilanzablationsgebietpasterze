@@ -7,6 +7,7 @@ from GUI.frame_model import ModelFrame
 from GUI.frame_read import ReadFrame
 import GUI.info_bar as info_bar
 import GUI.navigation_bar as nav_bar
+from manage_config import cfg
 
 
 class GUImain(tk.Tk):
@@ -16,7 +17,7 @@ class GUImain(tk.Tk):
     All the main frames Start page, Dev page and Car page and stored in an dictionary and then tk.raised() via a
     function. This method is working pretty good and it is easy to add new frames.
     """
-    def __init__(self, manager):
+    def __init__(self):
         tk.Tk.__init__(self)
 
         # if os.name == 'posix':  # Portable Operating System Interface
@@ -83,3 +84,6 @@ class GUImain(tk.Tk):
             event.widget.focus_set()
         except AttributeError:
             pass
+
+if not cfg["NO_GUI"]:
+    singleton = GUImain()

@@ -13,10 +13,22 @@ import datetime as dt
 # from matplotlib import rc
 # rc('text', usetex=True)
 import multiple_measurements
+import scipy
+import numpy as np
+from scipy import optimize
+
+
+def test_func(x, a, b):
+    return a * np.sin(b * x)
 
 
 class Visualize:
+    singleton_created = False
+
     def __init__(self):
+        if Visualize.singleton_created:
+            raise Exception("Reader is a singleton")
+        Visualize.singleton_created = True
 
         if not os.path.exists(cfg["RESULT_PLOT_PATH"]):
             os.makedirs(cfg["RESULT_PLOT_PATH"])
@@ -24,6 +36,10 @@ class Visualize:
         self.ax = None
 
     def initialize_plot(self):
+        """
+
+        :rtype: object
+        """
         fig = plt.figure(figsize=(10, 6))
         self.ax = fig.add_subplot(111)
 
@@ -85,26 +101,32 @@ class Visualize:
     def plot_summed_total_energy_balance(self):
         self.initialize_plot()
 
-        self.ax.plot(multiple_measurements.singleton.summed_get_all_of("datetime_begin"),
-                     multiple_measurements.singleton.summed_get_all_of("total_energy_balance"))
+        # self.ax.plot(multiple_measurements.singleton.summed_get_all_of("datetime_begin"),
+        #              multiple_measurements.singleton.summed_get_all_of("total_energy_balance"))
 
         # trying to trendeliminate here
-        X = multiple_measurements.singleton.summed_get_all_of("total_energy_balance")
+        X = multiple_measurements.singleton.mean_get_all_of("total_energy_balance")
+        start_date = multiple_measurements.singleton.get_date_of_first_measurement(summed=True)
+        end_date = multiple_measurements.singleton.get_date_of_last_measurement(summed=True)
+        amount = multiple_measurements.singleton.get_measurement_amount(summed=True)
+
+        timedelta = int(round(dt.timedelta(days=365) / ((end_date-start_date) / amount), 0))
+        print(timedelta)
+
         diff = list()
-        days_in_year = 365
+        days_in_year = timedelta
         for i in range(days_in_year, len(X)):
-            if not None in [X[i], X[i - days_in_year]]:
+            if None not in [X[i], X[i - days_in_year]]:
                 value = X[i] - X[i - days_in_year]
                 diff.append(value)
             else:
                 diff.append(None)
 
-        self.ax.plot(multiple_measurements.singleton.summed_get_all_of("datetime_begin")[days_in_year:],
+        self.ax.plot(multiple_measurements.singleton.mean_get_all_of("datetime_begin")[days_in_year:],
                      diff)
 
         self.modify_axes()
         self.save_and_close_plot()
-
 
     @staticmethod
     def save_add(first, second):
@@ -147,3 +169,6 @@ class Visualize:
 
         self.modify_axes()
         self.save_and_close_plot()
+
+
+singleton = Visualize()
