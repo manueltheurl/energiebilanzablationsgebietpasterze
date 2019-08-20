@@ -138,6 +138,7 @@ class MultipleMeasurements:
     def get_measurement_amount(self, summed=False):
         if summed:
             return len(self.__all_mean_measurements)
+
         return len(self.__all_single_measurement_objects)
 
     def get_date_of_first_measurement(self, summed=False):

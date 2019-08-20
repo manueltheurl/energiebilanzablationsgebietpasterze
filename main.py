@@ -45,12 +45,21 @@ class Manager:
         multiple_measurements.singleton.calculate_energy_balance_for_all()
         # multiple_measurements.singleton.sum_measurements_by_amount(30)
 
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=5))
 
     def visualize(self):
         # print("BALA")
         # visualizer.plot_total_energy_balance()
-        visualizer.singleton.plot_summed_total_energy_balance()
+        # visualizer.singleton.plot_summed_total_energy_balance()
+
+        visualizer.singleton.plot_periodic_trend_eliminated("total_energy_balance")
+        visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_in")
+        # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
+        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_in")
+        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_out")
+        # visualizer.singleton.plot_periodic_trend_eliminated("sensible_heat")
+        # visualizer.singleton.plot_periodic_trend_eliminated("latent_heat")
+
         # visualizer.plot_energy_balance_components(latent_heat=True)
 
 

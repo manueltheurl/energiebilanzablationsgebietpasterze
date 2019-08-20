@@ -101,29 +101,56 @@ class Visualize:
     def plot_summed_total_energy_balance(self):
         self.initialize_plot()
 
+        self.ax.plot(multiple_measurements.singleton.mean_get_all_of("datetime_begin"),
+                     multiple_measurements.singleton.mean_get_all_of("total_energy_balance"))
+
+        self.modify_axes()
+        self.save_and_close_plot()
+
+    def plot_periodic_trend_eliminated(self, value_name):
+        self.initialize_plot()
+
         # self.ax.plot(multiple_measurements.singleton.summed_get_all_of("datetime_begin"),
         #              multiple_measurements.singleton.summed_get_all_of("total_energy_balance"))
 
         # trying to trendeliminate here
-        X = multiple_measurements.singleton.mean_get_all_of("total_energy_balance")
-        start_date = multiple_measurements.singleton.get_date_of_first_measurement(summed=True)
-        end_date = multiple_measurements.singleton.get_date_of_last_measurement(summed=True)
-        amount = multiple_measurements.singleton.get_measurement_amount(summed=True)
 
-        timedelta = int(round(dt.timedelta(days=365) / ((end_date-start_date) / amount), 0))
-        print(timedelta)
+        one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
 
-        diff = list()
-        days_in_year = timedelta
-        for i in range(days_in_year, len(X)):
-            if None not in [X[i], X[i - days_in_year]]:
-                value = X[i] - X[i - days_in_year]
-                diff.append(value)
-            else:
-                diff.append(None)
+        values = multiple_measurements.singleton.mean_get_all_of(value_name)
+        dates = multiple_measurements.singleton.mean_get_all_of("datetime_begin")
 
-        self.ax.plot(multiple_measurements.singleton.mean_get_all_of("datetime_begin")[days_in_year:],
-                     diff)
+        reference_index = 0
+        for i in range(len(values)):
+            if values[i] is not None:
+                reference_index = i
+                break
+
+        reference_index_date = reference_index
+        reference_index_value = reference_index
+
+        diff_vals = list()
+        diff_dates = list()
+        diff_dates_indexes = list()
+
+        for i in range(len(values)):
+            if None not in [values[i], dates[i]]:
+                if dates[i] >= dates[reference_index_date] + one_year:
+                    diff_vals.append(values[i] - values[reference_index_value])
+                    diff_dates.append(dates[i])
+                    diff_dates_indexes.append(i)
+
+                    # print(dates[reference_index_date], dates[i])  approve that they are one year apart
+
+                    reference_index_value += 1
+                    reference_index_date += 1
+
+        z = np.polyfit(range(len(diff_dates)), diff_vals,  1)
+        p = np.poly1d(z)
+
+        self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
+
+        self.ax.plot(diff_dates, diff_vals)
 
         self.modify_axes()
         self.save_and_close_plot()
