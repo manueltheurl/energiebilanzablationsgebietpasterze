@@ -7,6 +7,7 @@ import datetime as dt
 import GUI.info_bar as info_bar
 import GUI.gui_main as gui_main
 import GUI.frame_plot as frame_plot
+import functions as fc
 
 
 class ReadFrame(tk.Frame):
@@ -76,21 +77,21 @@ class ReadFrame(tk.Frame):
             self.entry_startTime
         ]
 
-        self.set_widget_state(widgets_to_toggle_state, self.ckbox_startTime_value.get())
+        fc.set_widget_state(widgets_to_toggle_state, self.ckbox_startTime_value.get())
 
     def toggle_add_endtime(self):
         widgets_to_toggle_state = [
             self.entry_endTime
         ]
 
-        self.set_widget_state(widgets_to_toggle_state, self.ckbox_endTime_value.get())
+        fc.set_widget_state(widgets_to_toggle_state, self.ckbox_endTime_value.get())
 
     def toggle_resolution_by_percentage(self):
         widgets_to_toggle_state = [
             self.entry_percentToRead
         ]
 
-        self.set_widget_state(widgets_to_toggle_state, self.ckbox_percentToRead_value.get())
+        fc.set_widget_state(widgets_to_toggle_state, self.ckbox_percentToRead_value.get())
 
     def toggle_resolution_by_time_interval(self):
         widgets_to_toggle_state = [
@@ -98,17 +99,7 @@ class ReadFrame(tk.Frame):
             self.cmbobox_timeIntervalUnit
         ]
 
-        self.set_widget_state(widgets_to_toggle_state, self.ckbox_timeInterval_value.get())
-
-    @staticmethod
-    def set_widget_state(widgets: list, state):
-        if state == 1 or state == "normal":  # actually check if its 1 or 0, cause else "disabled" string is True also
-            for widget in widgets:
-                widget["state"] = "normal"
-
-        elif state == 0 or state == "disabled":
-            for widget in widgets:
-                widget["state"] = "disabled"
+        fc.set_widget_state(widgets_to_toggle_state, self.ckbox_timeInterval_value.get())
 
     def select_file(self):
         selected_path = tk.filedialog.askopenfilename(filetypes=(("Csv Files", "*.csv"), ("all files", "*.*")))
@@ -118,7 +109,7 @@ class ReadFrame(tk.Frame):
             self.lbl_chosenFile['text'] = selected_path
             reader.singleton.add_file_path(selected_path)
 
-            self.set_widget_state([
+            fc.set_widget_state([
                 self.ckbox_startTime,
                 self.ckbox_endTime,
                 self.ckbox_percentToRead,
@@ -152,7 +143,7 @@ class ReadFrame(tk.Frame):
 
         self.cmbobox_timeIntervalUnit.current(0)  # possible here without state normal first
 
-        self.set_widget_state([
+        fc.set_widget_state([
             # disable them again .. value stays though
             self.entry_startTime,
             self.entry_endTime,

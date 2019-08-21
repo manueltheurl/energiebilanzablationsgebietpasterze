@@ -126,7 +126,6 @@ class Reader:
 
                     i += 1
 
-        multiple_measurements.singleton.calculate_energy_balance_for_all()
         return i
 
 

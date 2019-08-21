@@ -54,9 +54,9 @@ class Manager:
 
         visualizer.singleton.plot_periodic_trend_eliminated("total_energy_balance")
         visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_in")
-        # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
-        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_in")
-        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_out")
+        visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
+        visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_in")
+        visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_out")
         # visualizer.singleton.plot_periodic_trend_eliminated("sensible_heat")
         # visualizer.singleton.plot_periodic_trend_eliminated("latent_heat")
 

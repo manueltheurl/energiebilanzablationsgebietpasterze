@@ -18,10 +18,6 @@ import numpy as np
 from scipy import optimize
 
 
-def test_func(x, a, b):
-    return a * np.sin(b * x)
-
-
 class Visualize:
     singleton_created = False
 
@@ -32,6 +28,17 @@ class Visualize:
 
         if not os.path.exists(cfg["RESULT_PLOT_PATH"]):
             os.makedirs(cfg["RESULT_PLOT_PATH"])
+
+        self.title_dict = {
+            "sw_radiation_in": "Short wave in",
+            "sw_radiation_out": "Short wave out",
+            "lw_radiation_in": "Long wave in",
+            "lw_radiation_out": "Long wave out",
+            "sensible_heat": "Sensible heat",
+            "latent_heat": "Latent heat",
+            "precipitation_heat": "Precipitation heat",
+            "total_energy_balance": "Total energy balance",
+        }
 
         self.ax = None
 
@@ -153,6 +160,7 @@ class Visualize:
         self.ax.plot(diff_dates, diff_vals)
 
         self.modify_axes()
+        self.ax.set_title(self.title_dict[value_name] + " - Periodic trend eliminated")
         self.save_and_close_plot()
 
     @staticmethod
