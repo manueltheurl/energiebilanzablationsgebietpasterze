@@ -1,87 +1,39 @@
 import tkinter as tk
+import GUI.gui_main_frame as gui_main_frame
 import visualizer
-import multiple_measurements
-import functions as fc
+from tkinter import ttk
 
 
-class PlotFrame(tk.Frame):
+class ModelFrame(tk.Frame):
     """
     Reserves the space for a main frame (3 in total) by creating a frame
     """
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
-        # self.config(bg="black")
-        self.grid_propagate(False)
+    def __init__(self):
+        tk.Frame.__init__(self, gui_main_frame.singleton.frame)
+        self.grid(row=0, column=0, sticky="nsew")
 
-        self.lbl_currentScope = tk.Label(self, text="Change current scope of all read in measurements")
-        self.lbl_currentScope.pack()
+        self.lbl_visualize = tk.Label(self, text="Visualize")
+        self.lbl_visualize.pack(padx=30)
 
-        self.ckbox_percentScope_value = tk.IntVar()
-        self.ckbox_percentScope = tk.Checkbutton(self,
-                                                  command=self.toggle_percent_scope,
-                                                  variable=self.ckbox_percentScope_value, state="active")
-        self.ckbox_percentScope.pack()
+        self.btn_totalEnergyBalance = tk.Button(self, text="Total energy balance",
+                                                command=self.plot_total_energy_balance)
+        self.btn_totalEnergyBalance.pack()
 
-        self.lbl_percentScope = tk.Label(self, text="Percent to take from read in measurements")
-        self.lbl_percentScope.pack()
-        self.entry_percentScope = tk.Entry(self, state="disabled")
-        self.entry_percentScope.pack()
+        # button2 = tk.Button(self, text="Plot summed total energy balance",
+        #                     command=visualizer.singleton.plot_summed_total_energy_balance)
+        # button2.pack()
+        #
+        # button3 = tk.Button(self, text="Plot summed total energy balance",
+        #                     command=visualizer.singleton.plot_summed_total_energy_balance)
+        # button3.pack()
 
-        self.ckbox_timeintervalScope_value = tk.IntVar()
-        self.ckbox_timeintervalScope = tk.Checkbutton(self,
-                                                 command=self.toggle_time_interval_scope,
-                                                 variable=self.ckbox_timeintervalScope_value, state="active")
-        self.ckbox_timeintervalScope.pack()
+    def plot_total_energy_balance(self):
+        visualizer.singleton.plot_total_energy_balance()
 
-        self.lbl_timeintervalScope = tk.Label(self, text="Percent to take from read in measurements")
-        self.lbl_timeintervalScope.pack()
-        self.entry_timeintervalScope = tk.Entry(self, state="disabled")
-        self.entry_timeintervalScope.pack()
 
-        self.btn_changeCurrentScope = tk.Button(self,
-                                                text="Change current scope",
-                                                command=self.change_current_scope,
-                                                state="active")
-        self.btn_changeCurrentScope.pack()
+singleton = None
 
-        self.btn_calcEnergyBalance = tk.Button(self,
-                                               text="Calculate Energy Balance",
-                                               command=multiple_measurements.singleton.calculate_energy_balance_for_all,
-                                               state="active")
-        self.btn_calcEnergyBalance.pack()
 
-        #  --> TODO
-        button1 = tk.Button(self, text="Plot total energy balance", command=visualizer.singleton.plot_total_energy_balance)
-        button1.pack()
-
-        button2 = tk.Button(self, text="Plot summed total energy balance",
-                           command=visualizer.singleton.plot_summed_total_energy_balance)
-        button2.pack()
-
-        button3 = tk.Button(self, text="Plot summed total energy balance",
-                               command=visualizer.singleton.plot_summed_total_energy_balance)
-        button3.pack()
-
-    def toggle_percent_scope(self):
-        widgets_to_toggle_state = [
-            self.entry_percentScope
-        ]
-
-        fc.set_widget_state(widgets_to_toggle_state, self.ckbox_percentScope_value.get())
-
-    def toggle_time_interval_scope(self):
-        widgets_to_toggle_state = [
-            self.entry_timeintervalScope
-        ]
-
-        fc.set_widget_state(widgets_to_toggle_state, self.ckbox_timeintervalScope_value.get())
-
-    def change_current_scope(self):
-        percent_scope = None
-        if self.ckbox_percentScope_value.get():
-            percent_scope = self.entry_percentScope.get()
-
-        timeinterval_scope = None
-        if self.ckbox_timeintervalScope_value.get():
-            timeinterval_scope = self.entry_timeintervalScope.get()
-
+def create_singleton():
+    global singleton
+    singleton = ModelFrame()  # yet to be initialized

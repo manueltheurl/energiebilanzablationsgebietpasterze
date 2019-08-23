@@ -1,13 +1,5 @@
 import tkinter as tk
 import os
-from GUI.main_frame import MainFrame
-from GUI.frame_plot import PlotFrame
-from GUI.navigation_bar import NavigationBar
-from GUI.frame_model import ModelFrame
-from GUI.frame_read import ReadFrame
-import GUI.info_bar as info_bar
-import GUI.navigation_bar as nav_bar
-from manage_config import cfg
 
 
 class GUImain(tk.Tk):
@@ -43,36 +35,16 @@ class GUImain(tk.Tk):
 
         # self.config(bg="lightgray")
 
-        self.main_frame = MainFrame(self)
-        self.main_frame.pack(side="bottom", fill="both", expand=True)
+        self.frame = tk.Frame(self)
+        self.frame.pack(side="bottom", fill="both", expand=True)
 
         # needs to be set, otherwise no weight at all
-        self.main_frame.rowconfigure(0, weight=1)
-        self.main_frame.columnconfigure(0, weight=1)
+        self.frame.rowconfigure(0, weight=1)
+        self.frame.columnconfigure(0, weight=1)
 
-        self.main_frames = {}
-
-        for F in (ModelFrame, PlotFrame, ReadFrame):  # last item here is standard page to show
-            frame = F(self.main_frame)
-            self.main_frames[F] = frame
-
-        nav_bar.singleton = nav_bar.NavigationBar(self)
-        nav_bar.singleton.pack(side="top", fill="both")
-
-        info_bar.singleton = info_bar.InfoBar(self)
-        info_bar.singleton.pack(side="top", fill="both", padx=15, pady=10)
-
-        info_bar.singleton["text"] = "Read in a file"
-
-        # show frames
-        for main_frame in self.main_frames.values():
-            main_frame.grid(row=0, column=0, sticky="nsew")  # padx=20, pady=20
-
-        # self.pack(fill="both", expand=True)
-
-    def show_main_frame(self, cont):
-        frame = self.main_frames[cont]
-        frame.tkraise()
+    @staticmethod
+    def show_main_frame(singleton_file):
+        singleton_file.singleton.tkraise()
 
     def close_application(self):
         self.destroy()
@@ -85,5 +57,10 @@ class GUImain(tk.Tk):
         except AttributeError:
             pass
 
-if not cfg["NO_GUI"]:
+
+singleton = None
+
+
+def create_singleton():
+    global singleton
     singleton = GUImain()

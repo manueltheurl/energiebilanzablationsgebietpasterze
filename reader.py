@@ -2,9 +2,6 @@ from single_measurement import SingleMeasurement
 from datetime import datetime as dt
 from manage_config import cfg
 import multiple_measurements
-import GUI.info_bar as info_bar
-import GUI.gui_main as gui_main
-import GUI.frame_plot as frame_plot
 
 
 class Reader:

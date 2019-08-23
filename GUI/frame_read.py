@@ -5,14 +5,18 @@ import multiple_measurements
 from tkinter import ttk
 import datetime as dt
 import GUI.info_bar as info_bar
-import GUI.gui_main as gui_main
+import GUI.gui_main_frame as gui_main_frame
 import GUI.frame_plot as frame_plot
 import functions as fc
+import GUI.navigation_bar as navigation_bar
+import GUI.frame_energy_balance as frame_energy_balance
 
 
 class ReadFrame(tk.Frame):
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
+    def __init__(self):
+        tk.Frame.__init__(self, gui_main_frame.singleton.frame)
+        self.grid(row=0, column=0, sticky="nsew")
+
         self.grid_propagate(False)
 
         self.file_path = None
@@ -70,7 +74,7 @@ class ReadFrame(tk.Frame):
                                                 text="Read in defined measurements",
                                                 command=self.read_measurements_to_objects,
                                                 state="disabled")
-        self.btn_readFilesToObjects.pack()
+        self.btn_readFilesToObjects.pack(pady=30)
 
     def toggle_add_starttime(self):
         widgets_to_toggle_state = [
@@ -194,4 +198,15 @@ class ReadFrame(tk.Frame):
         ]
 
         info_bar.singleton["text"] = "\t".join(info_bar_text_list)
-        gui_main.singleton.show_main_frame(frame_plot.PlotFrame)
+
+        frame_energy_balance.singleton.fill_fields_with_read_in_values()
+        navigation_bar.singleton.show_energy_balance_frame()
+
+
+singleton = None
+
+
+def create_singleton():
+    global singleton
+    singleton = ReadFrame()
+

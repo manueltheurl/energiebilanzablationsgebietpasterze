@@ -11,12 +11,19 @@ TODO Rights .. open source .. and that stuff
 from manage_config import cfg
 import datetime as dt
 import os
-from GUI.gui_main import GUImain
 import threading
 import multiple_measurements
 import reader
-import numpy as np
-import GUI.gui_main as gui_main
+
+# The gui is constructed as singletons .. this order therefor has to be maintained
+import GUI.gui_main_frame as gui_main
+import GUI.navigation_bar as navigation_bar
+import GUI.info_bar as info_bar
+import GUI.frame_plot as frame_plot
+import GUI.frame_energy_balance as frame_scope
+import GUI.frame_model as frame_model
+import GUI.frame_read as frame_read
+import GUI.frame_sum as frame_sum
 import visualizer
 
 
@@ -25,6 +32,9 @@ class Manager:
         self.path_to_meteorologic_measurements = cfg["DATA_PATH"]
         self.startTime = "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
         self.endTime = "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.read()
+        self.calculate()
+        self.visualize()
 
     def read(self):
 
@@ -66,17 +76,23 @@ class Manager:
 if __name__ == "__main__":
     if cfg["NO_GUI"]:
         manager = Manager()
-        manager.read()
-        manager.calculate()
-        manager.visualize()
 
     else:
-        if os.name != 'posix':
-            gui_main.singleton.lift()
-            try:  # TODO yet to test on all different windows versions
-                gui_main.singleton.state('zoomed')
-            except:
-                pass
+        """
+        Order matters here, cause all need the gui_main_frame
+        So each singleton is saved in a singleton variable in the corresponding file. So every file can then access
+        those singletons by including the module    
+        """
+        gui_main.create_singleton()
+        navigation_bar.create_singleton()
+        info_bar.create_singleton()
+        frame_scope.create_singleton()
+        frame_plot.create_singleton()
+        frame_model.create_singleton()
+        frame_sum.create_singleton()
+        frame_read.create_singleton()
+
+        navigation_bar.singleton.show_sum_frame()
 
         gui_thread = threading.Thread(target=gui_main.singleton.mainloop())
         gui_thread.start()
