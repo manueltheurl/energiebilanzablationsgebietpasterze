@@ -63,7 +63,7 @@ class NavigationBar(tk.Frame):
     def show_sum_frame(self):
         self.__set_state_of_buttons_normal()
         gui_main_frame.singleton.show_main_frame(frame_sum)
-        self.btn_energybalanceframe["state"] = "active"  # aint working
+        self.btn_sumframe["state"] = "active"  # aint working
 
     def show_plot_frame(self):
         self.__set_state_of_buttons_normal()

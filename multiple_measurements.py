@@ -38,9 +38,16 @@ class MultipleMeasurements:
     def get_single_measurement_metadata(self, key):
         return self.__measurement_metadata[key]
 
-    def calculate_energy_balance_for_all(self):
-        for obj in self.__all_single_measurement_objects:
+    def calculate_energy_balance_for_scope(self):
+        print("calculating energy balance for current scope")
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]:
             obj.calculate_energy_balance()
+
+    # def calculate_energy_balance_for_all(self):
+    #     # function probably not even needed
+    #     print("calculating energy balance for all")
+    #     for obj in self.__all_single_measurement_objects:
+    #         obj.calculate_energy_balance()
 
     def get_all_of(self, attribute_name):
         return list(map(

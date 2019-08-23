@@ -38,6 +38,9 @@ class SingleMeasurement:
         self.__total_energy_balance = None  # not calculated yet
 
     def calculate_energy_balance(self):
+        if self.__total_energy_balance is not None:  # so that we wont recalculate for nothing
+            return
+
         if None not in [self.__air_pressure, self.__wind_speed, self.__temperature]:
             self.__energy_balance_components["sensible_heat"] = energy_balance.singleton.calculate_sensible_heat(
                 self.__air_pressure,

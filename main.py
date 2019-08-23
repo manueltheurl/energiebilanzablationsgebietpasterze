@@ -23,6 +23,7 @@ import GUI.frame_plot as frame_plot
 import GUI.frame_energy_balance as frame_scope
 import GUI.frame_model as frame_model
 import GUI.frame_read as frame_read
+import GUI.frame_energy_balance as frame_energy_balance
 import GUI.frame_sum as frame_sum
 import visualizer
 
@@ -92,7 +93,30 @@ if __name__ == "__main__":
         frame_sum.create_singleton()
         frame_read.create_singleton()
 
+        # JUST FOR TESTING DELETE FROM HERE
+        reader.singleton.add_file_path("PAS_10min_SHORT.csv")
+
+        read_in_measurements = reader.singleton.read_meterologic_file_to_objects()
+
+        multiple_measurements.singleton.fetch_measurements_metadata()
+
+        info_bar_text_list = [
+            "Measurements: " + str(read_in_measurements),
+            "First: " + str(
+                multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement")),
+            "Last: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement")),
+            "Time resolution: " + str(multiple_measurements.singleton.get_single_measurement_metadata(
+                "time_resolution").seconds // 60) + " minutes"
+        ]
+
+        info_bar.singleton["text"] = "\t".join(info_bar_text_list)
+
+        frame_energy_balance.singleton.fill_fields_with_read_in_values()
+        multiple_measurements.singleton.calculate_energy_balance_for_scope()
+
         navigation_bar.singleton.show_sum_frame()
+
+        # TILL HERE
 
         gui_thread = threading.Thread(target=gui_main.singleton.mainloop())
         gui_thread.start()

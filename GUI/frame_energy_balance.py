@@ -107,19 +107,21 @@ class ScopeFrame(tk.Frame):
                 time_interval_unit = self.cmbobox_timeIntervalScopeUnit.get()
 
                 if time_interval_unit == "Minutes":
-                    resolution_by_time_interval = dt.timedelta(minutes=int(self.entry_timeintervalScope.get()))
+                    timeinterval_scope = dt.timedelta(minutes=int(self.entry_timeintervalScope.get()))
                 elif time_interval_unit == "Hours":
-                    resolution_by_time_interval = dt.timedelta(hours=int(self.entry_timeintervalScope.get()))
+                    timeinterval_scope = dt.timedelta(hours=int(self.entry_timeintervalScope.get()))
                 elif time_interval_unit == "Days":
-                    resolution_by_time_interval = dt.timedelta(days=int(self.entry_timeintervalScope.get()))
+                    timeinterval_scope = dt.timedelta(days=int(self.entry_timeintervalScope.get()))
 
         if percent_scope is not None and percent_scope.isdigit():
+            print(percent_scope)
             multiple_measurements.singleton.change_measurement_resolution_by_percentage(int(percent_scope))
         if timeinterval_scope is not None:
+            print(timeinterval_scope)
             multiple_measurements.singleton.change_measurement_resolution_by_time_interval(timeinterval_scope)
 
     def calculate_energy_balance(self):
-        multiple_measurements.singleton.calculate_energy_balance_for_all()
+        multiple_measurements.singleton.calculate_energy_balance_for_scope()
         navigation_bar.singleton.show_sum_frame()
 
 

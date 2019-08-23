@@ -4,6 +4,8 @@ import visualizer
 from tkinter import ttk
 import GUI.navigation_bar as navigation_bar
 import functions as fc
+import datetime as dt
+import multiple_measurements
 
 
 class SumFrame(tk.Frame):
@@ -37,8 +39,8 @@ class SumFrame(tk.Frame):
         self.entry_sumByTimeInterval.pack()
         self.lbl_timeInterval = tk.Label(self, text="Time interval unit")
         self.lbl_timeInterval.pack()
-        self.cmbobox_timeIntervalUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days"], state="disabled")
-        self.cmbobox_timeIntervalUnit.pack()
+        self.cmbobox_sumByTimeIntervalUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days"], state="disabled")
+        self.cmbobox_sumByTimeIntervalUnit.pack()
         self.ckbox_sumByTimeInterval.pack(padx=10)
 
         self.btn_sumMeasurements = tk.Button(self, text="Sum measurements",
@@ -61,21 +63,39 @@ class SumFrame(tk.Frame):
     def toggle_sum_measurements_by_time_interval(self):
         widgets_to_toggle_state = [
             self.entry_sumByTimeInterval,
-            self.cmbobox_timeIntervalUnit
+            self.cmbobox_sumByTimeIntervalUnit
         ]
 
         fc.set_widget_state(widgets_to_toggle_state, self.ckbox_sumByTimeInterval_value.get())
         fc.set_widget_state([self.btn_sumMeasurements],
                             self.ckbox_sumByAmount_value.get() or self.ckbox_sumByTimeInterval_value.get())
 
-    def sum_measurements_by_amount(self):
-        pass
-
-    def sum_measurements_by_time_interval(self):
-        pass
-
     def create_summed_measurement(self):
-        pass
+        print("Summing measurements")
+        sum_by_amount = None
+        if self.ckbox_sumByAmount_value.get():
+            sum_by_amount = self.entry_sumByAmount.get()
+
+        sum_by_time_interval = None
+        if self.ckbox_sumByTimeInterval_value.get():
+            if self.entry_sumByTimeInterval.get().isdigit():
+                time_interval_unit = self.cmbobox_sumByTimeIntervalUnit.get()
+
+                if time_interval_unit == "Minutes":
+                    sum_by_time_interval = dt.timedelta(minutes=int(self.entry_sumByTimeInterval.get()))
+                elif time_interval_unit == "Hours":
+                    sum_by_time_interval = dt.timedelta(hours=int(self.entry_sumByTimeInterval.get()))
+                elif time_interval_unit == "Days":
+                    sum_by_time_interval = dt.timedelta(days=int(self.entry_sumByTimeInterval.get()))
+
+        if sum_by_amount is not None and sum_by_amount.isdigit():
+            print(sum_by_amount)
+            multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
+        if sum_by_time_interval is not None:
+            print(sum_by_time_interval)
+            multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
+
+        navigation_bar.singleton.show_plot_frame()
 
 
 singleton = None
