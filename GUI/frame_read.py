@@ -127,23 +127,23 @@ class ReadFrame(tk.Frame):
                 self.entry_percentToRead
             ], "normal")
 
-        multiple_measurements.singleton.fetch_measurements_metadata()
+        reader.singleton.fetch_file_metadata()
 
         self.entry_startTime.delete(0, 'end')
         self.entry_startTime.insert(
             0,
-            multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement"))
+            reader.singleton.get_single_file_metadata("time_of_first_measurement"))
 
         self.entry_endTime.delete(0, 'end')
         self.entry_endTime.insert(
             0,
-            multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement"))
+            reader.singleton.get_single_file_metadata("time_of_last_measurement"))
         self.entry_percentToRead.insert(0, "100")
 
         self.entry_timeInterval.delete(0, 'end')
         self.entry_timeInterval.insert(
             0,  # no minutes available for next line .. only seconds
-            multiple_measurements.singleton.get_single_measurement_metadata("time_resolution").seconds // 60)
+            reader.singleton.get_single_file_metadata("time_resolution").seconds // 60)
 
         self.cmbobox_timeIntervalUnit.current(0)  # possible here without state normal first
 
@@ -182,22 +182,20 @@ class ReadFrame(tk.Frame):
                 elif time_interval_unit == "Days":
                     resolution_by_time_interval = dt.timedelta(days=int(self.entry_timeInterval.get()))
 
-        read_in_measurements = reader.singleton.read_meterologic_file_to_objects(start_time,
+        reader.singleton.read_meterologic_file_to_objects(start_time,
                                                                                  end_time,
                                                                                  resolution_by_percentage,
                                                                                  resolution_by_time_interval
                                                                                  )
 
         info_bar_text_list = [
-            "Measurements: " + str(read_in_measurements),
-            "First: " + str(
-                multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement")),
-            "Last: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement")),
-            "Time resolution: " + str(multiple_measurements.singleton.get_single_measurement_metadata(
-                "time_resolution").seconds // 60) + " minutes"
+            "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),
+            "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement()),
+            "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement()),
+            "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution()) + " minutes"
         ]
 
-        info_bar.singleton["text"] = "\t".join(info_bar_text_list)
+        info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
 
         frame_energy_balance.singleton.fill_fields_with_read_in_values()
         navigation_bar.singleton.show_energy_balance_frame()

@@ -2,7 +2,7 @@ import tkinter as tk
 import GUI.gui_main_frame as gui_main_frame
 
 
-class InfoBar(tk.Label):
+class InfoBar:
     """
     TODO
     """
@@ -13,11 +13,31 @@ class InfoBar(tk.Label):
             raise Exception("InfoBar is a singleton")
         InfoBar.singleton_created = True
 
-        tk.Label.__init__(self, gui_main_frame.singleton, anchor="w")
+        self.read = tk.Label(gui_main_frame.singleton, anchor="w")
+        self.scope = tk.Label(gui_main_frame.singleton, anchor="w")
+        self.sum = tk.Label(gui_main_frame.singleton, anchor="w")
 
-        self.pack(side="top", fill="both", padx=15, pady=10)
+    @staticmethod
+    def pack_if_not_empty_else_forget(label, text):
+        if text == "":
+            label.pack_forget()
+        else:
+            label.pack(side="top", fill="both", padx=15)
 
-        self["text"] = "Read in a file"
+    def change_read_info(self, text):
+        self.read["text"] = "Read info:\t" + text
+        self.pack_if_not_empty_else_forget(self.read, text)
+
+    def change_scope_info(self, text):
+        self.scope["text"] = "Scope info:\t" + text
+        self.pack_if_not_empty_else_forget(self.scope, text)
+
+    def change_sum_info(self, text):
+        self.sum["text"] = "Sum info:\t" + text
+        self.pack_if_not_empty_else_forget(self.sum, text)
+
+
+
 
 
 singleton = None

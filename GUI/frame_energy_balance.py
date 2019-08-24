@@ -3,8 +3,10 @@ import multiple_measurements
 import functions as fc
 import GUI.gui_main_frame as gui_main_frame
 import GUI.navigation_bar as navigation_bar
+import GUI.info_bar as info_bar
 from tkinter import ttk
 import datetime as dt
+import reader
 
 
 class ScopeFrame(tk.Frame):
@@ -72,7 +74,7 @@ class ScopeFrame(tk.Frame):
         self.entry_timeintervalScope.delete(0, 'end')
         self.entry_timeintervalScope.insert(
             0,  # no minutes available for next line .. only seconds
-            multiple_measurements.singleton.get_single_measurement_metadata("time_resolution").seconds // 60)
+            reader.singleton.get_single_file_metadata("time_resolution").seconds // 60)
         self.entry_timeintervalScope["state"] = "disabled"
 
         self.cmbobox_timeIntervalScopeUnit.current(0)  # possible here without state normal first
@@ -97,6 +99,8 @@ class ScopeFrame(tk.Frame):
                             self.ckbox_percentScope_value.get() or self.ckbox_timeintervalScope_value.get())
 
     def change_current_scope(self):
+        multiple_measurements.singleton.reset_scope_to_all()
+
         percent_scope = None
         if self.ckbox_percentScope_value.get():
             percent_scope = self.entry_percentScope.get()
@@ -114,11 +118,17 @@ class ScopeFrame(tk.Frame):
                     timeinterval_scope = dt.timedelta(days=int(self.entry_timeintervalScope.get()))
 
         if percent_scope is not None and percent_scope.isdigit():
-            print(percent_scope)
             multiple_measurements.singleton.change_measurement_resolution_by_percentage(int(percent_scope))
         if timeinterval_scope is not None:
-            print(timeinterval_scope)
             multiple_measurements.singleton.change_measurement_resolution_by_time_interval(timeinterval_scope)
+
+        info_bar_text_list = [
+            "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount(of="scope")),
+            "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement(of="scope")),
+            "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement(of="scope")),
+            "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution(of="scope")) + " minutes"
+        ]
+        info_bar.singleton.change_scope_info("\t".join(info_bar_text_list))
 
     def calculate_energy_balance(self):
         multiple_measurements.singleton.calculate_energy_balance_for_scope()

@@ -16,27 +16,9 @@ class MultipleMeasurements:
 
         self.__all_mean_measurements = []  # Empty in the beginning .. can later be calculated and used
 
-        self.__measurement_metadata = {
-            "time_resolution": None,  # warning: this is determined by the time diff of the first two measurements only
-            "time_of_first_measurement": None,
-            "time_of_last_measurement": None
-        }
-
     def add_single_measurement(self, single_measurement_objects):
         self.__current_index_scope.add(len(self.__all_single_measurement_objects))
         self.__all_single_measurement_objects.append(single_measurement_objects)
-
-    def fetch_measurements_metadata(self):
-        time_resolution, time_of_first_measure, time_of_last_measure = reader.singleton.read_measurements_metadata()
-        self.set_measurement_metadata(time_resolution, time_of_first_measure, time_of_last_measure)
-
-    def set_measurement_metadata(self, time_resolution, time_of_first_measurement, time_of_last_measurement):
-        self.__measurement_metadata["time_resolution"] = time_resolution
-        self.__measurement_metadata["time_of_first_measurement"] = time_of_first_measurement
-        self.__measurement_metadata["time_of_last_measurement"] = time_of_last_measurement
-
-    def get_single_measurement_metadata(self, key):
-        return self.__measurement_metadata[key]
 
     def calculate_energy_balance_for_scope(self):
         print("calculating energy balance for current scope")
@@ -142,23 +124,47 @@ class MultipleMeasurements:
 
         self.__current_index_scope.difference_update(indexes_to_remove)
 
-    def get_measurement_amount(self, summed=False):
-        if summed:
+    def get_measurement_amount(self, of="all"):
+        if of == "summed":
             return len(self.__all_mean_measurements)
+        elif of == "scope":
+            return len(self.__current_index_scope)
 
         return len(self.__all_single_measurement_objects)
 
-    def get_date_of_first_measurement(self, summed=False):
+    def get_date_of_first_measurement(self, of="all"):
         # this presupposes that the measurements are read in sorted ascending by date
-        if summed:
+        if of == "summed":
             return self.__all_mean_measurements[0].datetime_begin
+        elif of == "scope":
+            return self.__all_single_measurement_objects[sorted(self.__current_index_scope)[0]].datetime
+
         return self.__all_single_measurement_objects[0].datetime
 
-    def get_date_of_last_measurement(self, summed=False):
+    def get_date_of_last_measurement(self, of="all"):
         # this presupposes that the measurements are read in sorted ascending by date
-        if summed:
+        if of == "summed":
             return self.__all_mean_measurements[-1].datetime_begin
+        elif of == "scope":
+            return self.__all_single_measurement_objects[sorted(self.__current_index_scope)[-1]].datetime
+
         return self.__all_single_measurement_objects[-1].datetime
+
+    def get_time_resolution(self, of="all"):
+        """
+        Based on the first two measurements!
+        :return Timedelta in minutes
+        """
+
+        if of == "summed":
+            time_delta = self.__all_mean_measurements[1].datetime_begin - self.__all_mean_measurements[0].datetime_begin
+        elif of == "scope":
+            scope_indexes = sorted(self.__current_index_scope)
+            time_delta = self.__all_single_measurement_objects[scope_indexes[1]].datetime - self.__all_single_measurement_objects[scope_indexes[0]].datetime
+        else:
+            time_delta = self.__all_single_measurement_objects[1].datetime - self.__all_single_measurement_objects[0].datetime
+
+        return time_delta.seconds // 60
 
 
 singleton = MultipleMeasurements()

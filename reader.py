@@ -17,6 +17,12 @@ class Reader:
         self.no_data = "NULL"
         self.number_of_data_attributes = 16
 
+        self.__file_metadata = {
+            "time_resolution": None,  # warning: this is determined by the time diff of the first two measurements only
+            "time_of_first_measurement": None,
+            "time_of_last_measurement": None
+        }
+
     def add_file_path(self, filepath):
         self.__file_path = filepath
 
@@ -45,6 +51,18 @@ class Reader:
                 datetime_last_measurement
             ]
 
+    def fetch_file_metadata(self):
+        time_resolution, time_of_first_measure, time_of_last_measure = self.read_measurements_metadata()
+        self.__set_file_metadata(time_resolution, time_of_first_measure, time_of_last_measure)
+
+    def __set_file_metadata(self, time_resolution, time_of_first_measurement, time_of_last_measurement):
+        self.__file_metadata["time_resolution"] = time_resolution
+        self.__file_metadata["time_of_first_measurement"] = time_of_first_measurement
+        self.__file_metadata["time_of_last_measurement"] = time_of_last_measurement
+
+    def get_single_file_metadata(self, key):
+        return self.__file_metadata[key]
+
     def read_meterologic_file_to_objects(self, starttime=None,
                                          endtime=None, resolution_by_percentage=None, resolution_by_time_interval=None):
 
@@ -63,7 +81,6 @@ class Reader:
             for _ in range(cfg["SKIP_LINES"]):  # TODO just for testing
                 next(file)
 
-            i = 0  # number of read in measurements
             for line in file:
                 parts = line.split(self.delimiter)
 
@@ -120,10 +137,6 @@ class Reader:
                             ablation=self.convert_to_float_or_none(parts[15])
                         )
                     )
-
-                    i += 1
-
-        return i
 
 
 singleton = Reader()

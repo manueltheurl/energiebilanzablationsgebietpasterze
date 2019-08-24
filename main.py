@@ -41,7 +41,7 @@ class Manager:
 
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
 
-        multiple_measurements.singleton.fetch_measurements_metadata()
+        multiple_measurements.singleton.fetch_file_metadata()
 
         reader.singleton.read_meterologic_file_to_objects(starttime=None,
                                                           endtime=None,
@@ -98,18 +98,15 @@ if __name__ == "__main__":
 
         read_in_measurements = reader.singleton.read_meterologic_file_to_objects()
 
-        multiple_measurements.singleton.fetch_measurements_metadata()
+        reader.singleton.fetch_file_metadata()
 
         info_bar_text_list = [
-            "Measurements: " + str(read_in_measurements),
-            "First: " + str(
-                multiple_measurements.singleton.get_single_measurement_metadata("time_of_first_measurement")),
-            "Last: " + str(multiple_measurements.singleton.get_single_measurement_metadata("time_of_last_measurement")),
-            "Time resolution: " + str(multiple_measurements.singleton.get_single_measurement_metadata(
-                "time_resolution").seconds // 60) + " minutes"
+            "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),
+            "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement()),
+            "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement()),
+            "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution()) + " minutes"
         ]
-
-        info_bar.singleton["text"] = "\t".join(info_bar_text_list)
+        info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
 
         frame_energy_balance.singleton.fill_fields_with_read_in_values()
         multiple_measurements.singleton.calculate_energy_balance_for_scope()
