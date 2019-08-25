@@ -3,6 +3,7 @@ import GUI.gui_main_frame as gui_main_frame
 import visualizer
 from tkinter import ttk
 import GUI.navigation_bar as navigation_bar
+import GUI.info_bar as info_bar
 import functions as fc
 import datetime as dt
 import multiple_measurements
@@ -56,6 +57,14 @@ class SumFrame(tk.Frame):
             self.entry_sumByAmount
         ]
 
+        # deactivate other option
+        if self.ckbox_sumByAmount_value.get():
+            if self.ckbox_sumByTimeInterval_value.get():
+                self.toggle_sum_measurements_by_time_interval()
+            fc.set_widget_state([self.ckbox_sumByTimeInterval], "disabled")
+        else:
+            fc.set_widget_state([self.ckbox_sumByTimeInterval], "normal")
+
         fc.set_widget_state(widgets_to_toggle_state, self.ckbox_sumByAmount_value.get())
         fc.set_widget_state([self.btn_sumMeasurements],
                             self.ckbox_sumByAmount_value.get() or self.ckbox_sumByTimeInterval_value.get())
@@ -66,12 +75,20 @@ class SumFrame(tk.Frame):
             self.cmbobox_sumByTimeIntervalUnit
         ]
 
+        # deactivate other option
+        if self.ckbox_sumByTimeInterval_value.get():
+            if self.ckbox_sumByAmount_value.get():
+                self.toggle_sum_measurements_by_amount()
+            fc.set_widget_state([self.ckbox_sumByAmount], "disabled")
+        else:
+            fc.set_widget_state([self.ckbox_sumByAmount], "normal")
+
         fc.set_widget_state(widgets_to_toggle_state, self.ckbox_sumByTimeInterval_value.get())
         fc.set_widget_state([self.btn_sumMeasurements],
                             self.ckbox_sumByAmount_value.get() or self.ckbox_sumByTimeInterval_value.get())
 
     def create_summed_measurement(self):
-        print("Summing measurements")
+        info_bar_text = ""
         sum_by_amount = None
         if self.ckbox_sumByAmount_value.get():
             sum_by_amount = self.entry_sumByAmount.get()
@@ -89,11 +106,15 @@ class SumFrame(tk.Frame):
                     sum_by_time_interval = dt.timedelta(days=int(self.entry_sumByTimeInterval.get()))
 
         if sum_by_amount is not None and sum_by_amount.isdigit():
-            print(sum_by_amount)
+            info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
             multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
-        if sum_by_time_interval is not None:
-            print(sum_by_time_interval)
+        elif sum_by_time_interval is not None:
+            info_bar_text += "Measurements every " + str(sum_by_time_interval.seconds // 60) + " minutes summed"
             multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
+        else:
+            return  # shouldnt get here
+
+        info_bar.singleton.change_sum_info(info_bar_text)
 
         navigation_bar.singleton.show_plot_frame()
 

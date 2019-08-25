@@ -28,7 +28,7 @@ class NavigationBar(tk.Frame):
         self.btn_readframe.pack(side="left")
         self.__all_buttons.append(self.btn_readframe)
 
-        self.btn_energybalanceframe = tk.Button(self, text="Energy Balance", command=self.show_energy_balance_frame,
+        self.btn_energybalanceframe = tk.Button(self, text="Scope/Energy Balance", command=self.show_energy_balance_frame,
                                         state="disabled")
         self.btn_energybalanceframe.pack(side="left")
         self.__all_buttons.append(self.btn_energybalanceframe)

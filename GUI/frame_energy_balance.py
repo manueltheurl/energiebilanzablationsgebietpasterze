@@ -55,7 +55,6 @@ class ScopeFrame(tk.Frame):
                                                 state="disabled")
         self.btn_changeCurrentScope.pack(pady=20)
 
-
         self.btn_calcEnergyBalance = tk.Button(self,
                                                text="Calculate Energy Balance",
                                                command=self.calculate_energy_balance,
