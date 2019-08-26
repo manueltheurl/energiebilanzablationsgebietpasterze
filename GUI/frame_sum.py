@@ -7,6 +7,7 @@ import GUI.info_bar as info_bar
 import functions as fc
 import datetime as dt
 import multiple_measurements
+import GUI.frame_plot as frame_plot
 
 
 class SumFrame(tk.Frame):
@@ -107,8 +108,10 @@ class SumFrame(tk.Frame):
 
         if sum_by_amount is not None and sum_by_amount.isdigit():
             info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
+            frame_plot.singleton.enable_option_to_use_summed_measurements()
             multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
         elif sum_by_time_interval is not None:
+            frame_plot.singleton.enable_option_to_use_summed_measurements()
             info_bar_text += "Measurements every " + str(sum_by_time_interval.seconds // 60) + " minutes summed"
             multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
         else:

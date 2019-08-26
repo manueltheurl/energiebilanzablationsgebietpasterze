@@ -31,15 +31,16 @@ class MultipleMeasurements:
     #     for obj in self.__all_single_measurement_objects:
     #         obj.calculate_energy_balance()
 
-    def get_all_of(self, attribute_name):
-        return list(map(
-            lambda obj: getattr(obj, attribute_name),
-            # set messes with the order, sorted creates a list of the set
-            [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]
-        ))
+    def get_all_of(self, attribute_name, use_summed_measurements=False):
+        if use_summed_measurements:
+            return list(map(lambda obj: getattr(obj, attribute_name), self.__all_mean_measurements))
 
-    def mean_get_all_of(self, attribute_name):
-        return list(map(lambda obj: getattr(obj, attribute_name), self.__all_mean_measurements))
+        else:
+            return list(map(
+                lambda obj: getattr(obj, attribute_name),
+                # set messes with the order, sorted creates a list of the set
+                [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]
+            ))
 
     def sum_measurements_by_amount(self, amount):
         self.__all_mean_measurements.clear()

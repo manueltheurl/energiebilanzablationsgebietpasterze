@@ -111,7 +111,24 @@ if __name__ == "__main__":
         frame_energy_balance.singleton.fill_fields_with_read_in_values()
         multiple_measurements.singleton.calculate_energy_balance_for_scope()
 
-        navigation_bar.singleton.show_sum_frame()
+        info_bar_text = ""
+        sum_by_amount = "10"
+        sum_by_time_interval = None
+
+        if sum_by_amount is not None and sum_by_amount.isdigit():
+            info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
+            multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
+            frame_plot.singleton.enable_option_to_use_summed_measurements()
+        elif sum_by_time_interval is not None:
+            info_bar_text += "Measurements every " + str(sum_by_time_interval.seconds // 60) + " minutes summed"
+            multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
+            frame_plot.singleton.enable_option_to_use_summed_measurements()
+
+        info_bar.singleton.change_sum_info(info_bar_text)
+
+
+
+        navigation_bar.singleton.show_plot_frame()
 
         # TILL HERE
 

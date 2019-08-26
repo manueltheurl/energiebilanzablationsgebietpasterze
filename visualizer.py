@@ -82,34 +82,17 @@ class Visualize:
         plt.close()
         # plt.savefig(cfg["RESULT_PLOT_PATH"] + "/with.png", dpi=cfg["PLOT_RESOLUTION"], bbox_inches='tight')
 
-    def plot_total_energy_balance(self):
+    def plot_total_energy_balance(self, use_summed_measurements=False):
         self.initialize_plot()
 
-        self.ax.plot(multiple_measurements.singleton.get_all_of("datetime"),
-                     multiple_measurements.singleton.get_all_of("total_energy_balance"))
+        x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
+                                                            use_summed_measurements=use_summed_measurements)
+        if use_summed_measurements:
+            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin", use_summed_measurements=use_summed_measurements)
+        else:
+            y_dates = multiple_measurements.singleton.get_all_of("datetime")
 
-        # trying to trendeliminate here
-        X = multiple_measurements.singleton.get_all_of("total_energy_balance")
-        diff = list()
-        days_in_year = 365
-        for i in range(days_in_year, len(X)):
-            if not None in [X[i], X[i - days_in_year]]:
-                value = X[i] - X[i - days_in_year]
-                diff.append(value)
-            else:
-                diff.append(None)
-
-        self.ax.plot(multiple_measurements.singleton.get_all_of("datetime")[days_in_year:],
-                     diff)
-
-        self.modify_axes()
-        self.save_and_close_plot()
-
-    def plot_summed_total_energy_balance(self):
-        self.initialize_plot()
-
-        self.ax.plot(multiple_measurements.singleton.mean_get_all_of("datetime_begin"),
-                     multiple_measurements.singleton.mean_get_all_of("total_energy_balance"))
+        self.ax.plot(y_dates, x_vals)
 
         self.modify_axes()
         self.save_and_close_plot()
@@ -170,37 +153,37 @@ class Visualize:
         return None
 
     def plot_energy_balance_components(self,
-                                       sw_radiation_in=False, sw_radiation_out=False, lw_radiation_in=False,
-                                       lw_radiation_out=False, sensible_heat=False, latent_heat=False,
-                                       precipitation_heat=False, ablation=False
+                                       options, use_summed_measurements=False
                                        ):
         """
         For better readability all arguments are declared here as False
         """
 
-        energy_balance_of_selected_parts = [0] * multiple_measurements.singleton.get_measurement_amount()
+        if use_summed_measurements:
+            x_vals = [0] * multiple_measurements.singleton.get_measurement_amount(of="summed")
+        else:
+            x_vals = [0] * multiple_measurements.singleton.get_measurement_amount()
 
-        for component_bool, component_name in zip(
-                [sw_radiation_in, sw_radiation_out, lw_radiation_in, lw_radiation_out, sensible_heat, latent_heat,
-                 precipitation_heat, ablation
-                 ],
-                ["sw_radiation_in", "sw_radiation_out", "lw_radiation_in", "lw_radiation_out", "sensible_heat",
-                 "latent_heat", "precipitation_heat", "ablation"
-                 ]):
-
-            if component_bool:
-                energy_balance_of_selected_parts = list(map(
-                    self.save_add, energy_balance_of_selected_parts,
-                    multiple_measurements.singleton.get_all_of(component_name))
-                )
+        for option in options:
+            x_vals = list(map(
+                self.save_add, x_vals,
+                multiple_measurements.singleton.get_all_of(option,
+                                                           use_summed_measurements=use_summed_measurements)))
 
         self.initialize_plot()
 
-        self.ax.plot(multiple_measurements.singleton.get_all_of("datetime"), energy_balance_of_selected_parts,
+        if use_summed_measurements:
+            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin",
+                                                                 use_summed_measurements=use_summed_measurements)
+        else:
+            y_dates = multiple_measurements.singleton.get_all_of("datetime")
+
+        self.ax.plot(y_dates, x_vals,
                      zorder=3)
-        self.ax.plot(multiple_measurements.singleton.get_all_of("datetime"),
-                     multiple_measurements.singleton.get_all_of("total_energy_balance"), color="orange", alpha=0.3,
-                     zorder=2)
+        # TODO maybe add that as a checkbox option
+        # self.ax.plot(multiple_measurements.singleton.get_all_of("datetime"),
+        #              multiple_measurements.singleton.get_all_of("total_energy_balance"), color="orange", alpha=0.3,
+        #              zorder=2)
 
         self.modify_axes()
         self.save_and_close_plot()
