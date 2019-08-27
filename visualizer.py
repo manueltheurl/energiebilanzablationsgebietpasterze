@@ -107,8 +107,12 @@ class Visualize:
 
         one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
 
-        values = multiple_measurements.singleton.mean_get_all_of(value_name)
-        dates = multiple_measurements.singleton.mean_get_all_of("datetime_begin")
+        values = multiple_measurements.singleton.get_all_of(value_name, use_summed_measurements=True)
+        dates = multiple_measurements.singleton.get_all_of("datetime_begin", use_summed_measurements=True)
+
+        if dates[-1] - dates[0] < one_year:
+            print("Cant trend eliminate for data range less than one year")
+            return
 
         reference_index = 0
         for i in range(len(values)):

@@ -26,6 +26,7 @@ import GUI.frame_read as frame_read
 import GUI.frame_energy_balance as frame_energy_balance
 import GUI.frame_sum as frame_sum
 import visualizer
+TEST = False
 
 
 class Manager:
@@ -41,33 +42,33 @@ class Manager:
 
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
 
-        multiple_measurements.singleton.fetch_file_metadata()
+        reader.singleton.fetch_file_metadata()
 
         reader.singleton.read_meterologic_file_to_objects(starttime=None,
                                                           endtime=None,
                                                           resolution_by_percentage=10,
                                                           resolution_by_time_interval=None)
 
-        # meteorologic_measurements.change_measurement_resolution_by_percentage(1)
-        # meteorologic_measurements.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
+        multiple_measurements.singleton.change_measurement_resolution_by_percentage(80)
+        #multiple_measurements.singleton.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
 
     def calculate(self):
 
-        multiple_measurements.singleton.calculate_energy_balance_for_all()
+        multiple_measurements.singleton.calculate_energy_balance_for_scope()
         # multiple_measurements.singleton.sum_measurements_by_amount(30)
 
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=5))
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(minutes=50))
 
     def visualize(self):
         # print("BALA")
         # visualizer.plot_total_energy_balance()
         # visualizer.singleton.plot_summed_total_energy_balance()
-
-        visualizer.singleton.plot_periodic_trend_eliminated("total_energy_balance")
-        visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_in")
-        visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
-        visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_in")
-        visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_out")
+        pass
+        # visualizer.singleton.plot_periodic_trend_eliminated("total_energy_balance")
+        # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_in")
+        # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
+        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_in")
+        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_out")
         # visualizer.singleton.plot_periodic_trend_eliminated("sensible_heat")
         # visualizer.singleton.plot_periodic_trend_eliminated("latent_heat")
 
@@ -93,44 +94,40 @@ if __name__ == "__main__":
         frame_sum.create_singleton()
         frame_read.create_singleton()
 
-        # JUST FOR TESTING DELETE FROM HERE
-        reader.singleton.add_file_path("PAS_10min_SHORT.csv")
+        if TEST:
+            reader.singleton.add_file_path("PAS_10min_SHORT.csv")
 
-        read_in_measurements = reader.singleton.read_meterologic_file_to_objects()
+            read_in_measurements = reader.singleton.read_meterologic_file_to_objects()
 
-        reader.singleton.fetch_file_metadata()
+            reader.singleton.fetch_file_metadata()
 
-        info_bar_text_list = [
-            "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),
-            "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement()),
-            "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement()),
-            "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution()) + " minutes"
-        ]
-        info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
+            info_bar_text_list = [
+                "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),
+                "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement()),
+                "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement()),
+                "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution()) + " minutes"
+            ]
+            info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
 
-        frame_energy_balance.singleton.fill_fields_with_read_in_values()
-        multiple_measurements.singleton.calculate_energy_balance_for_scope()
+            frame_energy_balance.singleton.fill_fields_with_read_in_values()
+            multiple_measurements.singleton.calculate_energy_balance_for_scope()
 
-        info_bar_text = ""
-        sum_by_amount = "10"
-        sum_by_time_interval = None
+            info_bar_text = ""
+            sum_by_amount = "10"
+            sum_by_time_interval = None
 
-        if sum_by_amount is not None and sum_by_amount.isdigit():
-            info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
-            multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
-            frame_plot.singleton.enable_option_to_use_summed_measurements()
-        elif sum_by_time_interval is not None:
-            info_bar_text += "Measurements every " + str(sum_by_time_interval.seconds // 60) + " minutes summed"
-            multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
-            frame_plot.singleton.enable_option_to_use_summed_measurements()
+            if sum_by_amount is not None and sum_by_amount.isdigit():
+                info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
+                multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
+                frame_plot.singleton.enable_option_to_use_summed_measurements()
+            elif sum_by_time_interval is not None:
+                info_bar_text += "Measurements every " + str(sum_by_time_interval.seconds // 60) + " minutes summed"
+                multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
+                frame_plot.singleton.enable_option_to_use_summed_measurements()
 
-        info_bar.singleton.change_sum_info(info_bar_text)
+            info_bar.singleton.change_sum_info(info_bar_text)
 
-
-
-        navigation_bar.singleton.show_plot_frame()
-
-        # TILL HERE
+            navigation_bar.singleton.show_plot_frame()
 
         gui_thread = threading.Thread(target=gui_main.singleton.mainloop())
         gui_thread.start()

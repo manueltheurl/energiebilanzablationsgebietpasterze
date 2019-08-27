@@ -113,15 +113,35 @@ class MultipleMeasurements:
         :param percentage: reaching from 0 to 100
         :return:
         """
-        threshold = 0
+        threshold = 100  # so that first one is always there
         indexes_to_remove = set()
 
         for index in self.__current_index_scope:
             threshold += percentage
             if threshold >= 100:
-                threshold = 0
+                threshold %= 100
             else:
                 indexes_to_remove.add(index)  # if not a member, a KeyError is raised
+
+        self.__current_index_scope.difference_update(indexes_to_remove)
+
+    def change_measurement_resolution_by_start_end_time(self, starttime=None, endtime=None):
+        if starttime is not None:
+            starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
+        if endtime is not None:
+            endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
+
+        indexes_to_remove = set()
+
+        if starttime is not None or endtime is not None:
+            for index in self.__current_index_scope:
+                if starttime is not None:
+                    if starttime > self.__all_single_measurement_objects[index].datetime:
+                        indexes_to_remove.add(index)
+
+                if endtime is not None:
+                    if endtime < self.__all_single_measurement_objects[index].datetime:
+                        indexes_to_remove.add(index)
 
         self.__current_index_scope.difference_update(indexes_to_remove)
 

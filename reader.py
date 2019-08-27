@@ -1,5 +1,5 @@
 from single_measurement import SingleMeasurement
-from datetime import datetime as dt
+import datetime as dt
 from manage_config import cfg
 import multiple_measurements
 
@@ -41,9 +41,9 @@ class Reader:
             second_line_parts = next(file).split(self.delimiter)
             last_line_parts = file.readlines()[-2].split(self.delimiter)  # TODO better way to find last actual data line?
 
-            datetime_first_measurement = dt.strptime(first_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
-            datetime_second_measurement = dt.strptime(second_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
-            datetime_last_measurement = dt.strptime(last_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
+            datetime_first_measurement = dt.datetime.strptime(first_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
+            datetime_second_measurement = dt.datetime.strptime(second_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
+            datetime_last_measurement = dt.datetime.strptime(last_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
 
             return [
                 datetime_second_measurement - datetime_first_measurement,
@@ -67,11 +67,11 @@ class Reader:
                                          endtime=None, resolution_by_percentage=None, resolution_by_time_interval=None):
 
         if starttime is not None:
-            starttime = dt.strptime(starttime, "%Y-%m-%d %H:%M:%S")
+            starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
         if endtime is not None:
-            endtime = dt.strptime(endtime, "%Y-%m-%d %H:%M:%S") if endtime is not None else None
+            endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
         if resolution_by_percentage is not None:
-            percentage_threshold = 0
+            percentage_threshold = 100  # so that first one is always there
         if resolution_by_time_interval is not None:
             resolution_reference_time = None  # TODO does it matter if startime is widely in the past?
 
@@ -87,7 +87,7 @@ class Reader:
                 if len(parts) < self.number_of_data_attributes:  # plausibility check
                     continue
 
-                datetime = dt.strptime(parts[0], "\"%Y-%m-%d %H:%M:%S\"")  # double quotes around date
+                datetime = dt.datetime.strptime(parts[0], "\"%Y-%m-%d %H:%M:%S\"")  # double quotes around date
 
                 if starttime is not None and endtime is not None:
                     time_condition = starttime <= datetime <= endtime
@@ -105,7 +105,7 @@ class Reader:
                     if resolution_by_percentage is not None:
                         percentage_threshold += resolution_by_percentage
                         if percentage_threshold >= 100:
-                            percentage_threshold = 0
+                            percentage_threshold %= 100
                         else:
                             continue
 
