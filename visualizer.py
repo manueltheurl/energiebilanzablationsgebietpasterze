@@ -88,7 +88,8 @@ class Visualize:
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
                                                             use_summed_measurements=use_summed_measurements)
         if use_summed_measurements:
-            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin", use_summed_measurements=use_summed_measurements)
+            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin",
+                                                                 use_summed_measurements=use_summed_measurements)
         else:
             y_dates = multiple_measurements.singleton.get_all_of("datetime")
 
@@ -97,49 +98,79 @@ class Visualize:
         self.modify_axes()
         self.save_and_close_plot()
 
-    def plot_periodic_trend_eliminated(self, value_name):
+    def plot_periodic_trend_eliminated(self, options, use_summed_measurements=False):
+
+        x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
+
         self.initialize_plot()
-
-        # self.ax.plot(multiple_measurements.singleton.summed_get_all_of("datetime_begin"),
-        #              multiple_measurements.singleton.summed_get_all_of("total_energy_balance"))
-
-        # trying to trendeliminate here
 
         one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
 
-        values = multiple_measurements.singleton.get_all_of(value_name, use_summed_measurements=True)
-        dates = multiple_measurements.singleton.get_all_of("datetime_begin", use_summed_measurements=True)
-
-        if dates[-1] - dates[0] < one_year:
+        if y_dates[-1] - y_dates[0] < one_year:
             print("Cant trend eliminate for data range less than one year")
             return
 
+        with_mean = True
+
+        # find first actual date where there are values
         reference_index = 0
-        for i in range(len(values)):
-            if values[i] is not None:
+        for i in range(len(x_vals)):
+            if x_vals[i] is not None:
                 reference_index = i
                 break
 
         reference_index_date = reference_index
         reference_index_value = reference_index
 
-        diff_vals = list()
-        diff_dates = list()
-        diff_dates_indexes = list()
+        if not with_mean:
+            diff_vals = list()
+            diff_dates = list()
+            for i, x_val in enumerate(x_vals[reference_index:]):
+                if None not in [x_vals[i], y_dates[i]]:
+                    if y_dates[i] >= y_dates[reference_index_date] + one_year:
+                        diff_vals.append(x_vals[i] - x_vals[reference_index_value])
+                        diff_dates.append(y_dates[i])
 
-        for i in range(len(values)):
-            if None not in [values[i], dates[i]]:
-                if dates[i] >= dates[reference_index_date] + one_year:
-                    diff_vals.append(values[i] - values[reference_index_value])
-                    diff_dates.append(dates[i])
-                    diff_dates_indexes.append(i)
+                        reference_index_value += 1
+                        reference_index_date += 1
 
-                    # print(dates[reference_index_date], dates[i])  approve that they are one year apart
+        else:
+            mean_vals = list()
+            first_year_dates = list()
+            current_first_year_index = 0
 
-                    reference_index_value += 1
-                    reference_index_date += 1
+            for i, x_val in enumerate(x_vals[reference_index:]):
+                if None not in [x_val, y_dates[i]]:
+                    if y_dates[i] < y_dates[reference_index_date] + one_year:
+                        mean_vals.append([x_vals])
+                        first_year_dates.append(y_dates[i])
+                    else:
+                        reference_index = i-1
+                        break
 
-        z = np.polyfit(range(len(diff_dates)), diff_vals,  1)
+            new_years = 1
+            first_year_dates_generator = iter(first_year_dates)
+            current_date = next(first_year_dates_generator)
+
+            for i, x_val in enumerate(x_vals[reference_index:]):  # the next year
+                if None not in [x_val, y_dates[i]]:
+
+                    while current_date + new_years*one_year <= y_dates[i]:
+                        print(current_date)
+                        try:
+                            current_date = next(first_year_dates_generator)
+                        except StopIteration:
+                            first_year_dates_generator = iter(first_year_dates)  # reset iterator
+                            current_date = next(first_year_dates_generator)
+                            new_years += 1
+
+                        current_first_year_index += 1
+                    else:
+                        mean_vals[current_first_year_index].append(x_val)
+
+            print("bla")
+
+        z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
         p = np.poly1d(z)
 
         self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
@@ -147,7 +178,9 @@ class Visualize:
         self.ax.plot(diff_dates, diff_vals)
 
         self.modify_axes()
-        self.ax.set_title(self.title_dict[value_name] + " - Periodic trend eliminated")
+
+        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
+        self.ax.set_title(title_used_options + " - Periodic trend eliminated")
         self.save_and_close_plot()
 
     @staticmethod
@@ -156,13 +189,7 @@ class Visualize:
             return first + second
         return None
 
-    def plot_energy_balance_components(self,
-                                       options, use_summed_measurements=False
-                                       ):
-        """
-        For better readability all arguments are declared here as False
-        """
-
+    def get_vals_and_dates_of_selected_options(self, options, use_summed_measurements=False):
         if use_summed_measurements:
             x_vals = [0] * multiple_measurements.singleton.get_measurement_amount(of="summed")
         else:
@@ -174,14 +201,23 @@ class Visualize:
                 multiple_measurements.singleton.get_all_of(option,
                                                            use_summed_measurements=use_summed_measurements)))
 
-        self.initialize_plot()
-
         if use_summed_measurements:
             y_dates = multiple_measurements.singleton.get_all_of("datetime_begin",
                                                                  use_summed_measurements=use_summed_measurements)
         else:
             y_dates = multiple_measurements.singleton.get_all_of("datetime")
 
+        return x_vals, y_dates
+
+    def plot_energy_balance_components(self,
+                                       options, use_summed_measurements=False
+                                       ):
+        """
+        For better readability all arguments are declared here as False
+        """
+        x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
+
+        self.initialize_plot()
         self.ax.plot(y_dates, x_vals,
                      zorder=3)
         # TODO maybe add that as a checkbox option

@@ -2,6 +2,7 @@ from single_measurement import SingleMeasurement
 import datetime as dt
 from manage_config import cfg
 import multiple_measurements
+import functions as fc
 
 
 class Reader:
@@ -41,9 +42,9 @@ class Reader:
             second_line_parts = next(file).split(self.delimiter)
             last_line_parts = file.readlines()[-2].split(self.delimiter)  # TODO better way to find last actual data line?
 
-            datetime_first_measurement = dt.datetime.strptime(first_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
-            datetime_second_measurement = dt.datetime.strptime(second_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
-            datetime_last_measurement = dt.datetime.strptime(last_line_parts[0], "\"%Y-%m-%d %H:%M:%S\"")
+            datetime_first_measurement = fc.string_date_to_datetime(first_line_parts[0])
+            datetime_second_measurement = fc.string_date_to_datetime(second_line_parts[0])
+            datetime_last_measurement = fc.string_date_to_datetime(last_line_parts[0])
 
             return [
                 datetime_second_measurement - datetime_first_measurement,
@@ -78,16 +79,13 @@ class Reader:
         with open(self.__file_path) as file:
             next(file)  # skip first line, contains description of values not actual data
 
-            for _ in range(cfg["SKIP_LINES"]):  # TODO just for testing
-                next(file)
-
             for line in file:
                 parts = line.split(self.delimiter)
 
                 if len(parts) < self.number_of_data_attributes:  # plausibility check
                     continue
 
-                datetime = dt.datetime.strptime(parts[0], "\"%Y-%m-%d %H:%M:%S\"")  # double quotes around date
+                datetime = fc.string_date_to_datetime(parts[0])  # double quotes around date
 
                 if starttime is not None and endtime is not None:
                     time_condition = starttime <= datetime <= endtime

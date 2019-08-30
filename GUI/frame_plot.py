@@ -35,17 +35,13 @@ class PlotFrame(tk.Frame):
 
         self.listbox_selectedComponents.pack(pady=(30, 0))
 
-        self.btn_selectedComponents = tk.Button(self, text="Selected components",
+        self.btn_energySelectedComponents = tk.Button(self, text="Energy selected components",
                                                 command=self.plot_selected_components)
-        self.btn_selectedComponents.pack()
+        self.btn_energySelectedComponents.pack()
 
-        # button2 = tk.Button(self, text="Plot summed total energy balance",
-        #                     command=visualizer.singleton.plot_summed_total_energy_balance)
-        # button2.pack()
-        #
-        # button3 = tk.Button(self, text="Plot summed total energy balance",
-        #                     command=visualizer.singleton.plot_summed_total_energy_balance)
-        # button3.pack()
+        self.btn_trendEliminateSelectedComponents = tk.Button(self, text="Trend eliminate selected components",
+                                                      command=self.plot_trend_eliminate_selected_components)
+        self.btn_trendEliminateSelectedComponents.pack()
 
     def enable_option_to_use_summed_measurements(self):
         fc.set_widget_state([self.lbl_use_sum, self.ckbox_use_sum], "normal")
@@ -58,6 +54,13 @@ class PlotFrame(tk.Frame):
             [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()],
             bool(self.ckbox_use_sum_value.get())
         )
+
+    def plot_trend_eliminate_selected_components(self):
+        visualizer.singleton.plot_periodic_trend_eliminated(
+            [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()],
+            bool(self.ckbox_use_sum_value.get())
+        )
+
 
 singleton = None
 

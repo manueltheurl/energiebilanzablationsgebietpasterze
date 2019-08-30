@@ -26,7 +26,7 @@ import GUI.frame_read as frame_read
 import GUI.frame_energy_balance as frame_energy_balance
 import GUI.frame_sum as frame_sum
 import visualizer
-TEST = False
+TEST = True
 
 
 class Manager:
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         frame_read.create_singleton()
 
         if TEST:
-            reader.singleton.add_file_path("PAS_10min_SHORT.csv")
+            reader.singleton.add_file_path("PAS_10min_MED.csv")
 
             read_in_measurements = reader.singleton.read_meterologic_file_to_objects()
 
