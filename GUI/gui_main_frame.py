@@ -23,8 +23,7 @@ class GUImain(tk.Tk):
         # self.geometry(str(1000) + "x" + str(1000) + "+" + "0" + "+0")
         self.minsize(1000, 700)
 
-        self.title("CRAZY NAME")
-        # TODO 0, 0,  check on two screens
+        self.title("Pasterzian Energy Balance Calculator")
 
         # self.state('iconic')  # TODO whats that
 

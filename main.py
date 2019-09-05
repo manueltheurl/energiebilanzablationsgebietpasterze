@@ -95,9 +95,13 @@ if __name__ == "__main__":
         frame_read.create_singleton()
 
         if TEST:
+            navigation_bar.singleton.btn_energybalanceframe["state"] = "normal"
+            navigation_bar.singleton.btn_sumframe["state"] = "normal"
+            navigation_bar.singleton.btn_plotframe["state"] = "normal"
+
             reader.singleton.add_file_path("PAS_10min_MED.csv")
 
-            read_in_measurements = reader.singleton.read_meterologic_file_to_objects()
+            read_in_measurements = reader.singleton.read_meterologic_file_to_objects(resolution_by_percentage=20)
 
             reader.singleton.fetch_file_metadata()
 
@@ -113,7 +117,7 @@ if __name__ == "__main__":
             multiple_measurements.singleton.calculate_energy_balance_for_scope()
 
             info_bar_text = ""
-            sum_by_amount = "10"
+            sum_by_amount = "30"
             sum_by_time_interval = None
 
             if sum_by_amount is not None and sum_by_amount.isdigit():

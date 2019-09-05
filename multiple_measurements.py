@@ -1,6 +1,7 @@
 import datetime as dt
 import reader
 from mean_measurement import MeanMeasurement
+import tqdm
 
 
 class MultipleMeasurements:
@@ -16,12 +17,14 @@ class MultipleMeasurements:
 
         self.__all_mean_measurements = []  # Empty in the beginning .. can later be calculated and used
 
+    def clear_all_single_measurements(self):
+        self.__all_single_measurement_objects = []
+
     def add_single_measurement(self, single_measurement_objects):
         self.__current_index_scope.add(len(self.__all_single_measurement_objects))
         self.__all_single_measurement_objects.append(single_measurement_objects)
 
     def calculate_energy_balance_for_scope(self):
-        print("calculating energy balance for current scope")
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]:
             obj.calculate_energy_balance()
 
@@ -46,10 +49,12 @@ class MultipleMeasurements:
         self.__all_mean_measurements.clear()
 
         scoped_measurements = [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]
+        multiple_separated_measurements = [scoped_measurements[x:x + amount] for x in range(0, len(scoped_measurements), amount)]
 
-        multiple_separated_measurements = [
-            scoped_measurements[i:i+amount] for i in range(len(scoped_measurements) - amount + 1)
-        ]
+        # for moving average this could be used  # TODO make another option maybe
+        # multiple_separated_measurements = [
+        #     scoped_measurements[i:i + amount] for i in range(len(scoped_measurements) - amount + 1)
+        # ]
 
         for separated_measurements in multiple_separated_measurements:
             summed_measurement = MeanMeasurement()
@@ -97,7 +102,7 @@ class MultipleMeasurements:
         indexes_to_remove = set()
         reference_time = self.__all_single_measurement_objects[0].datetime
 
-        for index in self.__current_index_scope:
+        for index in list(self.__current_index_scope)[1:]:
             current_time = self.__all_single_measurement_objects[index].datetime
 
             if current_time - reference_time >= time_interval:

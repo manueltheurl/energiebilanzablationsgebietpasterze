@@ -18,6 +18,9 @@ class SumFrame(tk.Frame):
         tk.Frame.__init__(self, gui_main_frame.singleton.frame)
         self.grid(row=0, column=0, sticky="nsew")
 
+        self.lbl_sum = tk.Label(self, text="Sum measurements together")
+        self.lbl_sum.pack(pady=(40, 30))
+
         # check if wanna sum measurements
         self.ckbox_sumByAmount_value = tk.IntVar()
         self.ckbox_sumByAmount = tk.Checkbutton(self,

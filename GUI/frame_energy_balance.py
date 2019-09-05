@@ -19,7 +19,7 @@ class ScopeFrame(tk.Frame):
         self.grid_propagate(False)
 
         self.lbl_currentScope = tk.Label(self, text="Change current scope of all read in measurements")
-        self.lbl_currentScope.pack()
+        self.lbl_currentScope.pack(pady=(40, 30))
 
         self.ckbox_percentScope_value = tk.IntVar()
         self.ckbox_percentScope = tk.Checkbutton(self,
@@ -36,7 +36,7 @@ class ScopeFrame(tk.Frame):
         self.ckbox_timeintervalScope = tk.Checkbutton(self,
                                                  command=self.toggle_time_interval_scope,
                                                  variable=self.ckbox_timeintervalScope_value, state="normal")
-        self.ckbox_timeintervalScope.pack()
+        self.ckbox_timeintervalScope.pack(pady=(7, 0))
 
         self.lbl_timeintervalScope = tk.Label(self, text="Time interval scope")
         self.lbl_timeintervalScope.pack()
@@ -53,7 +53,7 @@ class ScopeFrame(tk.Frame):
         self.ckbox_startTime = tk.Checkbutton(self,
                                               command=self.toggle_add_starttime,
                                               variable=self.ckbox_startTime_value)
-        self.ckbox_startTime.pack()
+        self.ckbox_startTime.pack(pady=(7, 0))
         self.lbl_startTime = tk.Label(self, text="Add starttime")
         self.lbl_startTime.pack()
         self.entry_startTime = tk.Entry(self, state="disabled")
@@ -63,7 +63,7 @@ class ScopeFrame(tk.Frame):
         self.ckbox_endTime = tk.Checkbutton(self,
                                             command=self.toggle_add_endtime,
                                             variable=self.ckbox_endTime_value)
-        self.ckbox_endTime.pack()
+        self.ckbox_endTime.pack(pady=(7, 0))
         self.lbl_endTime = tk.Label(self, text="Add endTime")
         self.lbl_endTime.pack()
         self.entry_endTime = tk.Entry(self, state="disabled")
@@ -73,7 +73,13 @@ class ScopeFrame(tk.Frame):
                                                 text="Change current scope",
                                                 command=self.change_current_scope,
                                                 state="disabled")
-        self.btn_changeCurrentScope.pack(pady=20)
+        self.btn_changeCurrentScope.pack(pady=(20, 0))
+
+        self.btn_resetScope = tk.Button(self,
+                                        text="Reset scope",
+                                        command=self.reset_scope,
+                                        state="normal")
+        self.btn_resetScope.pack(pady=5)
 
         self.btn_calcEnergyBalance = tk.Button(self,
                                                text="Calculate Energy Balance",
@@ -144,6 +150,11 @@ class ScopeFrame(tk.Frame):
 
         fc.set_widget_state(widgets_to_toggle_state, self.ckbox_timeintervalScope_value.get())
         self.activate_btn_change_current_scope_if_anything_active()
+
+    @staticmethod
+    def reset_scope():
+        multiple_measurements.singleton.reset_scope_to_all()
+        info_bar.singleton.change_scope_info("")
 
     def change_current_scope(self):
         multiple_measurements.singleton.reset_scope_to_all()

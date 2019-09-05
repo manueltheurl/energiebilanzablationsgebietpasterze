@@ -16,6 +16,7 @@ import multiple_measurements
 import scipy
 import numpy as np
 from scipy import optimize
+import functions as fc
 
 
 class Visualize:
@@ -55,22 +56,37 @@ class Visualize:
         months = mdates.MonthLocator()
         year_labels = mdates.DateFormatter('%Y')
         month_labels = mdates.DateFormatter('%b')  # Jan, Feb, ..
+        mondays = mdates.WeekdayLocator(mdates.MONDAY)
 
         # calculate time_spawn between first and last measurement
         time_spawn = dt.timedelta(days=self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
 
-        self.ax.xaxis.set_major_locator(years)
-        self.ax.xaxis.set_major_formatter(year_labels)
+        time_border_1 = dt.timedelta(days=2*365)
+        time_border_2 = dt.timedelta(days=150)
+        time_border_3 = dt.timedelta(days=30*2)
 
-        if dt.timedelta(days=365) > time_spawn:
+        # major and ax title
+        if time_spawn >= time_border_1:
+            self.ax.set_xlabel("Year")
+            self.ax.xaxis.set_major_locator(years)
+            self.ax.xaxis.set_major_formatter(year_labels)
+        elif time_border_2 <= time_spawn <= time_border_1:
+            self.ax.xaxis.set_major_locator(years)
+            self.ax.xaxis.set_major_formatter(year_labels)
+            self.ax.set_xlabel("Year")
+            self.ax.xaxis.set_tick_params(rotation=45)  # only major are rotated
+            self.ax.xaxis.set_minor_formatter(month_labels)
             self.ax.xaxis.set_minor_locator(months)
 
-            if dt.timedelta(days=3*365) > time_spawn:
-                self.ax.xaxis.set_minor_formatter(month_labels)
+        # elif time_border_3 <= time_spawn <= time_border_2:
+        #     self.ax.xaxis.set_major_locator(months)
+        #     self.ax.xaxis.set_major_formatter(month_labels)
+        #     self.ax.set_xlabel("Month")
+        #     self.ax.xaxis.set_minor_locator(months)
+        #     self.ax.xaxis.set_minor_formatter(month_labels)
 
-                self.ax.xaxis.set_tick_params(rotation=45)  # only major are rotated
+        # ELSE just take default tick and ticklabels
 
-        self.ax.set_xlabel("Year")
         self.ax.grid(linestyle="--", alpha=0.5, which='major')
         self.ax.grid(linestyle="--", alpha=0.4, which='minor')
 
@@ -95,14 +111,13 @@ class Visualize:
 
         self.ax.plot(y_dates, x_vals)
 
+        self.ax.set_title("Total Energy balance")
+
         self.modify_axes()
         self.save_and_close_plot()
 
-    def plot_periodic_trend_eliminated(self, options, use_summed_measurements=False):
-
+    def plot_periodic_trend_eliminated(self, options, use_summed_measurements=False, keep_trend=True):
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
-
-        self.initialize_plot()
 
         one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
 
@@ -110,72 +125,53 @@ class Visualize:
             print("Cant trend eliminate for data range less than one year")
             return
 
-        with_mean = True
+        self.initialize_plot()
 
         # find first actual date where there are values
-        reference_index = 0
+        reference_index_first_good_measurement = 0
         for i in range(len(x_vals)):
             if x_vals[i] is not None:
-                reference_index = i
+                reference_index_first_good_measurement = i
                 break
 
-        reference_index_date = reference_index
-        reference_index_value = reference_index
+        reference_index_current_measurement = reference_index_first_good_measurement
 
-        if not with_mean:
+        if not keep_trend:  # periodic and trend is eliminated by taking always previous year
             diff_vals = list()
             diff_dates = list()
-            for i, x_val in enumerate(x_vals[reference_index:]):
-                if None not in [x_vals[i], y_dates[i]]:
-                    if y_dates[i] >= y_dates[reference_index_date] + one_year:
-                        diff_vals.append(x_vals[i] - x_vals[reference_index_value])
-                        diff_dates.append(y_dates[i])
+            for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
+                                     y_dates[reference_index_first_good_measurement:]):
+                if None not in [x_val, y_date]:
+                    if y_date >= y_dates[reference_index_current_measurement] + one_year:
+                        diff_vals.append(x_val - x_vals[reference_index_current_measurement])
+                        diff_dates.append(y_date)
 
-                        reference_index_value += 1
-                        reference_index_date += 1
+                        reference_index_current_measurement += 1
 
-        else:
-            mean_vals = list()
-            first_year_dates = list()
-            current_first_year_index = 0
+        else:  # trend is not eliminated by taking always the first year as reference
+            diff_vals = list()
+            diff_dates = list()
+            start_date = y_dates[reference_index_first_good_measurement]
 
-            for i, x_val in enumerate(x_vals[reference_index:]):
-                if None not in [x_val, y_dates[i]]:
-                    if y_dates[i] < y_dates[reference_index_date] + one_year:
-                        mean_vals.append([x_vals])
-                        first_year_dates.append(y_dates[i])
-                    else:
-                        reference_index = i-1
-                        break
+            for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
+                                     y_dates[reference_index_first_good_measurement:]):
+                if None not in [x_val, y_date]:
+                    years_passed = int((y_date-start_date).total_seconds()/one_year.total_seconds())
+                    if fc.value_changed(years_passed, "years_passed"):
+                        reference_index_current_measurement = reference_index_first_good_measurement
 
-            new_years = 1
-            first_year_dates_generator = iter(first_year_dates)
-            current_date = next(first_year_dates_generator)
+                    if years_passed >= 1:
+                        if y_date >= y_dates[reference_index_current_measurement] + one_year*years_passed:
+                            diff_vals.append(x_val - x_vals[reference_index_current_measurement])
+                            diff_dates.append(y_date)
 
-            for i, x_val in enumerate(x_vals[reference_index:]):  # the next year
-                if None not in [x_val, y_dates[i]]:
-
-                    while current_date + new_years*one_year <= y_dates[i]:
-                        print(current_date)
-                        try:
-                            current_date = next(first_year_dates_generator)
-                        except StopIteration:
-                            first_year_dates_generator = iter(first_year_dates)  # reset iterator
-                            current_date = next(first_year_dates_generator)
-                            new_years += 1
-
-                        current_first_year_index += 1
-                    else:
-                        mean_vals[current_first_year_index].append(x_val)
-
-            print("bla")
+                            reference_index_current_measurement += 1
 
         z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
         p = np.poly1d(z)
 
-        self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
-
         self.ax.plot(diff_dates, diff_vals)
+        self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
 
         self.modify_axes()
 
@@ -224,6 +220,9 @@ class Visualize:
         # self.ax.plot(multiple_measurements.singleton.get_all_of("datetime"),
         #              multiple_measurements.singleton.get_all_of("total_energy_balance"), color="orange", alpha=0.3,
         #              zorder=2)
+
+        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
+        self.ax.set_title(title_used_options + " - Energy balance")
 
         self.modify_axes()
         self.save_and_close_plot()

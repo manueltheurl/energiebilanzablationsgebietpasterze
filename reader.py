@@ -67,6 +67,8 @@ class Reader:
     def read_meterologic_file_to_objects(self, starttime=None,
                                          endtime=None, resolution_by_percentage=None, resolution_by_time_interval=None):
 
+        multiple_measurements.singleton.clear_all_single_measurements()  # reset
+
         if starttime is not None:
             starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
         if endtime is not None:

@@ -21,6 +21,9 @@ class ReadFrame(tk.Frame):
 
         self.file_path = None
 
+        self.lbl_read = tk.Label(self, text="Read in a file of measurements")
+        self.lbl_read.pack(pady=(40, 30))
+
         self.btn_chooseFile = tk.Button(self, text="Choose File", command=self.select_file)
         self.btn_chooseFile.pack()
         self.lbl_chosenFile = tk.Label(self)
@@ -138,6 +141,8 @@ class ReadFrame(tk.Frame):
         self.entry_endTime.insert(
             0,
             reader.singleton.get_single_file_metadata("time_of_last_measurement"))
+
+        self.entry_percentToRead.delete(0, 'end')
         self.entry_percentToRead.insert(0, "100")
 
         self.entry_timeInterval.delete(0, 'end')
@@ -196,6 +201,8 @@ class ReadFrame(tk.Frame):
         ]
 
         info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
+        info_bar.singleton.change_scope_info("")
+        info_bar.singleton.change_sum_info("")
 
         frame_energy_balance.singleton.fill_fields_with_read_in_values()
         navigation_bar.singleton.show_energy_balance_frame()
