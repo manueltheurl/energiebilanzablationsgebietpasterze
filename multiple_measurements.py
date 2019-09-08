@@ -66,8 +66,11 @@ class MultipleMeasurements:
 
             self.__all_mean_measurements.append(summed_measurement)
 
-    def sum_measurements_by_time_interval(self, time_interval: dt.timedelta):
+    def clear_summed_measurements(self):
         self.__all_mean_measurements.clear()
+
+    def sum_measurements_by_time_interval(self, time_interval: dt.timedelta):
+        self.clear_summed_measurements()
 
         resolution_reference_time = None
         summed_measurement = MeanMeasurement()
@@ -92,6 +95,9 @@ class MultipleMeasurements:
 
     def reset_scope_to_all(self):
         self.__current_index_scope = set(range(len(self.__all_single_measurement_objects)))
+
+    def reset_scope_to_none(self):
+        self.__current_index_scope = set()
 
     def change_measurement_resolution_by_time_interval(self, time_interval: dt.timedelta):
         """

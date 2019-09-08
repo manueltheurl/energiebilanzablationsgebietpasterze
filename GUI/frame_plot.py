@@ -24,6 +24,17 @@ class PlotFrame(tk.Frame):
                                                 command=self.plot_total_energy_balance)
         self.btn_totalEnergyBalance.pack(pady=(40, 0))
 
+        self.btn_totalEnergyBalanceTrendEliminate = tk.Button(self, text="Trend eliminate total energy balance",
+                                                command=self.plot_trend_eliminate_total_energy_balance)
+        self.btn_totalEnergyBalanceTrendEliminate.pack(pady=(10, 0))
+
+        self.lbl_show_ablation = tk.Label(self, text="Show measured ablation", state="normal")
+        self.lbl_show_ablation.pack()
+
+        self.ckbox_show_ablation_value = tk.IntVar()
+        self.ckbox_show_ablation = tk.Checkbutton(self, variable=self.ckbox_show_ablation_value, state="normal")
+        self.ckbox_show_ablation.pack()
+
         listbox_option = [
             "sw_radiation_in", "sw_radiation_out", "lw_radiation_in", "lw_radiation_out", "sensible_heat",
             "latent_heat",
@@ -47,16 +58,20 @@ class PlotFrame(tk.Frame):
         fc.set_widget_state([self.lbl_use_sum, self.ckbox_use_sum], "normal")
 
     def plot_total_energy_balance(self):
-        visualizer.singleton.plot_total_energy_balance(bool(self.ckbox_use_sum_value.get()))
+        visualizer.singleton.plot_total_energy_balance(bool(self.ckbox_use_sum_value.get()),
+                                                       bool(self.ckbox_show_ablation_value.get()))
+
+    def plot_trend_eliminate_total_energy_balance(self):
+        visualizer.singleton.plot_periodic_trend_eliminated_total_energy_balance(bool(self.ckbox_use_sum_value.get()))
 
     def plot_selected_components(self):
         visualizer.singleton.plot_energy_balance_components(
             [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()],
-            bool(self.ckbox_use_sum_value.get())
+            bool(self.ckbox_use_sum_value.get()), bool(self.ckbox_show_ablation_value.get())
         )
 
     def plot_trend_eliminate_selected_components(self):
-        visualizer.singleton.plot_periodic_trend_eliminated(
+        visualizer.singleton.plot_periodic_trend_eliminated_selected_option(
             [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()],
             bool(self.ckbox_use_sum_value.get())
         )

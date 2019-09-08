@@ -98,7 +98,7 @@ class Visualize:
         plt.close()
         # plt.savefig(cfg["RESULT_PLOT_PATH"] + "/with.png", dpi=cfg["PLOT_RESOLUTION"], bbox_inches='tight')
 
-    def plot_total_energy_balance(self, use_summed_measurements=False):
+    def plot_total_energy_balance(self, use_summed_measurements=False, add_ablation=False):
         self.initialize_plot()
 
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
@@ -109,14 +109,101 @@ class Visualize:
         else:
             y_dates = multiple_measurements.singleton.get_all_of("datetime")
 
-        self.ax.plot(y_dates, x_vals)
+        self.ax.plot(y_dates, x_vals, label="Energy Balance")
 
-        self.ax.set_title("Total Energy balance")
+        if add_ablation:
+            ax_ablation = self.ax.twinx()
+
+            x_vals_ablation = multiple_measurements.singleton.get_all_of("ablation",
+                                                                         use_summed_measurements=use_summed_measurements)
+            ax_ablation.plot(y_dates, x_vals_ablation, label="Ablation", color="red")
+            ax_ablation.set_ylabel("m")
+
+            main_title = "Total Energy balance with Ablation"
+
+            self.ax.legend(loc="upper left")
+            ax_ablation.legend(loc="upper right")
+        else:
+            main_title = "Total Energy balance"
+            self.ax.legend()
+
+        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+        self.ax.set_title(main_title + summed_title_appendix)
 
         self.modify_axes()
         self.save_and_close_plot()
 
-    def plot_periodic_trend_eliminated(self, options, use_summed_measurements=False, keep_trend=True):
+    def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True):
+        x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
+                                                            use_summed_measurements=use_summed_measurements)
+        if use_summed_measurements:
+            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin",
+                                                                 use_summed_measurements=use_summed_measurements)
+        else:
+            y_dates = multiple_measurements.singleton.get_all_of("datetime")
+
+        one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
+
+        if y_dates[-1] - y_dates[0] < one_year:
+            print("Cant trend eliminate for data range less than one year")
+            return
+
+        self.initialize_plot()
+
+        # find first actual date where there are values
+        reference_index_first_good_measurement = 0
+        for i in range(len(x_vals)):
+            if x_vals[i] is not None:
+                reference_index_first_good_measurement = i
+                break
+
+        reference_index_current_measurement = reference_index_first_good_measurement
+
+        if not keep_trend:  # periodic and trend is eliminated by taking always previous year
+            diff_vals = list()
+            diff_dates = list()
+            for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
+                                     y_dates[reference_index_first_good_measurement:]):
+                if None not in [x_val, y_date]:
+                    if y_date >= y_dates[reference_index_current_measurement] + one_year:
+                        diff_vals.append(x_val - x_vals[reference_index_current_measurement])
+                        diff_dates.append(y_date)
+
+                        reference_index_current_measurement += 1
+
+        else:  # trend is not eliminated by taking always the first year as reference
+            diff_vals = list()
+            diff_dates = list()
+            start_date = y_dates[reference_index_first_good_measurement]
+
+            for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
+                                     y_dates[reference_index_first_good_measurement:]):
+                if None not in [x_val, y_date]:
+                    years_passed = int((y_date-start_date).total_seconds()/one_year.total_seconds())
+                    if fc.value_changed(years_passed, "years_passed"):
+                        reference_index_current_measurement = reference_index_first_good_measurement
+
+                    if years_passed >= 1:
+                        if y_date >= y_dates[reference_index_current_measurement] + one_year*years_passed:
+                            diff_vals.append(x_val - x_vals[reference_index_current_measurement])
+                            diff_dates.append(y_date)
+
+                            reference_index_current_measurement += 1
+
+        z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
+        p = np.poly1d(z)
+
+        self.ax.plot(diff_dates, diff_vals)
+        self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
+
+        self.modify_axes()
+
+        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+
+        self.ax.set_title("Total energy balance - Periodic trend eliminated" + summed_title_appendix)
+        self.save_and_close_plot()
+
+    def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True):
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
         one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
@@ -175,8 +262,10 @@ class Visualize:
 
         self.modify_axes()
 
+        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+
         title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
-        self.ax.set_title(title_used_options + " - Periodic trend eliminated")
+        self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
         self.save_and_close_plot()
 
     @staticmethod
@@ -206,7 +295,7 @@ class Visualize:
         return x_vals, y_dates
 
     def plot_energy_balance_components(self,
-                                       options, use_summed_measurements=False
+                                       options, use_summed_measurements=False, add_ablation=False
                                        ):
         """
         For better readability all arguments are declared here as False
@@ -214,15 +303,34 @@ class Visualize:
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
         self.initialize_plot()
+        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
+
         self.ax.plot(y_dates, x_vals,
-                     zorder=3)
+                     zorder=3, label=title_used_options)
         # TODO maybe add that as a checkbox option
         # self.ax.plot(multiple_measurements.singleton.get_all_of("datetime"),
         #              multiple_measurements.singleton.get_all_of("total_energy_balance"), color="orange", alpha=0.3,
         #              zorder=2)
 
-        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
-        self.ax.set_title(title_used_options + " - Energy balance")
+        if add_ablation:
+            ax_ablation = self.ax.twinx()
+
+            x_vals_ablation = multiple_measurements.singleton.get_all_of("ablation",
+                                                                         use_summed_measurements=use_summed_measurements)
+            ax_ablation.plot(y_dates, x_vals_ablation, label="Ablation", color="red")
+            ax_ablation.set_ylabel("m")
+
+            ablation_appendix = " - with Ablation"
+
+            self.ax.legend(loc="upper left")
+            ax_ablation.legend(loc="upper right")
+        else:
+            ablation_appendix = ""
+            self.ax.legend()
+
+        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+
+        self.ax.set_title(title_used_options + ablation_appendix + " - Energy input" + summed_title_appendix)
 
         self.modify_axes()
         self.save_and_close_plot()

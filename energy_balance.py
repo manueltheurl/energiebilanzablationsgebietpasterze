@@ -14,14 +14,17 @@ class EnergyBalance:
 
         # z_0 - surface roughness parameter (Table 5.4 in Cuffey and Paterson 2010 state: Ice in ablation zone 1-5 mm
         z_0 = 0.003  # m
-        z = 1.55  # m - see AWS-Pasterze-Metadata.xlsx
+        sensor_height_temperature = 1.55  # m - see AWS-Pasterze-Metadata.xlsx
+        sensor_height_wind = 5  # m
 
-        self.c_star = self.calculate_c_star(k_0, z_0, z)
+        self.c_star = self.calculate_c_star(k_0, z_0, sensor_height_wind)
 
     @staticmethod
-    def calculate_c_star(k_0, z, z_0):
+    def calculate_c_star(k_0, sensor_height_wind, z_0):
         """
         The value of c star depends on measurement height and a bit on surface roughness
+        see http://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0016-71692015000400299 under eq 10 that
+        the sensor_height_wind is meant
         """
         # k_0 - Kármán’s constant
 
@@ -29,7 +32,7 @@ class EnergyBalance:
         #  -> this has to be taken into account
 
         # c - transer coefficient
-        return k_0**2/m.log(z / z_0)**2  # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
+        return k_0**2/m.log(sensor_height_wind / z_0)**2  # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
 
     def calculate_sensible_heat(self, air_pressure, wind_speed, temperature):  # E_E
         t_s = 0  # Temperature of ice surface (0 on melting surfaces)
@@ -50,7 +53,7 @@ class EnergyBalance:
         e = rel_moisture / 100 * e_s
 
         # v - ?? remember that:  L v/s is the latent heat of vaporization or sublimation  .. so maybe the rel humidity?
-        v = wind_speed  # TODO is that correct?  # ny is not defined in Box_Energybudget paper .. thats why I suppose its a u for windspeed
+        v = wind_speed
         # http://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0016-71692015000400299 PROOFS THAT ITS THE WIND SPEED INDEED
         # TODO take a look in this article above on eq 14,  there P woiuld be the air pressure which we have, take it?
 

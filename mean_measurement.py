@@ -20,6 +20,7 @@ class MeanMeasurement:
             "precipitation_heat": None,
         }
 
+        self.__ablation = None
         self.__datetime_begin = None
         self.__datetime_end = None
         self.__total_energy_balance = None
@@ -32,6 +33,7 @@ class MeanMeasurement:
         self.contains_latent_heat = 0
         self.contains_precipitation_heat = 0
         self.contains_total_energy_balance = 0
+        self.contains_ablation = 0
 
     def __iadd__(self, single_measurement: SingleMeasurement):
         if self.__datetime_begin is None or single_measurement.datetime < self.__datetime_begin:
@@ -90,6 +92,13 @@ class MeanMeasurement:
             else:
                 self.__energy_balance_components["precipitation_heat"] += single_measurement.precipitation_energy
 
+        if single_measurement.ablation is not None:
+            self.contains_ablation += 1
+            if self.__ablation is None:
+                self.__ablation = single_measurement.ablation
+            else:
+                self.__ablation += single_measurement.ablation
+
         if single_measurement.total_energy_balance is not None:
             self.contains_total_energy_balance += 1
             if self.__total_energy_balance is None:
@@ -120,6 +129,9 @@ class MeanMeasurement:
 
         if self.__energy_balance_components["precipitation_heat"] is not None:
             self.__energy_balance_components["precipitation_heat"] /= self.contains_precipitation_heat
+
+        if self.__ablation is not None:
+            self.__ablation /= self.contains_ablation
 
         if self.__total_energy_balance is not None:
             self.__total_energy_balance /= self.contains_total_energy_balance
@@ -155,6 +167,10 @@ class MeanMeasurement:
     @property
     def precipitation_energy(self):
         return self.__energy_balance_components["precipitation_heat"]
+
+    @property
+    def ablation(self):
+        return self.__ablation
 
     @property
     def total_energy_balance(self):

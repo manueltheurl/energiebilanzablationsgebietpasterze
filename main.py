@@ -26,7 +26,7 @@ import GUI.frame_read as frame_read
 import GUI.frame_energy_balance as frame_energy_balance
 import GUI.frame_sum as frame_sum
 import visualizer
-TEST = True
+TEST = False
 
 
 class Manager:
@@ -132,6 +132,8 @@ if __name__ == "__main__":
             info_bar.singleton.change_sum_info(info_bar_text)
 
             navigation_bar.singleton.show_plot_frame()
+
+            visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True, add_ablation=True)
 
         gui_thread = threading.Thread(target=gui_main.singleton.mainloop())
         gui_thread.start()
