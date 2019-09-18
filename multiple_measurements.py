@@ -1,7 +1,6 @@
 import datetime as dt
 import reader
 from mean_measurement import MeanMeasurement
-import tqdm
 
 
 class MultipleMeasurements:

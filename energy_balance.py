@@ -1,6 +1,10 @@
 import math as m
 from manage_config import cfg
 
+KARMANS_CONSTANT = 0.4
+STEFAN_BOLTZMANN_CONSTANT = 5.670 * 10**-8
+ABSOLUTE_ZERO_DEGREE_CELSIUS = -273.15
+
 
 class EnergyBalance:
     singleton_created = False
@@ -10,8 +14,6 @@ class EnergyBalance:
             raise Exception("EnergyBalance is a singleton")
         EnergyBalance.singleton_created = True
 
-        # k_0 - Kármán’s constant
-        k_0 = 0.4
         # z_0 - surface roughness parameter (Table 5.4 in Cuffey and Paterson 2010 state: Ice in ablation zone 1-5 mm
         z_0 = 0.003  # m
 
@@ -19,7 +21,7 @@ class EnergyBalance:
         sensor_height_temperature = 1.55  # m  .. not in use
         sensor_height_wind = 5  # m
 
-        self.c_star = self.calculate_c_star(k_0, z_0, sensor_height_wind)
+        self.c_star = self.calculate_c_star(KARMANS_CONSTANT, z_0, sensor_height_wind)
 
     @staticmethod
     def calculate_c_star(k_0, sensor_height_wind, z_0):
@@ -34,10 +36,18 @@ class EnergyBalance:
         # c - transfer coefficient
         return k_0**2/m.log(sensor_height_wind / z_0)**2  # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
 
-    def calculate_sensible_heat(self, air_pressure, wind_speed, temperature):  # E_E
-        t_s = 0  # Temperature of ice surface (0 on melting surfaces)
+    @staticmethod
+    def calculate_ice_temperature(outgoing_energy):
+        # I = e * STEFAN_BOLTZMANN_CONSTANT * T**4
+        # e -> emmissivity ~ 1 -> snow and ice act like a black body in the infrared
+        temperature = (abs(outgoing_energy)/STEFAN_BOLTZMANN_CONSTANT)**(1/4) + ABSOLUTE_ZERO_DEGREE_CELSIUS  # 4th sqrt
+        if temperature > 0:  # ice cant have positive degrees
+            return 0
+        return temperature
 
-        return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - t_s)
+    def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out):  # E_E
+        temperature_ice = self.calculate_ice_temperature(longwave_out)  # degree celcius
+        return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - temperature_ice)
 
     def calculate_latent_heat(self, temperature, rel_moisture, wind_speed):  # E_H
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
@@ -51,13 +61,13 @@ class EnergyBalance:
         # e - vapor pressure above the surface
         e = rel_moisture / 100 * e_s
 
-        v = wind_speed
+        u = wind_speed
         # http://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0016-71692015000400299 PROOFS THAT ITS THE WIND SPEED INDEED
         # TODO take a look in this article above on eq 14,  there P woiuld be the air pressure which we have, take it?
 
         # e - e_s is actually the vapor Pressure Deficit  -- https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
-        return 22.2 * self.c_star * v * (e - e_s)
+        return 22.2 * self.c_star * u * (e - e_s)
 
     def calculate_precipitation_heat(self):
         # not implemented as there sadly is no information given about the rain rate m/s

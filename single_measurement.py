@@ -41,11 +41,13 @@ class SingleMeasurement:
         if self.__total_energy_balance is not None:  # so that we wont recalculate for nothing
             return
 
-        if None not in [self.__air_pressure, self.__wind_speed, self.__temperature]:
+        if None not in [self.__air_pressure, self.__wind_speed, self.__temperature,
+                        self.__energy_balance_components["lw_radiation_out"]]:
             self.__energy_balance_components["sensible_heat"] = energy_balance.singleton.calculate_sensible_heat(
                 self.__air_pressure,
                 self.__wind_speed,
-                self.__temperature
+                self.__temperature,
+                self.__energy_balance_components["lw_radiation_out"]
             )
 
         if None not in [self.__temperature, self.__rel_moisture, self.__wind_speed]:

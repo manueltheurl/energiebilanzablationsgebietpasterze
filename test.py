@@ -27,9 +27,23 @@ class Test(unittest.TestCase):
         windspeed = 5  # m per second
         temperature = 5  # degree celcius
         energy_balance.singleton.c_star = 0.002
+        longwave_out = 1000  # "to a melting surface"  -> ice temp will be 0 then
 
-        sensible_heat = energy_balance.singleton.calculate_sensible_heat(pressure, windspeed, temperature)
+        sensible_heat = energy_balance.singleton.calculate_sensible_heat(pressure,
+                                                                         windspeed, temperature, longwave_out)
         self.assertTrue(47 < sensible_heat < 53)
+
+    def test_high_values_for_sensible_heat(self):
+        pressure = 80000  # Pa
+        windspeed = 14.7  # m per second
+        temperature = 12.1  # degree celcius
+        energy_balance.singleton.c_star = 0.002
+        longwave_out = 1000
+
+        sensible_heat = energy_balance.singleton.calculate_sensible_heat(pressure,
+                                                                         windspeed, temperature, longwave_out)
+
+        self.assertTrue(True)
 
 
 if __name__ == '__main__':

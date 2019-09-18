@@ -120,6 +120,9 @@ class Reader:
                             else:
                                 continue
 
+                    air_pressure_hpa = self.convert_to_float_or_none(parts[6])
+                    air_pressure_pa = None if air_pressure_hpa is None else air_pressure_hpa * 100
+
                     multiple_measurements.singleton.add_single_measurement(
                         SingleMeasurement(
                             datetime=datetime,
@@ -127,7 +130,7 @@ class Reader:
                             rel_moisture=self.convert_to_float_or_none(parts[3]),
                             wind_speed=self.convert_to_float_or_none(parts[4]),
                             wind_direction=self.convert_to_float_or_none(parts[5]),
-                            air_pressure=self.convert_to_float_or_none(parts[6]),
+                            air_pressure=air_pressure_pa,
                             sw_radiation_in=self.convert_to_float_or_none(parts[7]),
                             sw_radiation_out=self.convert_to_float_or_none(parts[8], negative=True),
                             lw_radiation_in=self.convert_to_float_or_none(parts[9]),
