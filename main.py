@@ -49,7 +49,7 @@ class Manager:
                                                           resolution_by_percentage=10,
                                                           resolution_by_time_interval=None)
 
-        multiple_measurements.singleton.change_measurement_resolution_by_percentage(80)
+        multiple_measurements.singleton.change_measurement_scope_by_percentage(80)
         #multiple_measurements.singleton.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
 
     def calculate(self):
@@ -125,7 +125,7 @@ if __name__ == "__main__":
                 multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
                 frame_plot.singleton.enable_option_to_use_summed_measurements()
             elif sum_by_time_interval is not None:
-                info_bar_text += "Measurements every " + str(sum_by_time_interval.seconds // 60) + " minutes summed"
+                info_bar_text += "Measurements every " + str(int(sum_by_time_interval.total_seconds() // 60)) + " minutes summed"
                 multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
                 frame_plot.singleton.enable_option_to_use_summed_measurements()
 

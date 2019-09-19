@@ -65,11 +65,15 @@ class Reader:
         return self.__file_metadata[key]
 
     def read_meterologic_file_to_objects(self, starttime=None,
-                                         endtime=None, resolution_by_percentage=None, resolution_by_time_interval=None):
+                                         endtime=None, resolution_by_percentage=None, resolution_by_time_interval=None,
+                                         resolution_by_months=None, resolution_by_years=None):
 
         multiple_measurements.singleton.reset_scope_to_none()  # reset
         multiple_measurements.singleton.clear_all_single_measurements()  # reset
         multiple_measurements.singleton.clear_summed_measurements()  # reset
+        percentage_threshold = None
+        reference_month = None  # used if resolution_by_months is not None
+        reference_year = None  # used if resolution_by_years is not None
 
         if starttime is not None:
             starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
@@ -78,7 +82,7 @@ class Reader:
         if resolution_by_percentage is not None:
             percentage_threshold = 100  # so that first one is always there
         if resolution_by_time_interval is not None:
-            resolution_reference_time = None  # TODO does it matter if startime is widely in the past?
+            resolution_reference_time = None  # TODO does it matter if startime is far in the past?
 
         with open(self.__file_path) as file:
             next(file)  # skip first line, contains description of values not actual data
@@ -104,13 +108,14 @@ class Reader:
 
                 if time_condition:
 
-                    if resolution_by_percentage is not None:
+                    if percentage_threshold is not None:
                         percentage_threshold += resolution_by_percentage
                         if percentage_threshold >= 100:
                             percentage_threshold %= 100
                         else:
                             continue
 
+                    # only one of that events can occur
                     if resolution_by_time_interval is not None:
                         if resolution_reference_time is None:  # first time .. no reference time there
                             resolution_reference_time = datetime
@@ -119,6 +124,22 @@ class Reader:
                                 resolution_reference_time = datetime
                             else:
                                 continue
+
+                    elif resolution_by_months is not None:
+                        if reference_month is None:
+                            reference_month = datetime.month
+                        elif fc.get_difference_of_months(reference_month, datetime.month) < resolution_by_months:
+                            continue
+                        else:
+                            reference_month = datetime.month
+
+                    elif resolution_by_years is not None:
+                        if reference_year is None:
+                            reference_year = datetime.year
+                        elif datetime.year - reference_year < resolution_by_years:
+                            continue
+                        else:
+                            reference_year = datetime.year
 
                     air_pressure_hpa = self.convert_to_float_or_none(parts[6])
                     air_pressure_pa = None if air_pressure_hpa is None else air_pressure_hpa * 100

@@ -1,6 +1,7 @@
 import datetime as dt
 import reader
 from mean_measurement import MeanMeasurement
+import functions as fc
 
 
 class MultipleMeasurements:
@@ -92,13 +93,60 @@ class MultipleMeasurements:
             else:
                 summed_measurement += single_measurement
 
+    def sum_measurements_by_months(self, months):
+        self.clear_summed_measurements()
+
+        reference_month = None
+        summed_measurement = MeanMeasurement()
+
+        for single_measurement in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_index_scope)]:
+            if reference_month is None:  # first time .. no reference time there
+                reference_month = single_measurement.datetime.month
+
+            # all the following times
+            if fc.get_difference_of_months(reference_month, single_measurement.datetime.month) < months:
+                summed_measurement += single_measurement
+            else:
+                reference_month = single_measurement.datetime.month
+
+                summed_measurement.calculate_mean()
+                self.__all_mean_measurements.append(summed_measurement)
+
+                # reset summed_measurement and add current to it
+                summed_measurement = MeanMeasurement()
+                summed_measurement += single_measurement
+
+    def sum_measurements_by_years(self, years):
+        self.clear_summed_measurements()
+
+        reference_years = None
+        summed_measurement = MeanMeasurement()
+
+        for single_measurement in [self.__all_single_measurement_objects[i] for i in
+                                   sorted(self.__current_index_scope)]:
+            if reference_years is None:  # first time .. no reference time there
+                reference_years = single_measurement.datetime.year
+
+            # all the following times
+            if fc.get_difference_of_months(reference_years, single_measurement.datetime.year) < years:
+                summed_measurement += single_measurement
+            else:
+                reference_years = single_measurement.datetime.year
+
+                summed_measurement.calculate_mean()
+                self.__all_mean_measurements.append(summed_measurement)
+
+                # reset summed_measurement and add current to it
+                summed_measurement = MeanMeasurement()
+                summed_measurement += single_measurement
+
     def reset_scope_to_all(self):
         self.__current_index_scope = set(range(len(self.__all_single_measurement_objects)))
 
     def reset_scope_to_none(self):
         self.__current_index_scope = set()
 
-    def change_measurement_resolution_by_time_interval(self, time_interval: dt.timedelta):
+    def change_measurement_scope_by_time_interval(self, time_interval: dt.timedelta):
         """
         TODO
         :param time_interval:
@@ -117,7 +165,35 @@ class MultipleMeasurements:
 
         self.__current_index_scope.difference_update(indexes_to_remove)
 
-    def change_measurement_resolution_by_percentage(self, percentage: int):
+    def change_measurement_scope_by_months(self, months):
+        indexes_to_remove = set()
+        reference_month = self.__all_single_measurement_objects[0].datetime.month
+
+        for index in list(self.__current_index_scope)[1:]:
+            current_month = self.__all_single_measurement_objects[index].datetime.month
+
+            if fc.get_difference_of_months(reference_month, current_month) < months:
+                indexes_to_remove.add(index)
+            else:
+                reference_month = current_month
+
+        self.__current_index_scope.difference_update(indexes_to_remove)
+
+    def change_measurement_scope_by_years(self, years):
+        indexes_to_remove = set()
+        reference_year = self.__all_single_measurement_objects[0].datetime.year
+
+        for index in list(self.__current_index_scope)[1:]:
+            current_year = self.__all_single_measurement_objects[index].datetime.year
+
+            if current_year - reference_year < years:
+                indexes_to_remove.add(index)
+            else:
+                reference_year = current_year
+
+        self.__current_index_scope.difference_update(indexes_to_remove)
+
+    def change_measurement_scope_by_percentage(self, percentage: int):
         """
 
         :param percentage: reaching from 0 to 100
@@ -195,7 +271,7 @@ class MultipleMeasurements:
         else:
             time_delta = self.__all_single_measurement_objects[1].datetime - self.__all_single_measurement_objects[0].datetime
 
-        return time_delta.seconds // 60
+        return int(time_delta.total_seconds() // 60)
 
 
 singleton = MultipleMeasurements()

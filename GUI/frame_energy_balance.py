@@ -46,7 +46,8 @@ class ScopeFrame(tk.Frame):
         self.lbl_timeIntervalScopeUnit = tk.Label(self, text="Time interval scope unit")
         self.lbl_timeIntervalScopeUnit.pack()
 
-        self.cmbobox_timeIntervalScopeUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days"], state="disabled")
+        self.cmbobox_timeIntervalScopeUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days", "Months", "Years"],
+                                                          state="disabled")
         self.cmbobox_timeIntervalScopeUnit.pack()
 
         self.ckbox_startTime_value = tk.IntVar()
@@ -115,7 +116,7 @@ class ScopeFrame(tk.Frame):
         self.entry_timeintervalScope.delete(0, 'end')
         self.entry_timeintervalScope.insert(
             0,  # no minutes available for next line .. only seconds
-            reader.singleton.get_single_file_metadata("time_resolution").seconds // 60)
+            int(reader.singleton.get_single_file_metadata("time_resolution").total_seconds() // 60))
         self.entry_timeintervalScope["state"] = "disabled"
 
         self.entry_startTime["state"] = "normal"
@@ -164,6 +165,9 @@ class ScopeFrame(tk.Frame):
             percent_scope = self.entry_percentScope.get()
 
         timeinterval_scope = None
+        months_scope = None
+        years_scope = None
+
         if self.ckbox_timeintervalScope_value.get():
             if self.entry_timeintervalScope.get().isdigit():
                 time_interval_unit = self.cmbobox_timeIntervalScopeUnit.get()
@@ -174,6 +178,10 @@ class ScopeFrame(tk.Frame):
                     timeinterval_scope = dt.timedelta(hours=int(self.entry_timeintervalScope.get()))
                 elif time_interval_unit == "Days":
                     timeinterval_scope = dt.timedelta(days=int(self.entry_timeintervalScope.get()))
+                elif time_interval_unit == "Months":
+                    months_scope = int(self.entry_timeintervalScope.get())
+                elif time_interval_unit == "Years":
+                    years_scope = int(self.entry_timeintervalScope.get())
 
         starttime_scope = None
         if self.ckbox_startTime_value.get():
@@ -184,9 +192,15 @@ class ScopeFrame(tk.Frame):
             endttime_scope = self.entry_endTime.get()
 
         if percent_scope is not None and percent_scope.isdigit():
-            multiple_measurements.singleton.change_measurement_resolution_by_percentage(int(percent_scope))
+            multiple_measurements.singleton.change_measurement_scope_by_percentage(int(percent_scope))
+
+        # Only one such event can occur
         if timeinterval_scope is not None:
-            multiple_measurements.singleton.change_measurement_resolution_by_time_interval(timeinterval_scope)
+            multiple_measurements.singleton.change_measurement_scope_by_time_interval(timeinterval_scope)
+        elif months_scope is not None:
+            multiple_measurements.singleton.change_measurement_scope_by_months(months_scope)
+        elif years_scope is not None:
+            multiple_measurements.singleton.change_measurement_scope_by_years(years_scope)
 
         if starttime_scope is not None or endttime_scope is not None:
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(starttime_scope,

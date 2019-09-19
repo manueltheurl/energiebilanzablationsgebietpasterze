@@ -44,7 +44,8 @@ class SumFrame(tk.Frame):
         self.entry_sumByTimeInterval.pack()
         self.lbl_timeInterval = tk.Label(self, text="Time interval unit")
         self.lbl_timeInterval.pack()
-        self.cmbobox_sumByTimeIntervalUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days"], state="disabled")
+        self.cmbobox_sumByTimeIntervalUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days", "Months", "Years"],
+                                                          state="disabled")
         self.cmbobox_sumByTimeIntervalUnit.pack()
         self.ckbox_sumByTimeInterval.pack(padx=10)
 
@@ -94,10 +95,14 @@ class SumFrame(tk.Frame):
     def create_summed_measurement(self):
         info_bar_text = ""
         sum_by_amount = None
+        sum_by_months = None
+        sum_by_years = None
+
         if self.ckbox_sumByAmount_value.get():
             sum_by_amount = self.entry_sumByAmount.get()
 
         sum_by_time_interval = None
+
         if self.ckbox_sumByTimeInterval_value.get():
             if self.entry_sumByTimeInterval.get().isdigit():
                 time_interval_unit = self.cmbobox_sumByTimeIntervalUnit.get()
@@ -108,6 +113,10 @@ class SumFrame(tk.Frame):
                     sum_by_time_interval = dt.timedelta(hours=int(self.entry_sumByTimeInterval.get()))
                 elif time_interval_unit == "Days":
                     sum_by_time_interval = dt.timedelta(days=int(self.entry_sumByTimeInterval.get()))
+                elif time_interval_unit == "Months":
+                    sum_by_months = int(self.entry_sumByTimeInterval.get())
+                elif time_interval_unit == "Years":
+                    sum_by_years = int(self.entry_sumByTimeInterval.get())
 
         if sum_by_amount is not None and sum_by_amount.isdigit():
             info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
@@ -115,8 +124,14 @@ class SumFrame(tk.Frame):
             multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
         elif sum_by_time_interval is not None:
             frame_plot.singleton.enable_option_to_use_summed_measurements()
-            info_bar_text += "Measurements every " + str(sum_by_time_interval.seconds // 60) + " minutes summed"
+            info_bar_text += "Measurements every " + str(int(sum_by_time_interval.total_seconds() // 60)) + " minutes summed"
             multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
+        elif sum_by_months is not None:
+            multiple_measurements.singleton.sum_measurements_by_months(sum_by_months)
+            frame_plot.singleton.enable_option_to_use_summed_measurements()
+        elif sum_by_years is not None:
+            multiple_measurements.singleton.sum_measurements_by_years(sum_by_years)
+            frame_plot.singleton.enable_option_to_use_summed_measurements()
         else:
             return  # shouldnt get here
 

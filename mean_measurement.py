@@ -175,3 +175,7 @@ class MeanMeasurement:
     @property
     def total_energy_balance(self):
         return self.__total_energy_balance
+
+    @property
+    def datetime(self):
+        return self.__datetime_begin + (self.__datetime_end - self.__datetime_begin) / 2

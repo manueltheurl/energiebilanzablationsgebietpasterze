@@ -50,7 +50,8 @@ class ReadFrame(tk.Frame):
         self.entry_timeInterval.pack()
         self.lbl_timeInterval = tk.Label(self, text="Time interval unit")
         self.lbl_timeInterval.pack()
-        self.cmbobox_timeIntervalUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days"], state="disabled")
+        self.cmbobox_timeIntervalUnit = ttk.Combobox(self, values=["Minutes", "Hours", "Days", "Months", "Years"],
+                                                     state="disabled")
         self.cmbobox_timeIntervalUnit.pack()
 
         self.ckbox_startTime_value = tk.IntVar()
@@ -148,7 +149,7 @@ class ReadFrame(tk.Frame):
         self.entry_timeInterval.delete(0, 'end')
         self.entry_timeInterval.insert(
             0,  # no minutes available for next line .. only seconds
-            reader.singleton.get_single_file_metadata("time_resolution").seconds // 60)
+            int(reader.singleton.get_single_file_metadata("time_resolution").total_seconds() // 60))
 
         self.cmbobox_timeIntervalUnit.current(0)  # possible here without state normal first
 
@@ -176,6 +177,8 @@ class ReadFrame(tk.Frame):
                 resolution_by_percentage = int(self.entry_percentToRead.get())
 
         resolution_by_time_interval = None
+        resolution_by_months = None
+        resolution_by_years = None
         if self.ckbox_timeInterval_value.get():
             if self.entry_timeInterval.get().isdigit():
                 time_interval_unit = self.cmbobox_timeIntervalUnit.get()
@@ -186,12 +189,18 @@ class ReadFrame(tk.Frame):
                     resolution_by_time_interval = dt.timedelta(hours=int(self.entry_timeInterval.get()))
                 elif time_interval_unit == "Days":
                     resolution_by_time_interval = dt.timedelta(days=int(self.entry_timeInterval.get()))
+                elif time_interval_unit == "Months":
+                    resolution_by_months = int(self.entry_timeInterval.get())
+                elif time_interval_unit == "Years":
+                    resolution_by_years = int(self.entry_timeInterval.get())
 
         reader.singleton.read_meterologic_file_to_objects(start_time,
-                                                                                 end_time,
-                                                                                 resolution_by_percentage,
-                                                                                 resolution_by_time_interval
-                                                                                 )
+                                                          end_time,
+                                                          resolution_by_percentage,
+                                                          resolution_by_time_interval,
+                                                          resolution_by_months,
+                                                          resolution_by_years
+                                                          )
 
         info_bar_text_list = [
             "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),

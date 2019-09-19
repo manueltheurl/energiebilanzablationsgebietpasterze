@@ -103,11 +103,9 @@ class Visualize:
 
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
                                                             use_summed_measurements=use_summed_measurements)
-        if use_summed_measurements:
-            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin",
-                                                                 use_summed_measurements=use_summed_measurements)
-        else:
-            y_dates = multiple_measurements.singleton.get_all_of("datetime")
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
 
         self.ax.plot(y_dates, x_vals, label="Energy Balance")
 
@@ -136,11 +134,9 @@ class Visualize:
     def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True):
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
                                                             use_summed_measurements=use_summed_measurements)
-        if use_summed_measurements:
-            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin",
-                                                                 use_summed_measurements=use_summed_measurements)
-        else:
-            y_dates = multiple_measurements.singleton.get_all_of("datetime")
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
 
         one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
 
@@ -286,11 +282,8 @@ class Visualize:
                 multiple_measurements.singleton.get_all_of(option,
                                                            use_summed_measurements=use_summed_measurements)))
 
-        if use_summed_measurements:
-            y_dates = multiple_measurements.singleton.get_all_of("datetime_begin",
-                                                                 use_summed_measurements=use_summed_measurements)
-        else:
-            y_dates = multiple_measurements.singleton.get_all_of("datetime")
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
 
         return x_vals, y_dates
 

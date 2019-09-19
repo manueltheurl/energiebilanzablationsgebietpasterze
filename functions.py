@@ -11,6 +11,10 @@ def set_widget_state(widgets: list, state):
             widget["state"] = "disabled"
 
 
+def get_difference_of_months(earlier_month, later_month):
+    return (later_month - earlier_month) % 12
+
+
 def string_date_to_datetime(string_date):
     try:
         return dt.datetime.strptime(string_date, "%Y-%m-%d %H:%M:%S")  # double quotes around date
