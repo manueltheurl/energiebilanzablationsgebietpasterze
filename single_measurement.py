@@ -1,5 +1,6 @@
 from datetime import datetime as dt
 import energy_balance
+from manage_config import cfg
 
 
 class SingleMeasurement:
@@ -15,15 +16,18 @@ class SingleMeasurement:
 
         # sw out and lw out are negative here even though they are technically positive .. sum of the dict is actual
         # energy balance then
+
         self.__energy_balance_components = {
             "sw_radiation_in": sw_radiation_in,
             "sw_radiation_out": sw_radiation_out,
             "lw_radiation_in": lw_radiation_in,
             "lw_radiation_out": lw_radiation_out,
-            "sensible_heat": 0,
-            "latent_heat": 0,
-            "precipitation_heat": 0,  # sadly there is no information about the rain rate m/s given
+            "sensible_heat": None,  # None, cause else 0 line would be plotted
+            "latent_heat": None,
         }
+        if not cfg["IGNORE_PRECIPITATION_HEAT"]:
+            self.__energy_balance_components["precipitation_heat"] = None
+
         self.__datetime = datetime
         self.__temperature = temperature
         self.__rel_moisture = rel_moisture  # in percent*100 .. e.g. 67
@@ -67,8 +71,10 @@ class SingleMeasurement:
                                                self.__energy_balance_components["lw_radiation_out"],
                                                self.__energy_balance_components["sensible_heat"],
                                                self.__energy_balance_components["latent_heat"],
-                                               self.__energy_balance_components["precipitation_heat"]
                                                ])
+
+            if not cfg["IGNORE_PRECIPITATION_HEAT"]:
+                self.__total_energy_balance += self.__energy_balance_components["precipitation_heat"]
 
     @property
     def datetime(self):

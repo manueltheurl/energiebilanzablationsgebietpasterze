@@ -40,13 +40,19 @@ class EnergyBalance:
     def calculate_ice_temperature(outgoing_energy):
         # I = e * STEFAN_BOLTZMANN_CONSTANT * T**4
         # e -> emmissivity ~ 1 -> snow and ice act like a black body in the infrared
+
+        if not cfg["CALCULATE_ICE_TEMPERATURE_WITH_STEFAN_BOLTZMANN"]:
+            return 0
+
         temperature = (abs(outgoing_energy)/STEFAN_BOLTZMANN_CONSTANT)**(1/4) + ABSOLUTE_ZERO_DEGREE_CELSIUS  # 4th sqrt
         if temperature > 0:  # ice cant have positive degrees
             return 0
+        
         return temperature
 
     def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out):  # E_E
         temperature_ice = self.calculate_ice_temperature(longwave_out)  # degree celcius
+
         return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - temperature_ice)
 
     def calculate_latent_heat(self, temperature, rel_moisture, wind_speed):  # E_H
@@ -55,11 +61,15 @@ class EnergyBalance:
         # or https://books.google.at/books?id=Zi1coMyhlHoC&lpg=PP1&pg=PA350&hl=en&redir_esc=y#v=onepage&q&f=false
         # see also post https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit for that
 
-        # e_s - vapor pressure at the surface - assuming saturation  TODO find proof for that function
-        e_s = 0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))
+        # e_surface - vapor pressure at the surface [Pa] - assuming saturation  TODO find proof for that function
+        e_surface = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # * 100 for converting to Pa
 
-        # e - vapor pressure above the surface
-        e = rel_moisture / 100 * e_s
+        # http://www.fao.org/3/X0490E/x0490e07.htm confirms eq 12 states, that unit is kPa even .. TODO proof ..
+        # https://www.hydrol-earth-syst-sci.net/17/1331/2013/hess-17-1331-2013-supplement.pdf .. S2.5  kPa here as well
+        # -> should be enough proof
+
+        # e_air - vapor pressure above the surface [Pa]
+        e_air = rel_moisture / 100 * e_surface
 
         u = wind_speed
         # http://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0016-71692015000400299 PROOFS THAT ITS THE WIND SPEED INDEED
@@ -67,7 +77,9 @@ class EnergyBalance:
 
         # e - e_s is actually the vapor Pressure Deficit  -- https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
-        return 22.2 * self.c_star * u * (e - e_s)
+        # TODO e_air and e_surface is Pa .. yes it is .. proof in 05_VO_Mountainhydrology Page 22
+
+        return 22.2 * self.c_star * u * (e_air - e_surface)
 
     def calculate_precipitation_heat(self):
         # not implemented as there sadly is no information given about the rain rate m/s

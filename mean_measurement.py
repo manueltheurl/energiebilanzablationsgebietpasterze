@@ -1,4 +1,5 @@
 from single_measurement import SingleMeasurement
+from manage_config import cfg
 
 
 class MeanMeasurement:
@@ -85,12 +86,13 @@ class MeanMeasurement:
             else:
                 self.__energy_balance_components["latent_heat"] += single_measurement.latent_heat
 
-        if single_measurement.precipitation_energy is not None:
-            self.contains_precipitation_heat += 1
-            if self.__energy_balance_components["precipitation_heat"] is None:
-                self.__energy_balance_components["precipitation_heat"] = single_measurement.precipitation_energy
-            else:
-                self.__energy_balance_components["precipitation_heat"] += single_measurement.precipitation_energy
+        if not cfg["IGNORE_PRECIPITATION_HEAT"]:
+            if single_measurement.precipitation_energy is not None:
+                self.contains_precipitation_heat += 1
+                if self.__energy_balance_components["precipitation_heat"] is None:
+                    self.__energy_balance_components["precipitation_heat"] = single_measurement.precipitation_energy
+                else:
+                    self.__energy_balance_components["precipitation_heat"] += single_measurement.precipitation_energy
 
         if single_measurement.ablation is not None:
             self.contains_ablation += 1
