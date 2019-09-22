@@ -50,7 +50,7 @@ class Manager:
                                                           resolution_by_time_interval=None)
 
         multiple_measurements.singleton.change_measurement_scope_by_percentage(80)
-        #multiple_measurements.singleton.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
+        # multiple_measurements.singleton.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
 
     def calculate(self):
 

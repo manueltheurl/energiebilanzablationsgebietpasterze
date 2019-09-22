@@ -47,7 +47,7 @@ class EnergyBalance:
         temperature = (abs(outgoing_energy)/STEFAN_BOLTZMANN_CONSTANT)**(1/4) + ABSOLUTE_ZERO_DEGREE_CELSIUS  # 4th sqrt
         if temperature > 0:  # ice cant have positive degrees
             return 0
-        
+
         return temperature
 
     def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out):  # E_E
