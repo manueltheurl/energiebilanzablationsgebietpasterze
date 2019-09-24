@@ -17,6 +17,7 @@ import scipy
 import numpy as np
 from scipy import optimize
 import functions as fc
+import calendar
 
 
 class Visualize:
@@ -61,7 +62,7 @@ class Visualize:
         # calculate time_spawn between first and last measurement
         time_spawn = dt.timedelta(days=self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
 
-        time_border_1 = dt.timedelta(days=2*365)
+        time_border_1 = dt.timedelta(days=3*365)
         time_border_2 = dt.timedelta(days=150)
         time_border_3 = dt.timedelta(days=30*2)
 
@@ -138,9 +139,9 @@ class Visualize:
         y_dates = multiple_measurements.singleton.get_all_of("datetime",
                                                              use_summed_measurements=use_summed_measurements)
 
-        one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
+        days_365 = dt.timedelta(days=365)  # hours=5, minutes=48     365.2422 days in year approximately
 
-        if y_dates[-1] - y_dates[0] < one_year:
+        if y_dates[-1] - y_dates[0] < days_365:
             print("Cant trend eliminate for data range less than one year")
             return
 
@@ -161,7 +162,7 @@ class Visualize:
             for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
                                      y_dates[reference_index_first_good_measurement:]):
                 if None not in [x_val, y_date]:
-                    if y_date >= y_dates[reference_index_current_measurement] + one_year:
+                    if y_date >= y_dates[reference_index_current_measurement] + days_365:
                         diff_vals.append(x_val - x_vals[reference_index_current_measurement])
                         diff_dates.append(y_date)
 
@@ -171,18 +172,23 @@ class Visualize:
             diff_vals = list()
             diff_dates = list()
             start_date = y_dates[reference_index_first_good_measurement]
+            leap_days = dt.timedelta(days=0)
 
             for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
                                      y_dates[reference_index_first_good_measurement:]):
                 if None not in [x_val, y_date]:
-                    years_passed = int((y_date-start_date).total_seconds()/one_year.total_seconds())
+                    years_passed = int((y_date-start_date).total_seconds()/days_365.total_seconds())
                     if fc.value_changed(years_passed, "years_passed"):
+                        if calendar.isleap(y_date.year) and y_date.month <= 2 and y_date.day < 29:
+                            leap_days += dt.timedelta(days=1)
                         reference_index_current_measurement = reference_index_first_good_measurement
 
                     if years_passed >= 1:
-                        if y_date >= y_dates[reference_index_current_measurement] + one_year*years_passed:
-                            diff_vals.append(x_val - x_vals[reference_index_current_measurement])
-                            diff_dates.append(y_date)
+                        if y_date >= y_dates[reference_index_current_measurement] + days_365*years_passed + leap_days:
+                            print(y_date, y_dates[reference_index_current_measurement], years_passed, leap_days)
+                            if x_vals[reference_index_current_measurement] is not None:  # can happen .. take it
+                                diff_vals.append(x_val - x_vals[reference_index_current_measurement])
+                                diff_dates.append(y_date)
 
                             reference_index_current_measurement += 1
 
@@ -202,9 +208,10 @@ class Visualize:
     def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True):
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
-        one_year = dt.timedelta(days=365, hours=5, minutes=48)  # 365.2422 days in year approximately
+        days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
 
-        if y_dates[-1] - y_dates[0] < one_year:
+
+        if y_dates[-1] - y_dates[0] < days_365:
             print("Cant trend eliminate for data range less than one year")
             return
 
@@ -225,9 +232,10 @@ class Visualize:
             for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
                                      y_dates[reference_index_first_good_measurement:]):
                 if None not in [x_val, y_date]:
-                    if y_date >= y_dates[reference_index_current_measurement] + one_year:
-                        diff_vals.append(x_val - x_vals[reference_index_current_measurement])
-                        diff_dates.append(y_date)
+                    if y_date >= y_dates[reference_index_current_measurement] + days_365:
+                        if x_vals[reference_index_current_measurement] is not None:
+                            diff_vals.append(x_val - x_vals[reference_index_current_measurement])
+                            diff_dates.append(y_date)
 
                         reference_index_current_measurement += 1
 
@@ -235,16 +243,19 @@ class Visualize:
             diff_vals = list()
             diff_dates = list()
             start_date = y_dates[reference_index_first_good_measurement]
+            leap_days = dt.timedelta(days=0)
 
             for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
                                      y_dates[reference_index_first_good_measurement:]):
                 if None not in [x_val, y_date]:
-                    years_passed = int((y_date-start_date).total_seconds()/one_year.total_seconds())
+                    years_passed = int((y_date-start_date).total_seconds()/days_365.total_seconds())
                     if fc.value_changed(years_passed, "years_passed"):
+                        if calendar.isleap(y_date.year) and y_date.month <= 2 and y_date.day < 29:
+                            leap_days += dt.timedelta(days=1)
                         reference_index_current_measurement = reference_index_first_good_measurement
 
                     if years_passed >= 1:
-                        if y_date >= y_dates[reference_index_current_measurement] + one_year*years_passed:
+                        if y_date >= y_dates[reference_index_current_measurement] + days_365*years_passed + leap_days:
                             diff_vals.append(x_val - x_vals[reference_index_current_measurement])
                             diff_dates.append(y_date)
 

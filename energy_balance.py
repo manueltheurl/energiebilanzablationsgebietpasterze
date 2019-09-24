@@ -21,10 +21,10 @@ class EnergyBalance:
         sensor_height_temperature = 1.55  # m  .. not in use
         sensor_height_wind = 5  # m
 
-        self.c_star = self.calculate_c_star(KARMANS_CONSTANT, z_0, sensor_height_wind)
+        self.c_star = self.calculate_c_star(z_0, sensor_height_wind)
 
     @staticmethod
-    def calculate_c_star(k_0, sensor_height_wind, z_0):
+    def calculate_c_star(sensor_height_wind, z_0):
         """
         C* is called the transfer coefficient
         The value of c star depends on measurement height and a bit on surface roughness
@@ -34,7 +34,7 @@ class EnergyBalance:
 
 
         # c - transfer coefficient
-        return k_0**2/m.log(sensor_height_wind / z_0)**2  # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
+        return KARMANS_CONSTANT**2/m.log(sensor_height_wind / z_0)**2  # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
 
     @staticmethod
     def calculate_ice_temperature(outgoing_energy):

@@ -206,7 +206,7 @@ class ReadFrame(tk.Frame):
             "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),
             "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement()),
             "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement()),
-            "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution()) + " minutes"
+            "Time resolution: " + multiple_measurements.singleton.get_time_resolution(as_beautiful_string=True)
         ]
 
         info_bar.singleton.change_read_info("\t".join(info_bar_text_list))

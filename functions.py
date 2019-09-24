@@ -15,6 +15,30 @@ def get_difference_of_months(earlier_month, later_month):
     return (later_month - earlier_month) % 12
 
 
+def make_seconds_beautiful_string(seconds):
+    days = seconds // 86400
+    remaining_seconds = seconds % 86400
+
+    hours = remaining_seconds // 3600
+    remaining_seconds = remaining_seconds % 3600
+
+    minutes = remaining_seconds // 60
+    remaining_seconds = remaining_seconds % 60
+
+    beautiful_string = []
+
+    if days > 0:
+        beautiful_string.append(str(int(days)) + " Days")
+    if hours > 0:
+        beautiful_string.append(str(int(hours)) + " Hour")
+    if minutes > 0:
+        beautiful_string.append(str(int(minutes)) + " Min")
+    if remaining_seconds > 0:
+        beautiful_string.append(str(int(remaining_seconds)) + " Sec")
+
+    return " ".join(beautiful_string)
+
+
 def string_date_to_datetime(string_date):
     try:
         return dt.datetime.strptime(string_date, "%Y-%m-%d %H:%M:%S")  # double quotes around date

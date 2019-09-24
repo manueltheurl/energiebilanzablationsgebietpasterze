@@ -210,7 +210,8 @@ class ScopeFrame(tk.Frame):
             "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount(of="scope")),
             "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement(of="scope")),
             "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement(of="scope")),
-            "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution(of="scope")) + " minutes"
+            "Time resolution: " + multiple_measurements.singleton.get_time_resolution(of="scope",
+                                                                                      as_beautiful_string=True)
         ]
         info_bar.singleton.change_scope_info("\t".join(info_bar_text_list))
 

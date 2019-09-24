@@ -124,14 +124,16 @@ class SumFrame(tk.Frame):
             multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
         elif sum_by_time_interval is not None:
             frame_plot.singleton.enable_option_to_use_summed_measurements()
-            info_bar_text += "Measurements every " + str(int(sum_by_time_interval.total_seconds() // 60)) + " minutes summed"
+            info_bar_text += "Measurements every " + fc.make_seconds_beautiful_string(sum_by_time_interval.total_seconds()) + " minutes summed"
             multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
         elif sum_by_months is not None:
             multiple_measurements.singleton.sum_measurements_by_months(sum_by_months)
             frame_plot.singleton.enable_option_to_use_summed_measurements()
+            info_bar_text += "Measurements every " + str(sum_by_months) + " months summed"
         elif sum_by_years is not None:
             multiple_measurements.singleton.sum_measurements_by_years(sum_by_years)
             frame_plot.singleton.enable_option_to_use_summed_measurements()
+            info_bar_text += "Measurements every " + str(sum_by_years) + " years summed"
         else:
             return  # shouldnt get here
 
