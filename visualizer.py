@@ -49,7 +49,7 @@ class Visualize:
 
         :rtype: object
         """
-        fig = plt.figure(figsize=(10, 6))
+        fig = plt.figure(figsize=(14, 9))
         self.ax = fig.add_subplot(111)
 
     def modify_axes(self):
@@ -185,7 +185,6 @@ class Visualize:
 
                     if years_passed >= 1:
                         if y_date >= y_dates[reference_index_current_measurement] + days_365*years_passed + leap_days:
-                            print(y_date, y_dates[reference_index_current_measurement], years_passed, leap_days)
                             if x_vals[reference_index_current_measurement] is not None:  # can happen .. take it
                                 diff_vals.append(x_val - x_vals[reference_index_current_measurement])
                                 diff_dates.append(y_date)
@@ -256,8 +255,9 @@ class Visualize:
 
                     if years_passed >= 1:
                         if y_date >= y_dates[reference_index_current_measurement] + days_365*years_passed + leap_days:
-                            diff_vals.append(x_val - x_vals[reference_index_current_measurement])
-                            diff_dates.append(y_date)
+                            if x_vals[reference_index_current_measurement] is not None:
+                                diff_vals.append(x_val - x_vals[reference_index_current_measurement])
+                                diff_dates.append(y_date)
 
                             reference_index_current_measurement += 1
 
