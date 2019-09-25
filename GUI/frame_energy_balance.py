@@ -1,9 +1,9 @@
 import tkinter as tk
 import multiple_measurements
 import functions as fc
-import GUI.gui_main_frame as gui_main_frame
-import GUI.navigation_bar as navigation_bar
-import GUI.info_bar as info_bar
+import gui_main_frame as gui_main_frame
+import navigation_bar as navigation_bar
+import info_bar as info_bar
 from tkinter import ttk
 import datetime as dt
 import reader

@@ -1,15 +1,17 @@
 import tkinter as tk
 from tkinter import filedialog
+import sys
+sys.path.append("GUI")
 import reader
 import multiple_measurements
 from tkinter import ttk
 import datetime as dt
-import GUI.info_bar as info_bar
-import GUI.gui_main_frame as gui_main_frame
-import GUI.frame_plot as frame_plot
+import info_bar as info_bar
+import gui_main_frame as gui_main_frame
+import frame_plot as frame_plot
 import functions as fc
-import GUI.navigation_bar as navigation_bar
-import GUI.frame_energy_balance as frame_energy_balance
+import navigation_bar as navigation_bar
+import frame_energy_balance as frame_energy_balance
 
 
 class ReadFrame(tk.Frame):

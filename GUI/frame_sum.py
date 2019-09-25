@@ -1,13 +1,17 @@
 import tkinter as tk
-import GUI.gui_main_frame as gui_main_frame
+import sys
+sys.path.append("GUI")
+
+import gui_main_frame
+import navigation_bar
 import visualizer
 from tkinter import ttk
-import GUI.navigation_bar as navigation_bar
-import GUI.info_bar as info_bar
 import functions as fc
-import datetime as dt
+import info_bar
+import functions
+import datetime
 import multiple_measurements
-import GUI.frame_plot as frame_plot
+import frame_plot
 
 
 class SumFrame(tk.Frame):

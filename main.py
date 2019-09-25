@@ -14,17 +14,19 @@ import os
 import threading
 import multiple_measurements
 import reader
+import sys
+sys.path.append("GUI")
 
 # The gui is constructed as singletons .. this order therefor has to be maintained
-import GUI.gui_main_frame as gui_main
-import GUI.navigation_bar as navigation_bar
-import GUI.info_bar as info_bar
-import GUI.frame_plot as frame_plot
-import GUI.frame_energy_balance as frame_scope
-import GUI.frame_model as frame_model
-import GUI.frame_read as frame_read
-import GUI.frame_energy_balance as frame_energy_balance
-import GUI.frame_sum as frame_sum
+import gui_main_frame as gui_main
+import navigation_bar
+import info_bar
+import frame_plot
+import frame_energy_balance
+import frame_model
+import frame_read
+import frame_energy_balance as frame_scope
+import frame_sum
 import visualizer
 TEST = False
 
