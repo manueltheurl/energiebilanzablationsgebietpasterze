@@ -54,11 +54,12 @@ class SingleMeasurement:
                 self.__energy_balance_components["lw_radiation_out"]
             )
 
-        if None not in [self.__temperature, self.__rel_moisture, self.__wind_speed]:
+        if None not in [self.__temperature, self.__rel_moisture, self.__wind_speed, self.__energy_balance_components["lw_radiation_out"]]:
             self.__energy_balance_components["latent_heat"] = energy_balance.singleton.calculate_latent_heat(
                 self.__temperature,
                 self.__rel_moisture,
-                self.__wind_speed
+                self.__wind_speed,
+                self.__energy_balance_components["lw_radiation_out"]
             )
 
         if None not in [None]:
