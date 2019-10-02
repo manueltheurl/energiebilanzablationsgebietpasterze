@@ -83,8 +83,8 @@ class ScopeFrame(tk.Frame):
         self.btn_resetScope.pack(pady=5)
 
         self.btn_calcEnergyBalance = tk.Button(self,
-                                               text="Calculate Energy Balance",
-                                               command=self.calculate_energy_balance,
+                                               text="Calculate Energy Balance and clean Ablation",
+                                               command=self.calculate_energy_balance_and_clean_ablation,
                                                state="normal")
         self.btn_calcEnergyBalance.pack(pady=30)
 
@@ -215,8 +215,9 @@ class ScopeFrame(tk.Frame):
         ]
         info_bar.singleton.change_scope_info("\t".join(info_bar_text_list))
 
-    def calculate_energy_balance(self):
+    def calculate_energy_balance_and_clean_ablation(self):
         multiple_measurements.singleton.calculate_energy_balance_for_scope()
+        multiple_measurements.singleton.clean_ablation_for_scope()
         navigation_bar.singleton.show_sum_frame()
 
 

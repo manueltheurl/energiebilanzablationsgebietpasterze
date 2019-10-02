@@ -32,6 +32,20 @@ class MultipleMeasurements:
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             obj.calculate_energy_balance()
 
+    def clean_ablation_for_scope(self):
+        old_ablation_value = None
+        current_subtractive = 0
+        threshold_of_unnaturality = 0.5
+
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if old_ablation_value is None:
+                old_ablation_value = obj.ablation
+            else:
+                if old_ablation_value < obj.ablation + current_subtractive + threshold_of_unnaturality:
+                    current_subtractive = obj.ablation - old_ablation_value
+                obj.ablation -= current_subtractive
+                old_ablation_value = obj.ablation
+
     def get_all_of(self, attribute_name, use_summed_measurements=False):
         if use_summed_measurements:
             return list(map(

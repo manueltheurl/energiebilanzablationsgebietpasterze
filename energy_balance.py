@@ -63,11 +63,11 @@ class EnergyBalance:
         # see also post https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit for that
 
         # e_surface - vapor pressure at the surface [Pa] - assuming saturation  TODO find proof for that function
-        e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # * 100 for converting to Pa
+        e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # * 1000 for converting to Pa
         e_air = rel_moisture / 100 * e_air_saturated
 
         e_surface_saturated = (0.6108 * m.e ** (
-                    17.27 * self.calculate_ice_temperature(longwave_out) / (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 100 for converting to Pa
+                    17.27 * self.calculate_ice_temperature(longwave_out) / (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
 
         # http://www.fao.org/3/X0490E/x0490e07.htm confirms eq 12 states, that unit is kPa even .. TODO proof ..
         # https://www.hydrol-earth-syst-sci.net/17/1331/2013/hess-17-1331-2013-supplement.pdf .. S2.5  kPa here as well

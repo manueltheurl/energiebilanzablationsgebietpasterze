@@ -149,6 +149,11 @@ class SingleMeasurement:
     def ablation(self):
         return self.__ablation
 
+    @ablation.setter
+    def ablation(self, new_value):
+        # for clearning the ablation values
+        self.__ablation = new_value
+
     @property
     def total_energy_balance(self):
         return self.__total_energy_balance
