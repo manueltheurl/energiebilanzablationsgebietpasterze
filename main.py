@@ -23,7 +23,7 @@ import navigation_bar
 import info_bar
 import frame_plot
 import frame_energy_balance
-import frame_model
+import frame_download
 import frame_read
 import frame_energy_balance as frame_scope
 import frame_sum
@@ -92,7 +92,7 @@ if __name__ == "__main__":
         info_bar.create_singleton()
         frame_scope.create_singleton()
         frame_plot.create_singleton()
-        frame_model.create_singleton()
+        frame_download.create_singleton()
         frame_sum.create_singleton()
         frame_read.create_singleton()
 

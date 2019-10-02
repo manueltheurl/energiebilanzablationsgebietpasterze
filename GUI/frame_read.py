@@ -114,7 +114,7 @@ class ReadFrame(tk.Frame):
     def select_file(self):
         selected_path = tk.filedialog.askopenfilename(filetypes=(("Csv Files", "*.csv"), ("all files", "*.*")))
 
-        if selected_path != "":
+        if type(selected_path) != tuple:  # no file selected then
             self.file_path = selected_path
             self.lbl_chosenFile['text'] = selected_path
             reader.singleton.add_file_path(selected_path)
@@ -133,35 +133,35 @@ class ReadFrame(tk.Frame):
                 self.entry_percentToRead
             ], "normal")
 
-        reader.singleton.fetch_file_metadata()
+            reader.singleton.fetch_file_metadata()
 
-        self.entry_startTime.delete(0, 'end')
-        self.entry_startTime.insert(
-            0,
-            reader.singleton.get_single_file_metadata("time_of_first_measurement"))
+            self.entry_startTime.delete(0, 'end')
+            self.entry_startTime.insert(
+                0,
+                reader.singleton.get_single_file_metadata("time_of_first_measurement"))
 
-        self.entry_endTime.delete(0, 'end')
-        self.entry_endTime.insert(
-            0,
-            reader.singleton.get_single_file_metadata("time_of_last_measurement"))
+            self.entry_endTime.delete(0, 'end')
+            self.entry_endTime.insert(
+                0,
+                reader.singleton.get_single_file_metadata("time_of_last_measurement"))
 
-        self.entry_percentToRead.delete(0, 'end')
-        self.entry_percentToRead.insert(0, "100")
+            self.entry_percentToRead.delete(0, 'end')
+            self.entry_percentToRead.insert(0, "100")
 
-        self.entry_timeInterval.delete(0, 'end')
-        self.entry_timeInterval.insert(
-            0,  # no minutes available for next line .. only seconds
-            int(reader.singleton.get_single_file_metadata("time_resolution").total_seconds() // 60))
+            self.entry_timeInterval.delete(0, 'end')
+            self.entry_timeInterval.insert(
+                0,  # no minutes available for next line .. only seconds
+                int(reader.singleton.get_single_file_metadata("time_resolution").total_seconds() // 60))
 
-        self.cmbobox_timeIntervalUnit.current(0)  # possible here without state normal first
+            self.cmbobox_timeIntervalUnit.current(0)  # possible here without state normal first
 
-        fc.set_widget_state([
-            # disable them again .. value stays though
-            self.entry_startTime,
-            self.entry_endTime,
-            self.entry_timeInterval,
-            self.entry_percentToRead
-        ], "disabled")
+            fc.set_widget_state([
+                # disable them again .. value stays though
+                self.entry_startTime,
+                self.entry_endTime,
+                self.entry_timeInterval,
+                self.entry_percentToRead
+            ], "disabled")
 
     def read_measurements_to_objects(self):
         start_time = None

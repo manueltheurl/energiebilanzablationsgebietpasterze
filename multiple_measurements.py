@@ -1,6 +1,9 @@
 import datetime as dt
 from mean_measurement import MeanMeasurement
 import functions as fc
+import os
+from manage_config import cfg
+import csv
 
 
 class MultipleMeasurements:
@@ -47,7 +50,6 @@ class MultipleMeasurements:
                     old_ablation_value = obj.ablation
 
                     obj.ablation -= current_subtractive
-
 
     def get_all_of(self, attribute_name, use_summed_measurements=False):
         if use_summed_measurements:
@@ -366,6 +368,38 @@ class MultipleMeasurements:
             return fc.make_seconds_beautiful_string(time_delta.total_seconds())
 
         return int(time_delta.total_seconds() // 60)
+
+    def download_whole_energy_balance(self, use_summed_measurements=False):
+        if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
+            os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
+
+        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_whole_energy_balance.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Date", "Total energy balance [W/m^2]"])
+
+            for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+                if obj.total_energy_balance is not None:
+                    writer.writerow([obj.datetime, round(obj.total_energy_balance, 3)])
+
+    def download_components_of_energy_balance(self, options, use_summed_measurements=False):
+        # currently not support for downloading summed measurements
+
+        if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
+            os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
+
+        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_parts_of_energy_balance.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Date"] + options)
+
+            for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+                line_to_write = [obj.datetime]
+                for option in options:
+                    item = getattr(obj, option)
+                    if item is not None:
+                        line_to_write.append(round(item, 3))
+                    else:
+                        line_to_write.append("None")
+                writer.writerow(line_to_write)
 
 
 singleton = MultipleMeasurements()

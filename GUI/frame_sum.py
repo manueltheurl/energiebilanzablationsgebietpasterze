@@ -12,6 +12,7 @@ import functions
 import datetime
 import multiple_measurements
 import frame_plot
+import datetime as dt
 
 
 class SumFrame(tk.Frame):

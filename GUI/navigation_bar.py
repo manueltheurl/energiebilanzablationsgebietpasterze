@@ -5,7 +5,7 @@ sys.path.append("GUI")
 
 import frame_read
 import frame_energy_balance
-import frame_model
+import frame_download
 import frame_plot
 import gui_main_frame
 import frame_sum
@@ -47,10 +47,10 @@ class NavigationBar(tk.Frame):
         self.btn_plotframe.pack(side="left")
         self.__all_buttons.append(self.btn_plotframe)
 
-        self.btn_modelframe = tk.Button(self, text="Model", command=self.show_model_frame,
+        self.btn_downloadframe = tk.Button(self, text="Download", command=self.show_download_frame,
                                    state="disabled")
-        self.btn_modelframe.pack(side="left")
-        self.__all_buttons.append(self.btn_modelframe)
+        self.btn_downloadframe.pack(side="left")
+        self.__all_buttons.append(self.btn_downloadframe)
 
         self.pack(side="top", fill="both")
 
@@ -74,10 +74,10 @@ class NavigationBar(tk.Frame):
         gui_main_frame.singleton.show_main_frame(frame_plot)
         self.btn_plotframe["state"] = "active"
 
-    def show_model_frame(self):
+    def show_download_frame(self):
         self.__set_state_of_buttons_normal()
-        gui_main_frame.singleton.show_main_frame(frame_model)
-        self.btn_modelframe["state"] = "active"
+        gui_main_frame.singleton.show_main_frame(frame_download)
+        self.btn_downloadframe["state"] = "active"
 
     def __set_state_of_buttons_normal(self):
         for button in self.__all_buttons:

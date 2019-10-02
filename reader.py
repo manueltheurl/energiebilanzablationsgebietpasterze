@@ -36,21 +36,21 @@ class Reader:
         return float(data_string)
 
     def read_measurements_metadata(self):
-        with open(self.__file_path) as file:
-            next(file)  # skip first line, contains no data
-            first_line_parts = next(file).split(self.delimiter)
-            second_line_parts = next(file).split(self.delimiter)
-            last_line_parts = file.readlines()[-2].split(self.delimiter)  # TODO better way to find last actual data line?
+            with open(self.__file_path) as file:
+                next(file)  # skip first line, contains no data
+                first_line_parts = next(file).split(self.delimiter)
+                second_line_parts = next(file).split(self.delimiter)
+                last_line_parts = file.readlines()[-2].split(self.delimiter)  # TODO better way to find last actual data line?
 
-            datetime_first_measurement = fc.string_date_to_datetime(first_line_parts[0])
-            datetime_second_measurement = fc.string_date_to_datetime(second_line_parts[0])
-            datetime_last_measurement = fc.string_date_to_datetime(last_line_parts[0])
+                datetime_first_measurement = fc.string_date_to_datetime(first_line_parts[0])
+                datetime_second_measurement = fc.string_date_to_datetime(second_line_parts[0])
+                datetime_last_measurement = fc.string_date_to_datetime(last_line_parts[0])
 
-            return [
-                datetime_second_measurement - datetime_first_measurement,
-                datetime_first_measurement,
-                datetime_last_measurement
-            ]
+                return [
+                    datetime_second_measurement - datetime_first_measurement,
+                    datetime_first_measurement,
+                    datetime_last_measurement
+                ]
 
     def fetch_file_metadata(self):
         time_resolution, time_of_first_measure, time_of_last_measure = self.read_measurements_metadata()

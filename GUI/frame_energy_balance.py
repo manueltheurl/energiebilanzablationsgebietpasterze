@@ -218,6 +218,7 @@ class ScopeFrame(tk.Frame):
     def calculate_energy_balance_and_clean_ablation(self):
         multiple_measurements.singleton.calculate_energy_balance_for_scope()
         multiple_measurements.singleton.clean_ablation_for_scope()
+        navigation_bar.singleton.btn_downloadframe["state"] = "normal"
         navigation_bar.singleton.show_sum_frame()
 
 
