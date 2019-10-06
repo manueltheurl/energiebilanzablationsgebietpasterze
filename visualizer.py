@@ -113,9 +113,14 @@ class Visualize:
         if add_ablation:
             ax_ablation = self.ax.twinx()
 
-            x_vals_ablation = multiple_measurements.singleton.get_all_of("ablation",
+            x_vals_ablation = multiple_measurements.singleton.get_all_of("cumulated_ablation",
                                                                          use_summed_measurements=use_summed_measurements)
             ax_ablation.plot(y_dates, x_vals_ablation, label="Ablation", color="red")
+
+            # x_vals_ablation = multiple_measurements.singleton.get_all_of("theoretical_melt_rate",
+            #                                                              use_summed_measurements=use_summed_measurements)
+            # ax_ablation.plot(y_dates, x_vals_ablation, label="Theoretical melt rate", color="red")
+
             ax_ablation.set_ylabel("m")
 
             main_title = "Total Energy balance with Ablation"
@@ -319,7 +324,7 @@ class Visualize:
         if add_ablation:
             ax_ablation = self.ax.twinx()
 
-            x_vals_ablation = multiple_measurements.singleton.get_all_of("ablation",
+            x_vals_ablation = multiple_measurements.singleton.get_all_of("cumulated_ablation",
                                                                          use_summed_measurements=use_summed_measurements)
             ax_ablation.plot(y_dates, x_vals_ablation, label="Ablation", color="red")
             ax_ablation.set_ylabel("m")

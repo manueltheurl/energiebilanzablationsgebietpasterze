@@ -82,9 +82,14 @@ class ScopeFrame(tk.Frame):
                                         state="normal")
         self.btn_resetScope.pack(pady=5)
 
+        self.lbl_simulate_dimming_brightening = tk.Label(self, text="Simulate global dimming and brightening [W/m^2]").pack()
+
+        self.scale_simulate_dimming_brightening = tk.Scale(self, from_=-9, to=4, orient="horizontal")
+        self.scale_simulate_dimming_brightening.pack()
+
         self.btn_calcEnergyBalance = tk.Button(self,
-                                               text="Calculate Energy Balance and clean Ablation",
-                                               command=self.calculate_energy_balance_and_clean_ablation,
+                                               text="Calculate Energy Balance and cumulate Ablation",
+                                               command=self.calculate_energy_balance_and_cumulate_ablation,
                                                state="normal")
         self.btn_calcEnergyBalance.pack(pady=30)
 
@@ -215,9 +220,13 @@ class ScopeFrame(tk.Frame):
         ]
         info_bar.singleton.change_scope_info("\t".join(info_bar_text_list))
 
-    def calculate_energy_balance_and_clean_ablation(self):
-        multiple_measurements.singleton.calculate_energy_balance_for_scope()
-        multiple_measurements.singleton.clean_ablation_for_scope()
+    def calculate_energy_balance_and_cumulate_ablation(self):
+        multiple_measurements.singleton.calculate_energy_balance_for_scope(
+            self.scale_simulate_dimming_brightening.get()
+        )
+        multiple_measurements.singleton.cumulate_ablation_for_scope()
+        multiple_measurements.singleton.convert_energy_balance_to_water_equivalent()
+
         navigation_bar.singleton.btn_downloadframe["state"] = "normal"
         navigation_bar.singleton.show_sum_frame()
 

@@ -38,12 +38,19 @@ class SingleMeasurement:
         self.__tiltx = tiltx
         self.__tilty = tilty
         self.__snow_depth = snow_depth
-        self.__ablation = ablation
+        self.__ablation = ablation  # this represents the ice thickness at the point of measurement
+        self.__cumulated_ablation = None
+        self.__theoretical_melt_rate = None
         self.__total_energy_balance = None  # not calculated yet
 
-    def calculate_energy_balance(self):
+    def calculate_energy_balance(self, simulate_global_dimming_brightening=0):
         if self.__total_energy_balance is not None:  # so that we wont recalculate for nothing
             return
+
+        if simulate_global_dimming_brightening != 0:
+            # simulate here TODO
+            if None not in [self.__energy_balance_components["sw_radiation_in"]]:
+                self.__energy_balance_components["sw_radiation_in"] += simulate_global_dimming_brightening
 
         if None not in [self.__air_pressure, self.__wind_speed, self.__temperature,
                         self.__energy_balance_components["lw_radiation_out"]]:
@@ -76,6 +83,12 @@ class SingleMeasurement:
 
             if not cfg["IGNORE_PRECIPITATION_HEAT"]:
                 self.__total_energy_balance += self.__energy_balance_components["precipitation_heat"]
+
+    def calculate_theoretical_melt_rate(self):
+        if None not in [self.__total_energy_balance]:
+            self.__theoretical_melt_rate = energy_balance.singleton.energy_balance_to_melt_water(
+                self.__total_energy_balance
+            )
 
     @property
     def datetime(self):
@@ -149,11 +162,19 @@ class SingleMeasurement:
     def ablation(self):
         return self.__ablation
 
-    @ablation.setter
-    def ablation(self, new_value):
+    @property
+    def cumulated_ablation(self):
+        return self.__cumulated_ablation
+
+    @cumulated_ablation.setter
+    def cumulated_ablation(self, new_value):
         # for clearning the ablation values
-        self.__ablation = new_value
+        self.__cumulated_ablation = new_value
 
     @property
     def total_energy_balance(self):
         return self.__total_energy_balance
+
+    @property
+    def theoretical_melt_rate(self):
+        return self.__theoretical_melt_rate

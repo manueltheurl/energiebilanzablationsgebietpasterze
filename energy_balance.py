@@ -4,7 +4,8 @@ from manage_config import cfg
 KARMANS_CONSTANT = 0.4
 STEFAN_BOLTZMANN_CONSTANT = 5.670 * 10**-8
 ABSOLUTE_ZERO_DEGREE_CELSIUS = -273.15
-
+PURE_ICE_DENSITY = 917  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
+PURE_ICE_LATENT_HEAD_OF_FUSION = 3.34 * 10**5  # J/kg  - taken from P. 142 Cuffey and Paterson
 
 class EnergyBalance:
     singleton_created = False
@@ -85,9 +86,14 @@ class EnergyBalance:
 
         return 22.2 * self.c_star * u * (e_air - e_surface_saturated)
 
+
     def calculate_precipitation_heat(self):
         # not implemented as there sadly is no information given about the rain rate m/s
         return 0
+
+    @staticmethod
+    def energy_balance_to_melt_water(energy_balance, ice_thickness=0, delta_temperature=0, delta_time=0):
+        return energy_balance/(PURE_ICE_DENSITY*PURE_ICE_LATENT_HEAD_OF_FUSION)
 
 
 singleton = EnergyBalance()

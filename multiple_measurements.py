@@ -31,25 +31,28 @@ class MultipleMeasurements:
         self.__current_mean_index_scope.add(len(self.__all_mean_measurements))
         self.__all_mean_measurements.append(summed_measurement_object)
 
-    def calculate_energy_balance_for_scope(self):
+    def calculate_energy_balance_for_scope(self, simulate_global_dimming_brightening=0):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            obj.calculate_energy_balance()
+            obj.calculate_energy_balance(simulate_global_dimming_brightening)
 
-    def clean_ablation_for_scope(self):
+    def cumulate_ablation_for_scope(self):
         old_ablation_value = None
         current_subtractive = 0
-        threshold_of_unnaturality = 2  # m  wont happen from one to another measurement -> human caused it
 
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             if obj.ablation is not None:
                 if old_ablation_value is None:
                     old_ablation_value = obj.ablation
                 else:
-                    if old_ablation_value < obj.ablation - threshold_of_unnaturality:
+                    if old_ablation_value < obj.ablation - cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]:
                         current_subtractive += obj.ablation - old_ablation_value
                     old_ablation_value = obj.ablation
 
-                    obj.ablation -= current_subtractive
+                    obj.cumulated_ablation = obj.ablation - current_subtractive
+
+    def convert_energy_balance_to_water_equivalent(self):
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            obj.calculate_theoretical_melt_rate()
 
     def get_all_of(self, attribute_name, use_summed_measurements=False):
         if use_summed_measurements:
