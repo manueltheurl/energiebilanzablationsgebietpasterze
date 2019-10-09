@@ -22,6 +22,7 @@ class MeanMeasurement:
         }
 
         self.__ablation = None
+        self.__cumulated_ablation = None
         self.__datetime_begin = None
         self.__datetime_end = None
         self.__total_energy_balance = None
@@ -101,6 +102,13 @@ class MeanMeasurement:
             else:
                 self.__ablation += single_measurement.ablation
 
+        if single_measurement.cumulated_ablation is not None:
+            self.contains_ablation += 1
+            if self.__cumulated_ablation is None:
+                self.__cumulated_ablation = single_measurement.cumulated_ablation
+            else:
+                self.__cumulated_ablation += single_measurement.cumulated_ablation
+
         if single_measurement.total_energy_balance is not None:
             self.contains_total_energy_balance += 1
             if self.__total_energy_balance is None:
@@ -134,6 +142,7 @@ class MeanMeasurement:
 
         if self.__ablation is not None:
             self.__ablation /= self.contains_ablation
+            self.__cumulated_ablation /= self.contains_ablation
 
         if self.__total_energy_balance is not None:
             self.__total_energy_balance /= self.contains_total_energy_balance
@@ -173,6 +182,10 @@ class MeanMeasurement:
     @property
     def ablation(self):
         return self.__ablation
+
+    @property
+    def cumulated_ablation(self):
+        return self.__cumulated_ablation
 
     @property
     def total_energy_balance(self):

@@ -42,15 +42,41 @@ class Visualize:
             "total_energy_balance": "Total energy balance",
         }
 
+        self.accumulate_plots = False
+
         self.ax = None
 
-    def initialize_plot(self):
-        """
+    plot_type_initialized = {
+        "energy_balance": False,
+        "trend": False,
+    }
 
+    def initialize_plot(self, type_):
+        """
         :rtype: object
         """
-        fig = plt.figure(figsize=(14, 9))
-        self.ax = fig.add_subplot(111)
+
+        yet_to_initialize = True
+
+        if self.accumulate_plots:
+            # close other plot types that are open
+            for plot_type in self.plot_type_initialized:
+                if type_ != plot_type:
+                    if self.plot_type_initialized[plot_type]:
+                        self.plot_type_initialized[plot_type] = False
+                        plt.close()
+                        break
+
+            if self.plot_type_initialized[type_]:
+                yet_to_initialize = False
+            else:
+                self.plot_type_initialized[type_] = True
+        else:
+            plt.close()  # should one be open
+
+        if yet_to_initialize:
+            fig = plt.figure(figsize=(14, 9))
+            self.ax = fig.add_subplot(111)
 
     def modify_axes(self):
         years = mdates.YearLocator()
@@ -93,14 +119,17 @@ class Visualize:
 
         self.ax.set_ylabel("W/m^2")
 
-    @staticmethod
-    def save_and_close_plot():
+    def show_save_and_close_plot(self, type_):
         plt.show()
-        plt.close()
+
+        if not self.accumulate_plots:
+            plt.close()
+            dict.fromkeys(self.plot_type_initialized, False)
+
         # plt.savefig(cfg["RESULT_PLOT_PATH"] + "/with.png", dpi=cfg["PLOT_RESOLUTION"], bbox_inches='tight')
 
     def plot_total_energy_balance(self, use_summed_measurements=False, add_ablation=False):
-        self.initialize_plot()
+        self.initialize_plot("energy_balance")
 
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
                                                             use_summed_measurements=use_summed_measurements)
@@ -135,7 +164,7 @@ class Visualize:
         self.ax.set_title(main_title + summed_title_appendix)
 
         self.modify_axes()
-        self.save_and_close_plot()
+        self.show_save_and_close_plot("energy_balance")
 
     def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True):
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
@@ -150,7 +179,7 @@ class Visualize:
             print("Cant trend eliminate for data range less than one year")
             return
 
-        self.initialize_plot()
+        self.initialize_plot("trend")
 
         # find first actual date where there are values
         reference_index_first_good_measurement = 0
@@ -207,7 +236,7 @@ class Visualize:
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
         self.ax.set_title("Total energy balance - Periodic trend eliminated" + summed_title_appendix)
-        self.save_and_close_plot()
+        self.show_save_and_close_plot("trend")
 
     def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True):
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
@@ -219,7 +248,7 @@ class Visualize:
             print("Cant trend eliminate for data range less than one year")
             return
 
-        self.initialize_plot()
+        self.initialize_plot("trend")
 
         # find first actual date where there are values
         reference_index_first_good_measurement = 0
@@ -278,7 +307,7 @@ class Visualize:
 
         title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
         self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
-        self.save_and_close_plot()
+        self.show_save_and_close_plot("trend")
 
     @staticmethod
     def save_add(first, second):
@@ -311,15 +340,11 @@ class Visualize:
         """
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
-        self.initialize_plot()
+        self.initialize_plot("energy_balance")
         title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
 
         self.ax.plot(y_dates, x_vals,
-                     zorder=3, label=title_used_options)
-        # TODO maybe add that as a checkbox option
-        # self.ax.plot(multiple_measurements.singleton.get_all_of("datetime"),
-        #              multiple_measurements.singleton.get_all_of("total_energy_balance"), color="orange", alpha=0.3,
-        #              zorder=2)
+                     zorder=3, label=title_used_options, linewidth=2)
 
         if add_ablation:
             ax_ablation = self.ax.twinx()
@@ -342,7 +367,7 @@ class Visualize:
         self.ax.set_title(title_used_options + ablation_appendix + " - Energy input" + summed_title_appendix)
 
         self.modify_axes()
-        self.save_and_close_plot()
+        self.show_save_and_close_plot("energy_balance")
 
 
 singleton = Visualize()

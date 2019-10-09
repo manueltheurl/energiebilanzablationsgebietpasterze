@@ -57,7 +57,7 @@ class EnergyBalance:
 
         return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - temperature_ice)
 
-    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out):  # E_H
+    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, use_standard_fomula=True):  # E_H
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
         # or https://books.google.at/books?id=Zi1coMyhlHoC&lpg=PP1&pg=PA350&hl=en&redir_esc=y#v=onepage&q&f=false
@@ -67,8 +67,13 @@ class EnergyBalance:
         e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # * 1000 for converting to Pa
         e_air = rel_moisture / 100 * e_air_saturated
 
-        e_surface_saturated = (0.6108 * m.e ** (
-                    17.27 * self.calculate_ice_temperature(longwave_out) / (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
+        if use_standard_fomula:
+            e_surface_saturated = (0.6108 * m.e ** (
+                        17.27 * self.calculate_ice_temperature(longwave_out) / (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
+        else:
+
+            e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(self.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
+
 
         # http://www.fao.org/3/X0490E/x0490e07.htm confirms eq 12 states, that unit is kPa even .. TODO proof ..
         # https://www.hydrol-earth-syst-sci.net/17/1331/2013/hess-17-1331-2013-supplement.pdf .. S2.5  kPa here as well

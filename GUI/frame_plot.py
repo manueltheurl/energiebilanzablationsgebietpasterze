@@ -23,6 +23,13 @@ class PlotFrame(tk.Frame):
         self.ckbox_use_sum = tk.Checkbutton(self, variable=self.ckbox_use_sum_value, state="disabled")
         self.ckbox_use_sum.pack()
 
+        self.lbl_accumulate_plots = tk.Label(self, text="Accumulate Plots")
+        self.lbl_accumulate_plots.pack(pady=(40, 0))
+
+        self.ckbox_accumulate_plots_value = tk.IntVar()
+        self.ckbox_accumulate_plots = tk.Checkbutton(self, variable=self.ckbox_accumulate_plots_value)
+        self.ckbox_accumulate_plots.pack()
+
         self.btn_totalEnergyBalance = tk.Button(self, text="Total energy balance",
                                                 command=self.plot_total_energy_balance)
         self.btn_totalEnergyBalance.pack(pady=(40, 0))
@@ -60,20 +67,28 @@ class PlotFrame(tk.Frame):
     def enable_option_to_use_summed_measurements(self):
         fc.set_widget_state([self.lbl_use_sum, self.ckbox_use_sum], "normal")
 
+    def check_accumulate_flag(self):
+        print( bool(self.ckbox_accumulate_plots_value.get()))
+        visualizer.singleton.accumulate_plots = bool(self.ckbox_accumulate_plots_value.get())
+
     def plot_total_energy_balance(self):
+        self.check_accumulate_flag()
         visualizer.singleton.plot_total_energy_balance(bool(self.ckbox_use_sum_value.get()),
                                                        bool(self.ckbox_show_ablation_value.get()))
 
     def plot_trend_eliminate_total_energy_balance(self):
+        self.check_accumulate_flag()
         visualizer.singleton.plot_periodic_trend_eliminated_total_energy_balance(bool(self.ckbox_use_sum_value.get()))
 
     def plot_selected_components(self):
+        self.check_accumulate_flag()
         visualizer.singleton.plot_energy_balance_components(
             [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()],
             bool(self.ckbox_use_sum_value.get()), bool(self.ckbox_show_ablation_value.get())
         )
 
     def plot_trend_eliminate_selected_components(self):
+        self.check_accumulate_flag()
         visualizer.singleton.plot_periodic_trend_eliminated_selected_option(
             [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()],
             bool(self.ckbox_use_sum_value.get())
