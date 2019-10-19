@@ -1,5 +1,6 @@
 from single_measurement import SingleMeasurement
 from manage_config import cfg
+import energy_balance
 
 
 class MeanMeasurement:
@@ -22,10 +23,18 @@ class MeanMeasurement:
         }
 
         self.__ablation = None
+        self.__relative_ablation = None
         self.__cumulated_ablation = None
+        self.__starting_ablation = None
+        self.__ending_ablation = None
+
         self.__datetime_begin = None
         self.__datetime_end = None
         self.__total_energy_balance = None
+        self.__theoretical_melt_rate = None
+
+        self.__actual_melt_water_per_sqm = None
+        self.__theoretical_melt_water_per_sqm = None
 
         self.contains_sw_in = 0
         self.contains_sw_out = 0
@@ -36,6 +45,8 @@ class MeanMeasurement:
         self.contains_precipitation_heat = 0
         self.contains_total_energy_balance = 0
         self.contains_ablation = 0
+        self.contains_cumulated_ablation = 0
+        self.contains_theoretical_melt_rate = 0
 
     def __iadd__(self, single_measurement: SingleMeasurement):
         if self.__datetime_begin is None or single_measurement.datetime < self.__datetime_begin:
@@ -87,6 +98,13 @@ class MeanMeasurement:
             else:
                 self.__energy_balance_components["latent_heat"] += single_measurement.latent_heat
 
+        if single_measurement.theoretical_melt_rate is not None:
+            self.contains_theoretical_melt_rate += 1
+            if self.__theoretical_melt_rate is None:
+                self.__theoretical_melt_rate = single_measurement.theoretical_melt_rate
+            else:
+                self.__theoretical_melt_rate += single_measurement.theoretical_melt_rate
+
         if not cfg["IGNORE_PRECIPITATION_HEAT"]:
             if single_measurement.precipitation_energy is not None:
                 self.contains_precipitation_heat += 1
@@ -103,11 +121,13 @@ class MeanMeasurement:
                 self.__ablation += single_measurement.ablation
 
         if single_measurement.cumulated_ablation is not None:
-            self.contains_ablation += 1
+            self.contains_cumulated_ablation += 1
             if self.__cumulated_ablation is None:
+                self.__starting_ablation = single_measurement.cumulated_ablation
                 self.__cumulated_ablation = single_measurement.cumulated_ablation
             else:
                 self.__cumulated_ablation += single_measurement.cumulated_ablation
+                self.__ending_ablation = single_measurement.cumulated_ablation  # just overwrite all the time
 
         if single_measurement.total_energy_balance is not None:
             self.contains_total_energy_balance += 1
@@ -140,12 +160,30 @@ class MeanMeasurement:
         if self.__energy_balance_components["precipitation_heat"] is not None:
             self.__energy_balance_components["precipitation_heat"] /= self.contains_precipitation_heat
 
+        if self.__theoretical_melt_rate is not None:
+            self.__theoretical_melt_rate /= self.contains_theoretical_melt_rate
+
         if self.__ablation is not None:
             self.__ablation /= self.contains_ablation
-            self.__cumulated_ablation /= self.contains_ablation
+            self.__cumulated_ablation /= self.contains_cumulated_ablation
+
+            if self.__starting_ablation is not None and self.__ending_ablation is not None:
+                self.__relative_ablation = self.__ending_ablation - self.__starting_ablation
 
         if self.__total_energy_balance is not None:
             self.__total_energy_balance /= self.contains_total_energy_balance
+
+        self.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
+
+    def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
+        if 6 <= self.__datetime_begin.month <= 8:  # TODO HARD BORDERLINE FOR NOW .. FIND OUT WHEN THERE IS SNOW
+            if self.__relative_ablation is not None:
+                self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
+                    self.__relative_ablation)
+
+            if self.__theoretical_melt_rate is not None:
+                self.__theoretical_melt_water_per_sqm = energy_balance.singleton.meltrate_to_melt_water(
+                    self.__theoretical_melt_rate, self.__datetime_end-self.__datetime_begin)
 
     @property
     def datetime_begin(self):
@@ -184,12 +222,28 @@ class MeanMeasurement:
         return self.__ablation
 
     @property
+    def theoretical_melt_rate(self):
+        return self.__theoretical_melt_rate
+
+    @property
     def cumulated_ablation(self):
         return self.__cumulated_ablation
 
     @property
+    def relative_ablation(self):
+        return self.__relative_ablation
+
+    @property
     def total_energy_balance(self):
         return self.__total_energy_balance
+
+    @property
+    def actual_melt_water_per_sqm(self):
+        return self.__actual_melt_water_per_sqm
+
+    @property
+    def theoretical_melt_water_per_sqm(self):
+        return self.__theoretical_melt_water_per_sqm
 
     @property
     def datetime(self):

@@ -44,10 +44,12 @@ class MultipleMeasurements:
                 if old_ablation_value is None:
                     old_ablation_value = obj.ablation
                 else:
-                    if old_ablation_value < obj.ablation - cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]:
+                    if old_ablation_value < obj.ablation - float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
                         current_subtractive += obj.ablation - old_ablation_value
-                    old_ablation_value = obj.ablation
+                    elif old_ablation_value > obj.ablation + float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
+                        continue  # cant be either .. first drop of ablation when picking up station
 
+                    old_ablation_value = obj.ablation
                     obj.cumulated_ablation = obj.ablation - current_subtractive
 
     def convert_energy_balance_to_water_equivalent(self):
@@ -86,7 +88,6 @@ class MultipleMeasurements:
                 summed_measurement += single_measurement
 
             summed_measurement.calculate_mean()
-
             self.add_summed_measurement(summed_measurement)
 
     def clear_summed_measurements(self):

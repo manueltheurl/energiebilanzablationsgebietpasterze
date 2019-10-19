@@ -74,7 +74,7 @@ class Visualize:
         else:
             plt.close()  # should one be open
 
-        if yet_to_initialize:
+        if yet_to_initialize or not bool(cfg["PRO_VERSION"]):
             fig = plt.figure(figsize=(14, 9))
             self.ax = fig.add_subplot(111)
 
@@ -122,7 +122,7 @@ class Visualize:
     def show_save_and_close_plot(self, type_):
         plt.show()
 
-        if not self.accumulate_plots:
+        if not self.accumulate_plots or not bool(cfg["PRO_VERSION"]):
             plt.close()
             dict.fromkeys(self.plot_type_initialized, False)
 
@@ -139,16 +139,22 @@ class Visualize:
 
         self.ax.plot(y_dates, x_vals, label="Energy Balance")
 
+        if use_summed_measurements:  # TODO temp solution here
+            actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of("actual_melt_water_per_sqm",
+                                                                use_summed_measurements=use_summed_measurements)
+
+            theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of("theoretical_melt_water_per_sqm",
+                                                                                        use_summed_measurements=use_summed_measurements)
+
+            self.ax.plot(y_dates, actual_melt_water_per_sqm, label="Actual Meltwater")
+            self.ax.plot(y_dates, theoretical_melt_water_per_sqm, label="Theoretical meltwater")
+
         if add_ablation:
             ax_ablation = self.ax.twinx()
 
             x_vals_ablation = multiple_measurements.singleton.get_all_of("cumulated_ablation",
                                                                          use_summed_measurements=use_summed_measurements)
             ax_ablation.plot(y_dates, x_vals_ablation, label="Ablation", color="red")
-
-            # x_vals_ablation = multiple_measurements.singleton.get_all_of("theoretical_melt_rate",
-            #                                                              use_summed_measurements=use_summed_measurements)
-            # ax_ablation.plot(y_dates, x_vals_ablation, label="Theoretical melt rate", color="red")
 
             ax_ablation.set_ylabel("m")
 
@@ -242,7 +248,6 @@ class Visualize:
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
         days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
-
 
         if y_dates[-1] - y_dates[0] < days_365:
             print("Cant trend eliminate for data range less than one year")

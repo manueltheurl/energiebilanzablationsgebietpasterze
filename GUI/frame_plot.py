@@ -68,7 +68,6 @@ class PlotFrame(tk.Frame):
         fc.set_widget_state([self.lbl_use_sum, self.ckbox_use_sum], "normal")
 
     def check_accumulate_flag(self):
-        print( bool(self.ckbox_accumulate_plots_value.get()))
         visualizer.singleton.accumulate_plots = bool(self.ckbox_accumulate_plots_value.get())
 
     def plot_total_energy_balance(self):

@@ -62,7 +62,6 @@ class Manager:
         multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(minutes=50))
 
     def visualize(self):
-        # print("BALA")
         # visualizer.plot_total_energy_balance()
         # visualizer.singleton.plot_summed_total_energy_balance()
         pass

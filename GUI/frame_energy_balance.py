@@ -7,6 +7,7 @@ import info_bar as info_bar
 from tkinter import ttk
 import datetime as dt
 import reader
+from manage_config import cfg
 
 
 class ScopeFrame(tk.Frame):
@@ -82,10 +83,13 @@ class ScopeFrame(tk.Frame):
                                         state="normal")
         self.btn_resetScope.pack(pady=5)
 
-        self.lbl_simulate_dimming_brightening = tk.Label(self, text="Simulate global dimming and brightening [W/m^2]").pack()
+        self.lbl_simulate_dimming_brightening = tk.Label(self, text="Simulate global dimming and brightening [W/m^2]")
 
         self.scale_simulate_dimming_brightening = tk.Scale(self, from_=-9, to=4, orient="horizontal")
-        self.scale_simulate_dimming_brightening.pack()
+
+        if bool(cfg["PRO_VERSION"]):
+            self.scale_simulate_dimming_brightening.pack()
+            self.lbl_simulate_dimming_brightening.pack()
 
         self.btn_calcEnergyBalance = tk.Button(self,
                                                text="Calculate Energy Balance and cumulate Ablation",

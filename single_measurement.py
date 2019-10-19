@@ -86,7 +86,7 @@ class SingleMeasurement:
 
     def calculate_theoretical_melt_rate(self):
         if None not in [self.__total_energy_balance]:
-            self.__theoretical_melt_rate = energy_balance.singleton.energy_balance_to_melt_water(
+            self.__theoretical_melt_rate = energy_balance.singleton.energy_balance_to_melt_rate(
                 self.__total_energy_balance
             )
 

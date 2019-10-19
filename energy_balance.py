@@ -4,8 +4,10 @@ from manage_config import cfg
 KARMANS_CONSTANT = 0.4
 STEFAN_BOLTZMANN_CONSTANT = 5.670 * 10**-8
 ABSOLUTE_ZERO_DEGREE_CELSIUS = -273.15
-PURE_ICE_DENSITY = 917  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
-PURE_ICE_LATENT_HEAD_OF_FUSION = 3.34 * 10**5  # J/kg  - taken from P. 142 Cuffey and Paterson
+PURE_ICE_DENSITY_AT_ZERO_DEG = 917  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
+WATER_DENSITY_AT_ZERO_DEG = 1000  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
+PURE_ICE_LATENT_HEAD_OF_FUSION_AT_ZERO_DEG = 3.34 * 10 ** 5  # J/kg  - taken from P. 142 Cuffey and Paterson
+
 
 class EnergyBalance:
     singleton_created = False
@@ -74,7 +76,6 @@ class EnergyBalance:
 
             e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(self.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
 
-
         # http://www.fao.org/3/X0490E/x0490e07.htm confirms eq 12 states, that unit is kPa even .. TODO proof ..
         # https://www.hydrol-earth-syst-sci.net/17/1331/2013/hess-17-1331-2013-supplement.pdf .. S2.5  kPa here as well
         # -> should be enough proof
@@ -91,14 +92,24 @@ class EnergyBalance:
 
         return 22.2 * self.c_star * u * (e_air - e_surface_saturated)
 
-
-    def calculate_precipitation_heat(self):
+    @staticmethod
+    def calculate_precipitation_heat():
         # not implemented as there sadly is no information given about the rain rate m/s
         return 0
 
     @staticmethod
-    def energy_balance_to_melt_water(energy_balance, ice_thickness=0, delta_temperature=0, delta_time=0):
-        return energy_balance/(PURE_ICE_DENSITY*PURE_ICE_LATENT_HEAD_OF_FUSION)
+    def meter_ablation_to_melt_water(meter_ablation):
+        if meter_ablation < 0:  # if melted
+            return abs(meter_ablation) * PURE_ICE_DENSITY_AT_ZERO_DEG
+        return None
+
+    @staticmethod
+    def meltrate_to_melt_water(melt_rate, timespawn):
+        return melt_rate * timespawn.total_seconds() * 1000  # * 1000 cause result is in m^3, and not liter (dm^3)
+
+    @staticmethod
+    def energy_balance_to_melt_rate(energy_balance):
+        return energy_balance/(WATER_DENSITY_AT_ZERO_DEG * PURE_ICE_LATENT_HEAD_OF_FUSION_AT_ZERO_DEG)
 
 
 singleton = EnergyBalance()
