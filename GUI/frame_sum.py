@@ -13,6 +13,7 @@ import datetime
 import multiple_measurements
 import frame_plot
 import datetime as dt
+import mean_measurement
 
 
 class SumFrame(tk.Frame):
@@ -102,6 +103,10 @@ class SumFrame(tk.Frame):
         sum_by_amount = None
         sum_by_months = None
         sum_by_years = None
+
+        # # make sure that endtime is set correctly .. this presupposes homogen measurements
+        #
+        # mean_measurement.MeanMeasurement.current_scope_time_resolution = multiple_measurements.singleton.get_time_resolution("scope")
 
         if self.ckbox_sumByAmount_value.get():
             sum_by_amount = self.entry_sumByAmount.get()

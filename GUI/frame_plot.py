@@ -2,7 +2,7 @@ import tkinter as tk
 
 import sys
 sys.path.append("GUI")
-import gui_main_frame as gui_main_frame
+import gui_main_frame
 import visualizer
 from tkinter import ttk
 import functions as fc

@@ -1,6 +1,9 @@
 from single_measurement import SingleMeasurement
 from manage_config import cfg
 import energy_balance
+import sys
+sys.path.append("GUI")
+import multiple_measurements
 
 
 class MeanMeasurement:
@@ -48,12 +51,11 @@ class MeanMeasurement:
         self.contains_cumulated_ablation = 0
         self.contains_theoretical_melt_rate = 0
 
+    current_scope_time_resolution = None
+
     def __iadd__(self, single_measurement: SingleMeasurement):
         if self.__datetime_begin is None or single_measurement.datetime < self.__datetime_begin:
             self.__datetime_begin = single_measurement.datetime
-
-        if self.__datetime_end is None or single_measurement.datetime > self.__datetime_end:
-            self.__datetime_end = single_measurement.datetime
 
         if single_measurement.sw_radiation_in is not None:
             self.contains_sw_in += 1
@@ -138,7 +140,9 @@ class MeanMeasurement:
 
         return self  # important
 
-    def calculate_mean(self):
+    def calculate_mean(self, endtime):
+        self.__datetime_end = endtime  # first date of next measurement .. important for calculating melt water
+
         if self.__energy_balance_components["sw_radiation_in"] is not None:
             self.__energy_balance_components["sw_radiation_in"] /= self.contains_sw_in
 
@@ -165,6 +169,8 @@ class MeanMeasurement:
 
         if self.__ablation is not None:
             self.__ablation /= self.contains_ablation
+
+        if self.__cumulated_ablation is not None:
             self.__cumulated_ablation /= self.contains_cumulated_ablation
 
             if self.__starting_ablation is not None and self.__ending_ablation is not None:

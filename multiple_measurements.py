@@ -81,13 +81,18 @@ class MultipleMeasurements:
         #     scoped_measurements[i:i + amount] for i in range(len(scoped_measurements) - amount + 1)
         # ]
 
-        for separated_measurements in multiple_separated_measurements:
+        for i, separated_measurements in enumerate(multiple_separated_measurements):
             summed_measurement = MeanMeasurement()
 
             for single_measurement in separated_measurements:
                 summed_measurement += single_measurement
 
-            summed_measurement.calculate_mean()
+            try:
+                summed_measurement.calculate_mean(endtime=multiple_separated_measurements[i+1][0].datetime)
+            except IndexError:
+                # last one
+                summed_measurement.calculate_mean(endtime=separated_measurements[-1].datetime)
+
             self.add_summed_measurement(summed_measurement)
 
     def clear_summed_measurements(self):
@@ -108,7 +113,7 @@ class MultipleMeasurements:
             if single_measurement.datetime - resolution_reference_time >= time_interval:
                 resolution_reference_time = single_measurement.datetime
 
-                summed_measurement.calculate_mean()
+                summed_measurement.calculate_mean(endtime=single_measurement.datetime)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -134,7 +139,7 @@ class MultipleMeasurements:
             else:
                 reference_month = single_measurement.datetime.month
 
-                summed_measurement.calculate_mean()
+                summed_measurement.calculate_mean(endtime=single_measurement.datetime)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -158,7 +163,7 @@ class MultipleMeasurements:
             else:
                 reference_years = single_measurement.datetime.year
 
-                summed_measurement.calculate_mean()
+                summed_measurement.calculate_mean(endtime=single_measurement.datetime)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -354,7 +359,7 @@ class MultipleMeasurements:
 
         return self.__all_single_measurement_objects[-1].datetime
 
-    def get_time_resolution(self, of="all", as_beautiful_string=False):
+    def get_time_resolution(self, of="all", as_beautiful_string=False, as_time_delta=False):
         """
         Based on the first two measurements!
         :return Timedelta in minutes
@@ -370,6 +375,9 @@ class MultipleMeasurements:
 
         if as_beautiful_string:
             return fc.make_seconds_beautiful_string(time_delta.total_seconds())
+
+        if as_time_delta:
+            return time_delta
 
         return int(time_delta.total_seconds() // 60)
 
