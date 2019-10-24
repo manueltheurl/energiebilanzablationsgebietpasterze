@@ -3,7 +3,6 @@ from manage_config import cfg
 import energy_balance
 import sys
 sys.path.append("GUI")
-import multiple_measurements
 
 
 class MeanMeasurement:
@@ -39,6 +38,8 @@ class MeanMeasurement:
         self.__actual_melt_water_per_sqm = None
         self.__theoretical_melt_water_per_sqm = None
 
+        self.is_snow_covered = None
+
         self.contains_sw_in = 0
         self.contains_sw_out = 0
         self.contains_lw_in = 0
@@ -50,8 +51,6 @@ class MeanMeasurement:
         self.contains_ablation = 0
         self.contains_cumulated_ablation = 0
         self.contains_theoretical_melt_rate = 0
-
-    current_scope_time_resolution = None
 
     def __iadd__(self, single_measurement: SingleMeasurement):
         if self.__datetime_begin is None or single_measurement.datetime < self.__datetime_begin:
@@ -131,6 +130,12 @@ class MeanMeasurement:
                 self.__cumulated_ablation += single_measurement.cumulated_ablation
                 self.__ending_ablation = single_measurement.cumulated_ablation  # just overwrite all the time
 
+        if single_measurement.is_snow_covered is not None:
+            if self.is_snow_covered is None and single_measurement.is_snow_covered is True:
+                self.is_snow_covered = True
+            elif single_measurement.is_snow_covered is False:
+                self.is_snow_covered = False
+
         if single_measurement.total_energy_balance is not None:
             self.contains_total_energy_balance += 1
             if self.__total_energy_balance is None:
@@ -182,7 +187,7 @@ class MeanMeasurement:
         self.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
 
     def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
-        if 6 <= self.__datetime_begin.month <= 8:  # TODO HARD BORDERLINE FOR NOW .. FIND OUT WHEN THERE IS SNOW
+        if self.is_snow_covered is False:  # dont change, None is False also
             if self.__relative_ablation is not None:
                 self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
                     self.__relative_ablation)

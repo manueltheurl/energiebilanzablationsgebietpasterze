@@ -37,11 +37,13 @@ class SingleMeasurement:
         self.__zenith_angle = zenith_angle
         self.__tiltx = tiltx
         self.__tilty = tilty
-        self.__snow_depth = snow_depth
+        self.__snow_depth = snow_depth  # WARNING, some crazy data here
         self.__ablation = ablation  # this represents the ice thickness at the point of measurement
         self.__cumulated_ablation = None
         self.__theoretical_melt_rate = None
         self.__total_energy_balance = None  # not calculated yet
+
+        self.is_snow_covered = None
 
     def calculate_energy_balance(self, simulate_global_dimming_brightening=0):
         if self.__total_energy_balance is not None:  # so that we wont recalculate for nothing

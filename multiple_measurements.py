@@ -52,7 +52,20 @@ class MultipleMeasurements:
                     old_ablation_value = obj.ablation
                     obj.cumulated_ablation = obj.ablation - current_subtractive
 
-    def convert_energy_balance_to_water_equivalent(self):
+    def check_for_snow_covering_for_scope(self):
+        # cumulate_ablation_for_scope has to be called before
+        # TODO think of something good here
+
+        # for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+        #     if obj.cumulated_ablation is not None:
+        #         pass
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if 6 <= obj.datetime.month <= 8:
+                obj.is_snow_covered = False
+            else:
+                obj.is_snow_covered = True
+
+    def convert_energy_balance_to_water_equivalent_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             obj.calculate_theoretical_melt_rate()
 
