@@ -1,0 +1,12 @@
+Sehr geehrter Herr Abermann,
+
+danke für die Unterlagen.
+Ich habe jetzt noch das mit dem wirklichen Schmelzwasser und dem theoretischen in die Software implementiert und unteranderem dem Plot im Anhang erstellt.  Im Downloader ist es auch möglich diese Werte herunterzuladen. Mit einer schnellen Korrelationsberechnung nach Pearson, habe ich eine Korrelation von 0.77 festgestellt, bei Berechnung über je 2 Tage. 
+
+Ich finde das ist ein gutes Ergebnis. 
+Ich habe momentan vereinfacht nur Juni, Juli und August als schneefrei angenommmen .. man könnte diese automatische Detektion auf schneefrei oder nicht natürlich später noch einbauen, allerdings glaub ich, dass es den Rahmen schön langsam sprengen würde.
+Deshalb belasse ich die Software jetzt auf diesem Stand und werde mich jetzt dem schriftlichen Teil zuwenden.
+
+Meine Vorschläge für was ich alles darin behandle und interpretiere:
+
+
