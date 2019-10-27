@@ -19,6 +19,8 @@ from scipy import optimize
 import functions as fc
 import calendar
 
+DAYS_365 = dt.timedelta(days=365)  # hours=5, minutes=48     365.2422 days in year approximately  dont change to that
+
 
 class Visualize:
     singleton_created = False
@@ -83,14 +85,14 @@ class Visualize:
         months = mdates.MonthLocator()
         year_labels = mdates.DateFormatter('%Y')
         month_labels = mdates.DateFormatter('%b')  # Jan, Feb, ..
-        mondays = mdates.WeekdayLocator(mdates.MONDAY)
+        # mondays = mdates.WeekdayLocator(mdates.MONDAY)
 
         # calculate time_spawn between first and last measurement
         time_spawn = dt.timedelta(days=self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
 
         time_border_1 = dt.timedelta(days=3*365)
         time_border_2 = dt.timedelta(days=150)
-        time_border_3 = dt.timedelta(days=30*2)
+        # time_border_3 = dt.timedelta(days=30*2)
 
         # major and ax title
         if time_spawn >= time_border_1:
@@ -128,7 +130,7 @@ class Visualize:
 
         # plt.savefig(cfg["RESULT_PLOT_PATH"] + "/with.png", dpi=cfg["PLOT_RESOLUTION"], bbox_inches='tight')
 
-    def plot_total_energy_balance(self, use_summed_measurements=False, add_ablation=False):
+    def plot_total_energy_balance(self, use_summed_measurements=False, ablation_or_water_equivalent=False):
         self.initialize_plot("energy_balance")
 
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
@@ -139,29 +141,37 @@ class Visualize:
 
         self.ax.plot(y_dates, x_vals, label="Energy Balance")
 
-        if use_summed_measurements:  # TODO temp solution here
-            actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of("actual_melt_water_per_sqm",
-                                                                use_summed_measurements=use_summed_measurements)
+        if ablation_or_water_equivalent is not False:  # is false if None of the both
+            second_ax = self.ax.twinx()
 
-            theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of("theoretical_melt_water_per_sqm",
-                                                                                        use_summed_measurements=use_summed_measurements)
+            if ablation_or_water_equivalent == "show_ablation":
+                second_ax_vals = multiple_measurements.singleton.get_all_of(
+                    "cumulated_ablation", use_summed_measurements=use_summed_measurements)
 
-            self.ax.plot(y_dates, actual_melt_water_per_sqm, label="Actual Meltwater")
-            self.ax.plot(y_dates, theoretical_melt_water_per_sqm, label="Theoretical meltwater")
+                second_ax.plot(y_dates, second_ax_vals, label="Ablation", color="red")
+                second_ax.set_ylabel("m")
+                main_title = "Total Energy balance with Ablation"
 
-        if add_ablation:
-            ax_ablation = self.ax.twinx()
+            elif ablation_or_water_equivalent == "show_water_equivalent":
+                if use_summed_measurements:  # has to be summed here for now
+                    actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
+                        "actual_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
 
-            x_vals_ablation = multiple_measurements.singleton.get_all_of("cumulated_ablation",
-                                                                         use_summed_measurements=use_summed_measurements)
-            ax_ablation.plot(y_dates, x_vals_ablation, label="Ablation", color="red")
+                    theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
+                        "theoretical_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
 
-            ax_ablation.set_ylabel("m")
+                    second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Actual Meltwater")
+                    second_ax.plot(
+                        y_dates, theoretical_melt_water_per_sqm, color="green", label="Theoretical Meltwater")
 
-            main_title = "Total Energy balance with Ablation"
+                second_ax.set_ylabel("l/m^2")
+                main_title = "Total Energy balance with actual and theoretical Ablation as water equivalent"
+
+            else:
+                return  # shouldnt get there
 
             self.ax.legend(loc="upper left")
-            ax_ablation.legend(loc="upper right")
+            second_ax.legend(loc="upper right")
         else:
             main_title = "Total Energy balance"
             self.ax.legend()
@@ -172,21 +182,28 @@ class Visualize:
         self.modify_axes()
         self.show_save_and_close_plot("energy_balance")
 
-    def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True):
-        x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
-                                                            use_summed_measurements=use_summed_measurements)
+    def plot_energy_balance_components(self,
+                                       options, use_summed_measurements=False
+                                       ):
+        x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
-        y_dates = multiple_measurements.singleton.get_all_of("datetime",
-                                                             use_summed_measurements=use_summed_measurements)
+        self.initialize_plot("energy_balance")
+        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
 
-        days_365 = dt.timedelta(days=365)  # hours=5, minutes=48     365.2422 days in year approximately
+        self.ax.plot(y_dates, x_vals,
+                     zorder=3, label=title_used_options, linewidth=2)
 
-        if y_dates[-1] - y_dates[0] < days_365:
-            print("Cant trend eliminate for data range less than one year")
-            return
+        self.ax.legend()
 
-        self.initialize_plot("trend")
+        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
+        self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
+
+        self.modify_axes()
+        self.show_save_and_close_plot("energy_balance")
+
+    @staticmethod
+    def do_periodic_trend_elimination(x_vals, y_dates, keep_trend):
         # find first actual date where there are values
         reference_index_first_good_measurement = 0
         for i in range(len(x_vals)):
@@ -202,7 +219,7 @@ class Visualize:
             for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
                                      y_dates[reference_index_first_good_measurement:]):
                 if None not in [x_val, y_date]:
-                    if y_date >= y_dates[reference_index_current_measurement] + days_365:
+                    if y_date >= y_dates[reference_index_current_measurement] + DAYS_365:
                         diff_vals.append(x_val - x_vals[reference_index_current_measurement])
                         diff_dates.append(y_date)
 
@@ -217,19 +234,34 @@ class Visualize:
             for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
                                      y_dates[reference_index_first_good_measurement:]):
                 if None not in [x_val, y_date]:
-                    years_passed = int((y_date-start_date).total_seconds()/days_365.total_seconds())
+                    years_passed = int((y_date - start_date).total_seconds() / DAYS_365.total_seconds())
                     if fc.value_changed(years_passed, "years_passed"):
                         if calendar.isleap(y_date.year) and y_date.month <= 2 and y_date.day < 29:
                             leap_days += dt.timedelta(days=1)
                         reference_index_current_measurement = reference_index_first_good_measurement
 
                     if years_passed >= 1:
-                        if y_date >= y_dates[reference_index_current_measurement] + days_365*years_passed + leap_days:
+                        if y_date >= y_dates[reference_index_current_measurement] + DAYS_365 * years_passed + leap_days:
                             if x_vals[reference_index_current_measurement] is not None:  # can happen .. take it
                                 diff_vals.append(x_val - x_vals[reference_index_current_measurement])
                                 diff_dates.append(y_date)
 
                             reference_index_current_measurement += 1
+        return diff_vals, diff_dates
+
+    def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True):
+        x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
+                                                            use_summed_measurements=use_summed_measurements)
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
+        self.initialize_plot("trend")
+
+        if y_dates[-1] - y_dates[0] < DAYS_365:
+            print("Cant trend eliminate for data range less than one year")
+            return
+
+        diff_vals, diff_dates = self.do_periodic_trend_elimination(x_vals, y_dates, keep_trend)
 
         z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
         p = np.poly1d(z)
@@ -246,6 +278,7 @@ class Visualize:
 
     def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True):
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
+        self.initialize_plot("trend")
 
         days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
 
@@ -253,52 +286,7 @@ class Visualize:
             print("Cant trend eliminate for data range less than one year")
             return
 
-        self.initialize_plot("trend")
-
-        # find first actual date where there are values
-        reference_index_first_good_measurement = 0
-        for i in range(len(x_vals)):
-            if x_vals[i] is not None:
-                reference_index_first_good_measurement = i
-                break
-
-        reference_index_current_measurement = reference_index_first_good_measurement
-
-        if not keep_trend:  # periodic and trend is eliminated by taking always previous year
-            diff_vals = list()
-            diff_dates = list()
-            for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
-                                     y_dates[reference_index_first_good_measurement:]):
-                if None not in [x_val, y_date]:
-                    if y_date >= y_dates[reference_index_current_measurement] + days_365:
-                        if x_vals[reference_index_current_measurement] is not None:
-                            diff_vals.append(x_val - x_vals[reference_index_current_measurement])
-                            diff_dates.append(y_date)
-
-                        reference_index_current_measurement += 1
-
-        else:  # trend is not eliminated by taking always the first year as reference
-            diff_vals = list()
-            diff_dates = list()
-            start_date = y_dates[reference_index_first_good_measurement]
-            leap_days = dt.timedelta(days=0)
-
-            for x_val, y_date in zip(x_vals[reference_index_first_good_measurement:],
-                                     y_dates[reference_index_first_good_measurement:]):
-                if None not in [x_val, y_date]:
-                    years_passed = int((y_date-start_date).total_seconds()/days_365.total_seconds())
-                    if fc.value_changed(years_passed, "years_passed"):
-                        if calendar.isleap(y_date.year) and y_date.month <= 2 and y_date.day < 29:
-                            leap_days += dt.timedelta(days=1)
-                        reference_index_current_measurement = reference_index_first_good_measurement
-
-                    if years_passed >= 1:
-                        if y_date >= y_dates[reference_index_current_measurement] + days_365*years_passed + leap_days:
-                            if x_vals[reference_index_current_measurement] is not None:
-                                diff_vals.append(x_val - x_vals[reference_index_current_measurement])
-                                diff_dates.append(y_date)
-
-                            reference_index_current_measurement += 1
+        diff_vals, diff_dates = self.do_periodic_trend_elimination(x_vals, y_dates, keep_trend)
 
         z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
         p = np.poly1d(z)
@@ -336,43 +324,6 @@ class Visualize:
                                                              use_summed_measurements=use_summed_measurements)
 
         return x_vals, y_dates
-
-    def plot_energy_balance_components(self,
-                                       options, use_summed_measurements=False, add_ablation=False
-                                       ):
-        """
-        For better readability all arguments are declared here as False
-        """
-        x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
-
-        self.initialize_plot("energy_balance")
-        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
-
-        self.ax.plot(y_dates, x_vals,
-                     zorder=3, label=title_used_options, linewidth=2)
-
-        if add_ablation:
-            ax_ablation = self.ax.twinx()
-
-            x_vals_ablation = multiple_measurements.singleton.get_all_of("cumulated_ablation",
-                                                                         use_summed_measurements=use_summed_measurements)
-            ax_ablation.plot(y_dates, x_vals_ablation, label="Ablation", color="red")
-            ax_ablation.set_ylabel("m")
-
-            ablation_appendix = " - with Ablation"
-
-            self.ax.legend(loc="upper left")
-            ax_ablation.legend(loc="upper right")
-        else:
-            ablation_appendix = ""
-            self.ax.legend()
-
-        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-
-        self.ax.set_title(title_used_options + ablation_appendix + " - Energy input" + summed_title_appendix)
-
-        self.modify_axes()
-        self.show_save_and_close_plot("energy_balance")
 
 
 singleton = Visualize()

@@ -19,8 +19,9 @@ class ScopeFrame(tk.Frame):
         # self.config(bg="black")
         self.grid_propagate(False)
 
-        self.lbl_currentScope = tk.Label(self, text="Change current scope of all read in measurements")
-        self.lbl_currentScope.pack(pady=(40, 30))
+        self.heading_currentScope = tk.Label(self,
+                                     text="Change current scope of all read in measurements", font=cfg["HEADING_FONT"])
+        self.heading_currentScope.pack(pady=(25, 30))
 
         self.ckbox_percentScope_value = tk.IntVar()
         self.ckbox_percentScope = tk.Checkbutton(self,
@@ -35,8 +36,8 @@ class ScopeFrame(tk.Frame):
 
         self.ckbox_timeintervalScope_value = tk.IntVar()
         self.ckbox_timeintervalScope = tk.Checkbutton(self,
-                                                 command=self.toggle_time_interval_scope,
-                                                 variable=self.ckbox_timeintervalScope_value, state="normal")
+                                                      command=self.toggle_time_interval_scope,
+                                                      variable=self.ckbox_timeintervalScope_value, state="normal")
         self.ckbox_timeintervalScope.pack(pady=(7, 0))
 
         self.lbl_timeintervalScope = tk.Label(self, text="Time interval scope")
@@ -242,4 +243,3 @@ singleton = None
 def create_singleton():
     global singleton
     singleton = ScopeFrame()
-

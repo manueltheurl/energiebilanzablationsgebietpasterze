@@ -21,7 +21,7 @@ class EnergyBalance:
         z_0 = 0.003  # m
 
         # see AWS-Pasterze-Metadata.xlsx
-        sensor_height_temperature = 1.55  # m  .. not in use
+        # sensor_height_temperature = 1.55  # m  .. not in use
         sensor_height_wind = 5  # m
 
         self.c_star = self.calculate_c_star(z_0, sensor_height_wind)
@@ -35,9 +35,9 @@ class EnergyBalance:
         the sensor_height_wind is meant
         """
 
-
         # c - transfer coefficient
-        return KARMANS_CONSTANT**2/m.log(sensor_height_wind / z_0)**2  # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
+        # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
+        return KARMANS_CONSTANT**2/m.log(sensor_height_wind / z_0)**2
 
     @staticmethod
     def calculate_ice_temperature(outgoing_energy):
@@ -59,21 +59,23 @@ class EnergyBalance:
 
         return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - temperature_ice)
 
-    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, use_standard_fomula=True):  # E_H
+    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, use_standard_fomula=True):
+        # E_H
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
         # or https://books.google.at/books?id=Zi1coMyhlHoC&lpg=PP1&pg=PA350&hl=en&redir_esc=y#v=onepage&q&f=false
         # see also post https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit for that
 
         # e_surface - vapor pressure at the surface [Pa] - assuming saturation  TODO find proof for that function
-        e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # * 1000 for converting to Pa
+        # * 1000 for converting to Pa
+        e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000
         e_air = rel_moisture / 100 * e_air_saturated
 
         if use_standard_fomula:
             e_surface_saturated = (0.6108 * m.e ** (
-                        17.27 * self.calculate_ice_temperature(longwave_out) / (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
+                        17.27 * self.calculate_ice_temperature(longwave_out) /
+                        (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
         else:
-
             e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(self.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
 
         # http://www.fao.org/3/X0490E/x0490e07.htm confirms eq 12 states, that unit is kPa even .. TODO proof ..

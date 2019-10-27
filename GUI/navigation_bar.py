@@ -32,8 +32,8 @@ class NavigationBar(tk.Frame):
         self.btn_readframe.pack(side="left")
         self.__all_buttons.append(self.btn_readframe)
 
-        self.btn_energybalanceframe = tk.Button(self, text="Scope/Energy Balance", command=self.show_energy_balance_frame,
-                                        state="disabled")
+        self.btn_energybalanceframe = tk.Button(self, text="Scope/Energy Balance",
+                                                command=self.show_energy_balance_frame, state="disabled")
         self.btn_energybalanceframe.pack(side="left")
         self.__all_buttons.append(self.btn_energybalanceframe)
 
@@ -42,13 +42,11 @@ class NavigationBar(tk.Frame):
         self.btn_sumframe.pack(side="left")
         self.__all_buttons.append(self.btn_sumframe)
 
-        self.btn_plotframe = tk.Button(self, text="Plot", command=self.show_plot_frame,
-                                  state="disabled")
+        self.btn_plotframe = tk.Button(self, text="Plot", command=self.show_plot_frame, state="disabled")
         self.btn_plotframe.pack(side="left")
         self.__all_buttons.append(self.btn_plotframe)
 
-        self.btn_downloadframe = tk.Button(self, text="Download", command=self.show_download_frame,
-                                   state="disabled")
+        self.btn_downloadframe = tk.Button(self, text="Download", command=self.show_download_frame, state="disabled")
         self.btn_downloadframe.pack(side="left")
         self.__all_buttons.append(self.btn_downloadframe)
 
@@ -91,4 +89,3 @@ singleton = None
 def create_singleton():
     global singleton
     singleton = NavigationBar()
-

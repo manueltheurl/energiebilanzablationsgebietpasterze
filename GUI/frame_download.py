@@ -5,6 +5,7 @@ import gui_main_frame as gui_main_frame
 import multiple_measurements
 import visualizer
 from tkinter import ttk
+from manage_config import cfg
 
 
 class ModelFrame(tk.Frame):
@@ -15,8 +16,9 @@ class ModelFrame(tk.Frame):
         tk.Frame.__init__(self, gui_main_frame.singleton.frame)
         self.grid(row=0, column=0, sticky="nsew")
 
-        self.lbl_heading_download = tk.Label(self, text="Download generated data to .csv", state="normal")
-        self.lbl_heading_download.pack(pady=(40, 0))
+        self.heading_download = tk.Label(self,
+                                         text="Download generated data to .csv", state="normal", font=cfg["HEADING_FONT"])
+        self.heading_download.pack(pady=(25, 0))
 
         self.btn_totalEnergyBalance = tk.Button(self, text="Total energy balance",
                                                 command=self.download_total_energy_balance)
@@ -25,6 +27,10 @@ class ModelFrame(tk.Frame):
         self.btn_cleanedAblation = tk.Button(self, text="Cleaned Ablation",
                                                 command=self.download_cleaned_ablation)
         self.btn_cleanedAblation.pack(pady=(40, 0))
+
+        self.btn_waterEquivalent = tk.Button(self, text="Water equivalent [Summed measurements]",
+                                             command=self.download_water_equivalent)
+        self.btn_waterEquivalent.pack(pady=(40, 0))
 
         listbox_option = [
             "sw_radiation_in", "sw_radiation_out", "lw_radiation_in", "lw_radiation_out", "sensible_heat",
@@ -38,7 +44,7 @@ class ModelFrame(tk.Frame):
         self.listbox_selectedComponents.pack(pady=(30, 0))
 
         self.btn_energySelectedComponents = tk.Button(self, text="Selected components",
-                                                command=self.download_selected_components)
+                                                      command=self.download_selected_components)
         self.btn_energySelectedComponents.pack()
 
     @staticmethod
@@ -49,6 +55,10 @@ class ModelFrame(tk.Frame):
     def download_cleaned_ablation():
         # aint a component of that .. TODO not the best name for the fx
         multiple_measurements.singleton.download_components_of_energy_balance(["ablation"])
+
+    @staticmethod
+    def download_water_equivalent():
+        multiple_measurements.singleton.download_water_equivalent()
 
     def download_selected_components(self):
         multiple_measurements.singleton.download_components_of_energy_balance(

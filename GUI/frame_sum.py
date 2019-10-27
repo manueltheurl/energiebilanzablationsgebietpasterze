@@ -14,6 +14,7 @@ import multiple_measurements
 import frame_plot
 import datetime as dt
 import mean_measurement
+from manage_config import cfg
 
 
 class SumFrame(tk.Frame):
@@ -24,8 +25,9 @@ class SumFrame(tk.Frame):
         tk.Frame.__init__(self, gui_main_frame.singleton.frame)
         self.grid(row=0, column=0, sticky="nsew")
 
-        self.lbl_sum = tk.Label(self, text="Sum measurements together")
-        self.lbl_sum.pack(pady=(40, 30))
+        self.heading_sum = tk.Label(self,
+                                     text="Sum measurements together", font=cfg["HEADING_FONT"])
+        self.heading_sum.pack(pady=(25, 30))
 
         # check if wanna sum measurements
         self.ckbox_sumByAmount_value = tk.IntVar()
@@ -104,9 +106,7 @@ class SumFrame(tk.Frame):
         sum_by_months = None
         sum_by_years = None
 
-        # # make sure that endtime is set correctly .. this presupposes homogen measurements
-        #
-        # mean_measurement.MeanMeasurement.current_scope_time_resolution = multiple_measurements.singleton.get_time_resolution("scope")
+        # make sure that endtime is set correctly .. this presupposes homogen measurements
 
         if self.ckbox_sumByAmount_value.get():
             sum_by_amount = self.entry_sumByAmount.get()
@@ -134,7 +134,8 @@ class SumFrame(tk.Frame):
             multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
         elif sum_by_time_interval is not None:
             frame_plot.singleton.enable_option_to_use_summed_measurements()
-            info_bar_text += "Measurements every " + fc.make_seconds_beautiful_string(sum_by_time_interval.total_seconds()) + " minutes summed"
+            info_bar_text += "Measurements every " +\
+                             fc.make_seconds_beautiful_string(sum_by_time_interval.total_seconds()) + " minutes summed"
             multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
         elif sum_by_months is not None:
             multiple_measurements.singleton.sum_measurements_by_months(sum_by_months)
@@ -148,7 +149,7 @@ class SumFrame(tk.Frame):
             return  # shouldnt get here
 
         info_bar.singleton.change_sum_info(info_bar_text)
-
+        frame_plot.singleton.did_sum_measurements = True
         navigation_bar.singleton.show_plot_frame()
 
 

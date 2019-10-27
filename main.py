@@ -15,7 +15,6 @@ import threading
 import multiple_measurements
 import reader
 import sys
-sys.path.append("GUI")
 
 # The gui is constructed as singletons .. this order therefor has to be maintained
 import gui_main_frame as gui_main
@@ -29,6 +28,7 @@ import frame_energy_balance as frame_scope
 import frame_sum
 import visualizer
 TEST = False
+sys.path.append("GUI")
 
 
 class Manager:

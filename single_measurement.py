@@ -46,9 +46,9 @@ class SingleMeasurement:
         self.is_snow_covered = None
 
     def calculate_energy_balance(self, simulate_global_dimming_brightening=0):
-        if self.__total_energy_balance is not None:  # so that we wont recalculate for nothing
-            return
-
+        # if self.__total_energy_balance is not None:  # so that we wont recalculate for nothing
+        # .. since simulate dimming, not anymore cause same measurement can have different actual values
+        #     return
         if simulate_global_dimming_brightening != 0:
             # simulate here TODO
             if None not in [self.__energy_balance_components["sw_radiation_in"]]:

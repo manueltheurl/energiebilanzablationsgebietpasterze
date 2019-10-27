@@ -10,6 +10,10 @@ def set_widget_state(widgets: list, state):
         for widget in widgets:
             widget["state"] = "disabled"
 
+    elif state == "active":
+        for widget in widgets:
+            widget["state"] = "active"
+
 
 def get_difference_of_months(earlier_month, later_month):
     return (later_month - earlier_month) % 12

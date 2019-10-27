@@ -15,7 +15,7 @@ class MultipleMeasurements:
         MultipleMeasurements.singleton_created = True
 
         self.__all_single_measurement_objects = []
-        self.__current_single_index_scope = set()  # current indexes that will be used are saved in here .. all by default
+        self.__current_single_index_scope = set()  # current indexes that will be used are saved in here; default: all
 
         self.__all_mean_measurements = []  # Empty in the beginning .. can later be calculated and used
         self.__current_mean_index_scope = set()
@@ -375,7 +375,6 @@ class MultipleMeasurements:
     def get_time_resolution(self, of="all", as_beautiful_string=False, as_time_delta=False):
         """
         Based on the first two measurements!
-        :return Timedelta in minutes
         """
 
         if of == "summed":
@@ -405,6 +404,30 @@ class MultipleMeasurements:
             for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
                 if obj.total_energy_balance is not None:
                     writer.writerow([obj.datetime, round(obj.total_energy_balance, 3)])
+
+    def download_water_equivalent(self):
+        if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
+            os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
+
+        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_water_equivalent.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Date", "Actual Meltwater [l/m^2]", "Theoretical Meltwater [l/m^2]"])
+
+            for obj in self.__all_mean_measurements:
+                if obj.actual_melt_water_per_sqm is not None and obj.theoretical_melt_water_per_sqm is not None:
+                    line_to_write = [obj.datetime]
+
+                    if obj.actual_melt_water_per_sqm is None:
+                        line_to_write.append("None")
+                    else:
+                        line_to_write.append(round(obj.actual_melt_water_per_sqm, 3))
+
+                    if obj.theoretical_melt_water_per_sqm is None:
+                        line_to_write.append("None")
+                    else:
+                        line_to_write.append(round(obj.theoretical_melt_water_per_sqm, 3))
+
+                    writer.writerow(line_to_write)
 
     def download_components_of_energy_balance(self, options, use_summed_measurements=False):
         # currently not support for downloading summed measurements

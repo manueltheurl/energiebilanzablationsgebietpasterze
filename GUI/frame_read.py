@@ -12,6 +12,7 @@ import frame_plot as frame_plot
 import functions as fc
 import navigation_bar as navigation_bar
 import frame_energy_balance as frame_energy_balance
+from manage_config import cfg
 
 
 class ReadFrame(tk.Frame):
@@ -23,8 +24,8 @@ class ReadFrame(tk.Frame):
 
         self.file_path = None
 
-        self.lbl_read = tk.Label(self, text="Read in a file of measurements")
-        self.lbl_read.pack(pady=(40, 30))
+        self.heading_read = tk.Label(self, text="Read in a file of measurements", font=cfg["HEADING_FONT"])
+        self.heading_read.pack(pady=(25, 0))
 
         self.btn_chooseFile = tk.Button(self, text="Choose File", command=self.select_file)
         self.btn_chooseFile.pack()
@@ -225,4 +226,3 @@ singleton = None
 def create_singleton():
     global singleton
     singleton = ReadFrame()
-
