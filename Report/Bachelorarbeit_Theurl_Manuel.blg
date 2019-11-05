@@ -1,0 +1,15 @@
+[0] Config.pm:302> INFO - This is Biber 2.11
+[0] Config.pm:305> INFO - Logfile is 'Bachelorarbeit_Theurl_Manuel.blg'
+[17] biber:313> INFO - === So Jun 16, 2019, 21:06:22
+[32] Biber.pm:371> INFO - Reading 'Bachelorarbeit_Theurl_Manuel.bcf'
+[74] Biber.pm:857> INFO - Found 5 citekeys in bib section 0
+[83] Biber.pm:3976> INFO - Processing section 0
+[89] Biber.pm:4136> INFO - Looking for bibtex format file 'literature.bib' for section 0
+[90] bibtex.pm:1489> INFO - LaTeX decoding ...
+[95] bibtex.pm:1305> INFO - Found BibTeX data source 'literature.bib'
+[135] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
+[135] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[135] Biber.pm:3804> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'de-DE'
+[135] Biber.pm:3810> INFO - No sort tailoring available for locale 'de-DE'
+[142] bbl.pm:617> INFO - Writing 'Bachelorarbeit_Theurl_Manuel.bbl' with encoding 'UTF-8'
+[145] bbl.pm:720> INFO - Output to Bachelorarbeit_Theurl_Manuel.bbl
