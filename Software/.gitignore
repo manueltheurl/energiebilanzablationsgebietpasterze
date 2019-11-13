@@ -4,3 +4,4 @@ venv
 plots
 PAS_10min.csv
 downloads
+*.pkl

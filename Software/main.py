@@ -15,6 +15,7 @@ import threading
 import multiple_measurements
 import reader
 import sys
+import pickle
 
 # The gui is constructed as singletons .. this order therefor has to be maintained
 import gui_main_frame as gui_main
@@ -31,40 +32,49 @@ TEST = False
 sys.path.append("GUI")
 
 
-class Manager:
+class NoGuiManager:
     def __init__(self):
-        self.path_to_meteorologic_measurements = cfg["DATA_PATH"]
-        self.startTime = "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
-        self.read()
-        self.calculate()
-        self.visualize()
+        self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
 
-    def read(self):
+        # read
+        self.startTime = None  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.endTime = None  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.pickle_file_name = "multiple_measurements_singleton.pkl"
 
+    def run(self):
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
 
         reader.singleton.fetch_file_metadata()
 
-        reader.singleton.read_meterologic_file_to_objects(starttime=None,
-                                                          endtime=None,
-                                                          resolution_by_percentage=10,
-                                                          resolution_by_time_interval=None)
+        if not os.path.exists(self.pickle_file_name):
+            reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
+                                                              endtime=self.endTime,
+                                                              resolution_by_percentage=100,
+                                                              resolution_by_time_interval=None)
 
-        multiple_measurements.singleton.change_measurement_scope_by_percentage(80)
+            multiple_measurements.singleton.calculate_energy_balance_for_scope()
+            multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(hours=50))
+
+            multiple_measurement_singleton = multiple_measurements.singleton
+
+            with open(self.pickle_file_name, 'wb') as f:
+                pickle.dump(multiple_measurement_singleton, f)
+        else:
+            with open(self.pickle_file_name, 'rb') as f:
+                multiple_measurements.singleton = pickle.load(f)
+
+
+        # multiple_measurements.singleton.change_measurement_scope_by_percentage(80)
         # multiple_measurements.singleton.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
 
-    def calculate(self):
 
-        multiple_measurements.singleton.calculate_energy_balance_for_scope()
         # multiple_measurements.singleton.sum_measurements_by_amount(30)
 
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(minutes=50))
+        #
 
-    def visualize(self):
         # visualizer.plot_total_energy_balance()
-        # visualizer.singleton.plot_summed_total_energy_balance()
-        pass
+        visualizer.singleton.plot_total_energy_balance()
+        visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True)
         # visualizer.singleton.plot_periodic_trend_eliminated("total_energy_balance")
         # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_in")
         # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
@@ -78,7 +88,8 @@ class Manager:
 
 if __name__ == "__main__":
     if cfg["NO_GUI"]:
-        manager = Manager()
+        no_gui_manager = NoGuiManager()
+        no_gui_manager.run()
 
     else:
         """
