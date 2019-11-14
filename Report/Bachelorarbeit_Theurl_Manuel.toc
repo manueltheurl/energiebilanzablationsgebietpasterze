@@ -43,6 +43,6 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{13}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{14}
+\contentsline {section}{\numberline {5}Fazit}{18}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{14}
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{18}

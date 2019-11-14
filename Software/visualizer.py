@@ -45,6 +45,7 @@ class Visualize:
         }
 
         self.accumulate_plots = False
+        self.show_plots = False
 
         self.ax = None
 
@@ -121,16 +122,20 @@ class Visualize:
 
         self.ax.set_ylabel("W/m^2")
 
-    def show_save_and_close_plot(self, type_):
-        plt.show()
+    def show_save_and_close_plot(self, type_, save_name=None):
+        if self.show_plots:
+            plt.show()
+
+        if save_name is not None:
+            plt.savefig(cfg["RESULT_PLOT_PATH"] + "/" + save_name + ".png", dpi=cfg["PLOT_RESOLUTION"],
+                        bbox_inches='tight')
 
         if not self.accumulate_plots or not bool(cfg["PRO_VERSION"]):
             plt.close()
             dict.fromkeys(self.plot_type_initialized, False)
 
-        # plt.savefig(cfg["RESULT_PLOT_PATH"] + "/with.png", dpi=cfg["PLOT_RESOLUTION"], bbox_inches='tight')
-
-    def plot_total_energy_balance(self, use_summed_measurements=False, ablation_or_water_equivalent=False):
+    def plot_total_energy_balance(self, use_summed_measurements=False, ablation_or_water_equivalent=False,
+                                  save_name=None):
         self.initialize_plot("energy_balance")
 
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
@@ -177,14 +182,13 @@ class Visualize:
             self.ax.legend()
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-        self.ax.set_title(main_title + summed_title_appendix)
+        # self.ax.set_title(main_title + summed_title_appendix)
 
         self.modify_axes()
-        self.show_save_and_close_plot("energy_balance")
+        self.show_save_and_close_plot("energy_balance", save_name=save_name)
 
     def plot_energy_balance_components(self,
-                                       options, use_summed_measurements=False
-                                       ):
+                                       options, use_summed_measurements=False, save_name=None):
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
         self.initialize_plot("energy_balance")
@@ -197,10 +201,10 @@ class Visualize:
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
-        self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
+        # self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
 
         self.modify_axes()
-        self.show_save_and_close_plot("energy_balance")
+        self.show_save_and_close_plot("energy_balance", save_name=save_name)
 
     @staticmethod
     def do_periodic_trend_elimination(x_vals, y_dates, keep_trend):
@@ -249,7 +253,8 @@ class Visualize:
                             reference_index_current_measurement += 1
         return diff_vals, diff_dates
 
-    def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True):
+    def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True,
+                                                            save_name=None):
         x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
                                                             use_summed_measurements=use_summed_measurements)
 
@@ -273,10 +278,11 @@ class Visualize:
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
-        self.ax.set_title("Total energy balance - Periodic trend eliminated" + summed_title_appendix)
-        self.show_save_and_close_plot("trend")
+        # self.ax.set_title("Total energy balance - Periodic trend eliminated" + summed_title_appendix)
+        self.show_save_and_close_plot("trend", save_name=save_name)
 
-    def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True):
+    def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True,
+                                                       save_name=None):
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
         self.initialize_plot("trend")
 
@@ -299,8 +305,8 @@ class Visualize:
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
         title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
-        self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
-        self.show_save_and_close_plot("trend")
+        # self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
+        self.show_save_and_close_plot("trend", save_name=save_name)
 
     @staticmethod
     def save_add(first, second):

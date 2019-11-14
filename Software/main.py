@@ -51,8 +51,13 @@ class NoGuiManager:
                                                               endtime=self.endTime,
                                                               resolution_by_percentage=100,
                                                               resolution_by_time_interval=None)
-
+            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+                starttime=dt.datetime(2016, 11, 0))
             multiple_measurements.singleton.calculate_energy_balance_for_scope()
+            multiple_measurements.singleton.cumulate_ablation_for_scope()
+            multiple_measurements.singleton.check_for_snow_covering_for_scope()  # yet TODO
+            multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
+
             multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(hours=50))
 
             multiple_measurement_singleton = multiple_measurements.singleton
@@ -63,18 +68,40 @@ class NoGuiManager:
             with open(self.pickle_file_name, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
 
-
+        # BEGIN --- NOT NEEDED JUST FOR REFERENCE
         # multiple_measurements.singleton.change_measurement_scope_by_percentage(80)
         # multiple_measurements.singleton.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
-
-
         # multiple_measurements.singleton.sum_measurements_by_amount(30)
+        # END --- NOT NEEDED JUST FOR REFERENCE
 
-        #
+        # BEGIN --- plots in use
+        visualizer.singleton.plot_total_energy_balance(save_name="Total_energy_balance")
+        visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
+                                                       save_name="Total_energy_balance_summed")
 
-        # visualizer.plot_total_energy_balance()
-        visualizer.singleton.plot_total_energy_balance()
-        visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True)
+        visualizer.singleton.plot_energy_balance_components({
+            "sw_radiation_in": "Short wave in",
+            "sw_radiation_out": "Short wave out",
+            "lw_radiation_in": "Long wave in",
+            "lw_radiation_out": "Long wave out"},
+            use_summed_measurements=True, save_name="Energy_balance_only_radiation")
+
+        visualizer.singleton.plot_energy_balance_components({
+            "sensible_heat": "Sensible heat",
+            "latent_heat": "Latent heat"},
+            use_summed_measurements=True, save_name="Energy_balance_only_sens_and_latent_heat")
+        # END --- plots in use
+
+        visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
+                                                       ablation_or_water_equivalent="show_ablation",
+                                                       save_name="Total_energy_balance_summed_with_ablation")
+
+        visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
+                                                       ablation_or_water_equivalent="show_water_equivalent",
+                                                       save_name="Total_energy_balance_summed_with_water_equivalent")
+
+
+
         # visualizer.singleton.plot_periodic_trend_eliminated("total_energy_balance")
         # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_in")
         # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
