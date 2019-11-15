@@ -313,9 +313,11 @@ class MultipleMeasurements:
 
     def change_measurement_resolution_by_start_end_time(self, starttime=None, endtime=None):
         if starttime is not None:
-            starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
+            if type(starttime) != dt.datetime:
+                starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
         if endtime is not None:
-            endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
+            if type(endtime) != dt.datetime:
+                endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
 
         indexes_to_remove = set()
 
@@ -393,58 +395,29 @@ class MultipleMeasurements:
 
         return int(time_delta.total_seconds() // 60)
 
-    def download_whole_energy_balance(self, use_summed_measurements=False):
-        if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
-            os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
-
-        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_whole_energy_balance.csv", "w") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Date", "Total energy balance [W/m^2]"])
-
-            for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-                if obj.total_energy_balance is not None:
-                    writer.writerow([obj.datetime, round(obj.total_energy_balance, 3)])
-
-    def download_water_equivalent(self):
-        if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
-            os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
-
-        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_water_equivalent.csv", "w") as f:
-            writer = csv.writer(f)
-            writer.writerow(["Date", "Actual Meltwater [l/m^2]", "Theoretical Meltwater [l/m^2]"])
-
-            for obj in self.__all_mean_measurements:
-                if obj.actual_melt_water_per_sqm is not None and obj.theoretical_melt_water_per_sqm is not None:
-                    line_to_write = [obj.datetime]
-
-                    if obj.actual_melt_water_per_sqm is None:
-                        line_to_write.append("None")
-                    else:
-                        line_to_write.append(round(obj.actual_melt_water_per_sqm, 3))
-
-                    if obj.theoretical_melt_water_per_sqm is None:
-                        line_to_write.append("None")
-                    else:
-                        line_to_write.append(round(obj.theoretical_melt_water_per_sqm, 3))
-
-                    writer.writerow(line_to_write)
-
-    def download_components_of_energy_balance(self, options, use_summed_measurements=False):
+    def download_components(self, options: list, use_summed_measurements=False):
         # currently not support for downloading summed measurements
 
         if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
             os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
 
-        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_parts_of_energy_balance.csv", "w") as f:
+        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_" + '_'.join(options) + ".csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(["Date"] + options)
 
-            for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if use_summed_measurements:
+                measures_to_take = [
+                    self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]
+            else:
+                measures_to_take = [
+                    self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]
+
+            for obj in measures_to_take:
                 line_to_write = [obj.datetime]
                 for option in options:
                     item = getattr(obj, option)
                     if item is not None:
-                        line_to_write.append(round(item, 3))
+                        line_to_write.append(round(item, 5))
                     else:
                         line_to_write.append("None")
                 writer.writerow(line_to_write)

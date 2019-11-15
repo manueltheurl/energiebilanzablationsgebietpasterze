@@ -28,6 +28,10 @@ class ModelFrame(tk.Frame):
                                                 command=self.download_cleaned_ablation)
         self.btn_cleanedAblation.pack(pady=(40, 0))
 
+        self.btn_relativeAblation = tk.Button(self, text="Relative Ablation (incl. modelled Ablation)",
+                                             command=self.download_relative_ablation)
+        self.btn_relativeAblation.pack(pady=(40, 0))
+
         self.btn_waterEquivalent = tk.Button(self, text="Water equivalent [Summed measurements]",
                                              command=self.download_water_equivalent)
         self.btn_waterEquivalent.pack(pady=(40, 0))
@@ -49,19 +53,26 @@ class ModelFrame(tk.Frame):
 
     @staticmethod
     def download_total_energy_balance():
-        multiple_measurements.singleton.download_whole_energy_balance()
+        multiple_measurements.singleton.download_components(["total_energy_balance"])
 
     @staticmethod
     def download_cleaned_ablation():
-        # aint a component of that .. TODO not the best name for the fx
-        multiple_measurements.singleton.download_components_of_energy_balance(["ablation"])
+        multiple_measurements.singleton.download_components(["cumulated_ablation"])
+
+    @staticmethod
+    def download_relative_ablation():
+        multiple_measurements.singleton.download_components(["relative_ablation_measured",
+                                                             "relative_ablation_modelled"],
+                                                            use_summed_measurements=True)
 
     @staticmethod
     def download_water_equivalent():
-        multiple_measurements.singleton.download_water_equivalent()
+        multiple_measurements.singleton.download_components(["actual_melt_water_per_sqm",
+                                                             "theoretical_melt_water_per_sqm"],
+                                                            use_summed_measurements=True)
 
     def download_selected_components(self):
-        multiple_measurements.singleton.download_components_of_energy_balance(
+        multiple_measurements.singleton.download_components(
             [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()]
         )
 

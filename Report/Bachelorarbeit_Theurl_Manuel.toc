@@ -1,48 +1,48 @@
 \boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
 \babel@toc {german}{}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {1}Einleitung}{1}
+\contentsline {section}{\numberline {1}Einleitung}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2}Theoretisches Grundwissen}{1}
+\contentsline {section}{\numberline {2}Theoretisches Grundwissen}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.1}Pasterze und Ablationsgebiet}{1}
+\contentsline {subsection}{\numberline {2.1}Pasterze und Ablationsgebiet}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.2}Energiebilanz}{3}
+\contentsline {subsection}{\numberline {2.2}Energiebilanz}{3}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {2.2.1}Energiebilanz Komponenten}{3}
+\contentsline {subsubsection}{\numberline {2.2.1}Energiebilanz Komponenten}{3}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{5}
+\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{5}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.3}``Global dimming''}{6}
+\contentsline {subsection}{\numberline {2.3}``Global dimming''}{6}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3}Methodik}{8}
+\contentsline {section}{\numberline {3}Methodik}{8}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{8}
+\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{8}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.2}Trendelimination}{10}
+\contentsline {subsection}{\numberline {3.2}Trendelimination}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{10}
+\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.4}Programmierung in Python}{10}
+\contentsline {subsection}{\numberline {3.4}Programmierung in Python}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.1}Umgebung}{10}
+\contentsline {subsubsection}{\numberline {3.4.1}Umgebung}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.2}Unittesting}{10}
+\contentsline {subsubsection}{\numberline {3.4.2}Unittesting}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Transfer Koeffizient}{10}
+\contentsline {paragraph}{Transfer Koeffizient}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Sensible Hitze}{11}
+\contentsline {paragraph}{Sensible Hitze}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.3}Graphical User Interface}{11}
+\contentsline {subsubsection}{\numberline {3.4.3}Graphical User Interface}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.5}Softwareverwaltung}{11}
+\contentsline {subsection}{\numberline {3.5}Softwareverwaltung}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.1}Download und Installation}{11}
+\contentsline {subsubsection}{\numberline {3.5.1}Download und Installation}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.2}Update}{12}
+\contentsline {subsubsection}{\numberline {3.5.2}Update}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{13}
+\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{13}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{18}
+\contentsline {section}{\numberline {5}Fazit}{20}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{18}
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{20}% 

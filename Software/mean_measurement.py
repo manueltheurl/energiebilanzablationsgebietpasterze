@@ -25,7 +25,8 @@ class MeanMeasurement:
         }
 
         self.__ablation = None
-        self.__relative_ablation = None
+        self.__relative_ablation_measured = None
+        self.__relative_ablation_modelled = None
         self.__cumulated_ablation = None
         self.__starting_ablation = None
         self.__ending_ablation = None
@@ -179,7 +180,7 @@ class MeanMeasurement:
             self.__cumulated_ablation /= self.contains_cumulated_ablation
 
             if self.__starting_ablation is not None and self.__ending_ablation is not None:
-                self.__relative_ablation = self.__ending_ablation - self.__starting_ablation
+                self.__relative_ablation_measured = self.__ending_ablation - self.__starting_ablation
 
         if self.__total_energy_balance is not None:
             self.__total_energy_balance /= self.contains_total_energy_balance
@@ -188,13 +189,16 @@ class MeanMeasurement:
 
     def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
         if self.is_snow_covered is False:  # dont change, None is False also
-            if self.__relative_ablation is not None:
+            if self.__relative_ablation_measured is not None:
                 self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
-                    self.__relative_ablation)
+                    self.__relative_ablation_measured)
 
             if self.__theoretical_melt_rate is not None:
                 self.__theoretical_melt_water_per_sqm = energy_balance.singleton.meltrate_to_melt_water(
-                    self.__theoretical_melt_rate, self.__datetime_end-self.__datetime_begin)
+                    self.__theoretical_melt_rate, self.__datetime_end - self.__datetime_begin)
+
+                self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
+                    self.__theoretical_melt_water_per_sqm)
 
     @property
     def datetime_begin(self):
@@ -241,8 +245,12 @@ class MeanMeasurement:
         return self.__cumulated_ablation
 
     @property
-    def relative_ablation(self):
-        return self.__relative_ablation
+    def relative_ablation_measured(self):
+        return self.__relative_ablation_measured
+
+    @property
+    def relative_ablation_modelled(self):
+        return self.__relative_ablation_modelled
 
     @property
     def total_energy_balance(self):

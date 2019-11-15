@@ -101,9 +101,15 @@ class EnergyBalance:
 
     @staticmethod
     def meter_ablation_to_melt_water(meter_ablation):
-        if meter_ablation < 0:  # if melted
+        if meter_ablation <= 0:  # if melted
             return abs(meter_ablation) * PURE_ICE_DENSITY_AT_ZERO_DEG
-        return None
+        return 0
+
+    @staticmethod
+    def melt_water_to_meter_ablation(melt_water):
+        if melt_water >= 0:
+            return - melt_water / PURE_ICE_DENSITY_AT_ZERO_DEG
+        return 0
 
     @staticmethod
     def meltrate_to_melt_water(melt_rate, timespawn):

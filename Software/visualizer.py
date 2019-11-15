@@ -123,7 +123,7 @@ class Visualize:
         self.ax.set_ylabel("W/m^2")
 
     def show_save_and_close_plot(self, type_, save_name=None):
-        if self.show_plots:
+        if self.show_plots or cfg["GUI"]:
             plt.show()
 
         if save_name is not None:
@@ -165,11 +165,25 @@ class Visualize:
                     theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
                         "theoretical_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
 
-                    second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Actual Meltwater")
+                    second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Measured Meltwater")
                     second_ax.plot(
-                        y_dates, theoretical_melt_water_per_sqm, color="green", label="Theoretical Meltwater")
+                        y_dates, theoretical_melt_water_per_sqm, color="green", label="Modelled Meltwater")
 
-                second_ax.set_ylabel("l/m^2")
+                    # calculate correlation coefficient
+                    if save_name is not None:
+                        none_indexes = []
+                        for i, values in enumerate(zip(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)):
+                            if None in values:
+                                none_indexes.append(i)
+
+                        actual_melt_water_per_sqm = np.delete(actual_melt_water_per_sqm, none_indexes)
+                        theoretical_melt_water_per_sqm = np.delete(theoretical_melt_water_per_sqm, none_indexes)
+
+                        print(save_name, "correlation coefficient:",
+                              round(np.ma.corrcoef(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)[0][1], 2))
+
+                second_ax.set_ylabel("l/m^2 per " + multiple_measurements.singleton.get_time_resolution(of="summed",
+                                                                                                    as_beautiful_string=True))
                 main_title = "Total Energy balance with actual and theoretical Ablation as water equivalent"
 
             else:
