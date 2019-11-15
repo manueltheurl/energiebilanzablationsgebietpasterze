@@ -90,7 +90,7 @@ class NoGuiManager:
             "sensible_heat": "Sensible heat",
             "latent_heat": "Latent heat"},
             use_summed_measurements=True, save_name="Energy_balance_only_sens_and_latent_heat")
-        # END --- plots in use
+
 
         visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
                                                        ablation_or_water_equivalent="show_ablation",
@@ -136,15 +136,57 @@ class NoGuiManager:
             "latent_heat": "Latent heat"},
             use_summed_measurements=True, save_name="Latent_and_Sensible_summed_periodic_trend_eliminated")
 
-        # visualizer.singleton.plot_periodic_trend_eliminated_selected_option("sw_radiation_in")
+        # END --- plots in use
 
-        # visualizer.singleton.plot_periodic_trend_eliminated("sw_radiation_out")
-        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_in")
-        # visualizer.singleton.plot_periodic_trend_eliminated("lw_radiation_out")
-        # visualizer.singleton.plot_periodic_trend_eliminated("sensible_heat")
-        # visualizer.singleton.plot_periodic_trend_eliminated("latent_heat")
+        # global dimming and brightening checking
+        multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+            starttime=dt.datetime(2018, 6, 1), endtime=dt.datetime(2018, 9, 1))
 
-        # visualizer.plot_energy_balance_components(latent_heat=True)
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+
+        measured_ablation_3_months = sum(
+            multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True))
+        modelled_ablation_3_months = sum(
+            multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True))
+
+        multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=-9)
+        multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+
+
+        modelled_ablation_3_months_minus_9 = sum(
+            multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True))
+
+        multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=-6)
+        multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+
+
+        modelled_ablation_3_months_minus_6 = sum(
+            multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True))
+
+        multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=-3)
+        multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+
+
+        modelled_ablation_3_months_minus_3 = sum(
+            multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True))
+
+        multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=3)
+        multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+
+
+        modelled_ablation_3_months_plus_3 = sum(
+            multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True))
+
+        print("Measured ablation in 3 months", round(measured_ablation_3_months, 2))
+        print("Modelled ablation in 3 months", round(modelled_ablation_3_months, 2))  # measured stays the same .. cause thats wont be affected
+        print("Modelled ablation in 3 months -9", round(modelled_ablation_3_months_minus_9, 2))
+        print("Modelled ablation in 3 months -6", round(modelled_ablation_3_months_minus_6, 2))
+        print("Modelled ablation in 3 months -3", round(modelled_ablation_3_months_minus_3, 2))
+        print("Modelled ablation in 3 months +3", round(modelled_ablation_3_months_plus_3, 2))
 
 
 if __name__ == "__main__":

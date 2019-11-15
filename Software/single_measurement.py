@@ -42,6 +42,7 @@ class SingleMeasurement:
         self.__cumulated_ablation = None
         self.__theoretical_melt_rate = None
         self.__total_energy_balance = None  # not calculated yet
+        self.__simulate_global_brightening = None
 
         self.is_snow_covered = None
 
@@ -49,10 +50,9 @@ class SingleMeasurement:
         # if self.__total_energy_balance is not None:  # so that we wont recalculate for nothing
         # .. since simulate dimming, not anymore cause same measurement can have different actual values
         #     return
+
         if simulate_global_dimming_brightening != 0:
-            # simulate here TODO
-            if None not in [self.__energy_balance_components["sw_radiation_in"]]:
-                self.__energy_balance_components["sw_radiation_in"] += simulate_global_dimming_brightening
+            self.__simulate_global_brightening = simulate_global_dimming_brightening
 
         if None not in [self.__air_pressure, self.__wind_speed, self.__temperature,
                         self.__energy_balance_components["lw_radiation_out"]]:
@@ -75,7 +75,7 @@ class SingleMeasurement:
             self.__energy_balance_components["precipitation_heat"] = energy_balance.singleton.calculate_precipitation_heat()
 
         if None not in self.__energy_balance_components.values():
-            self.__total_energy_balance = sum([self.__energy_balance_components["sw_radiation_in"],
+            self.__total_energy_balance = sum([self.sw_radiation_in,  # get it over property cause may be glob br. simul
                                                self.__energy_balance_components["sw_radiation_out"],
                                                self.__energy_balance_components["lw_radiation_in"],
                                                self.__energy_balance_components["lw_radiation_out"],
@@ -118,6 +118,8 @@ class SingleMeasurement:
 
     @property
     def sw_radiation_in(self):
+        if self.__simulate_global_brightening is not None:
+            return self.__energy_balance_components["sw_radiation_in"] + self.__simulate_global_brightening
         return self.__energy_balance_components["sw_radiation_in"]
 
     @property
