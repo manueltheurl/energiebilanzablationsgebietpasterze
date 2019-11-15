@@ -59,7 +59,6 @@ class MeanMeasurement:
 
         if single_measurement.sw_radiation_in is not None:
             self.contains_sw_in += 1
-
             if self.__energy_balance_components["sw_radiation_in"] is None:
                 self.__energy_balance_components["sw_radiation_in"] = single_measurement.sw_radiation_in
             else:
@@ -129,7 +128,6 @@ class MeanMeasurement:
                 self.__cumulated_ablation = single_measurement.cumulated_ablation
             else:
                 self.__cumulated_ablation += single_measurement.cumulated_ablation
-                self.__ending_ablation = single_measurement.cumulated_ablation  # just overwrite all the time
 
         if single_measurement.is_snow_covered is not None:
             if self.is_snow_covered is None and single_measurement.is_snow_covered is True:
@@ -146,8 +144,9 @@ class MeanMeasurement:
 
         return self  # important
 
-    def calculate_mean(self, endtime):
+    def calculate_mean(self, endtime, end_ablation):
         self.__datetime_end = endtime  # first date of next measurement .. important for calculating melt water
+        self.__ending_ablation = end_ablation
 
         if self.__energy_balance_components["sw_radiation_in"] is not None:
             self.__energy_balance_components["sw_radiation_in"] /= self.contains_sw_in

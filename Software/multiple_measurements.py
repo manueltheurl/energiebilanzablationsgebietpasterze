@@ -101,10 +101,14 @@ class MultipleMeasurements:
                 summed_measurement += single_measurement
 
             try:
-                summed_measurement.calculate_mean(endtime=multiple_separated_measurements[i+1][0].datetime)
+                summed_measurement.calculate_mean(
+                    endtime=multiple_separated_measurements[i+1][0].datetime,
+                    end_ablation=multiple_separated_measurements[i+1][0].cumulated_ablation)
             except IndexError:
                 # last one
-                summed_measurement.calculate_mean(endtime=separated_measurements[-1].datetime)
+                summed_measurement.calculate_mean(
+                    endtime=separated_measurements[-1].datetime,
+                    end_ablation=separated_measurements[-1].cumulated_ablation)
 
             self.add_summed_measurement(summed_measurement)
 
@@ -126,7 +130,8 @@ class MultipleMeasurements:
             if single_measurement.datetime - resolution_reference_time >= time_interval:
                 resolution_reference_time = single_measurement.datetime
 
-                summed_measurement.calculate_mean(endtime=single_measurement.datetime)
+                summed_measurement.calculate_mean(endtime=single_measurement.datetime,
+                                                  end_ablation=single_measurement.cumulated_ablation)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -152,7 +157,8 @@ class MultipleMeasurements:
             else:
                 reference_month = single_measurement.datetime.month
 
-                summed_measurement.calculate_mean(endtime=single_measurement.datetime)
+                summed_measurement.calculate_mean(endtime=single_measurement.datetime,
+                                                  end_ablation=single_measurement.cumulated_ablation)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -176,7 +182,8 @@ class MultipleMeasurements:
             else:
                 reference_years = single_measurement.datetime.year
 
-                summed_measurement.calculate_mean(endtime=single_measurement.datetime)
+                summed_measurement.calculate_mean(endtime=single_measurement.datetime,
+                                                  end_ablation=single_measurement.cumulated_ablation)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
