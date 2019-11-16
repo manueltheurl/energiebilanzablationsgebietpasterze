@@ -16,6 +16,7 @@ import multiple_measurements
 import reader
 import sys
 import pickle
+import numpy as np
 
 # The gui is constructed as singletons .. this order therefor has to be maintained
 import gui_main_frame as gui_main
@@ -91,6 +92,14 @@ class NoGuiManager:
             "latent_heat": "Latent heat"},
             use_summed_measurements=True, save_name="Energy_balance_only_sens_and_latent_heat")
 
+        visualizer.singleton.plot_energy_balance_components({
+            "latent_heat": "Latent heat"},
+            use_summed_measurements=True, save_name="Energy_balance_only_latent_heat")
+
+        visualizer.singleton.plot_energy_balance_components({
+            "sensible_heat": "Sensible heat"},
+            use_summed_measurements=True, save_name="Energy_balance_only_sensible_heat")
+
 
         visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
                                                        ablation_or_water_equivalent="show_ablation",
@@ -137,7 +146,18 @@ class NoGuiManager:
             use_summed_measurements=True, save_name="Latent_and_Sensible_summed_periodic_trend_eliminated")
 
         # END --- plots in use
+        multiple_measurements.singleton.reset_scope_to_all()
+        multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+            starttime=dt.datetime(2017, 1, 1), endtime=dt.datetime(2018, 1, 1))
+        print(
+            "EB mean 2017", round(np.mean(multiple_measurements.singleton.get_all_of("total_energy_balance")), 1), "W/m^2")
 
+        multiple_measurements.singleton.reset_scope_to_all()
+        multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+            starttime=dt.datetime(2018, 1, 1), endtime=dt.datetime(2019, 1, 1))
+        print("EB mean 2018", round(np.mean(multiple_measurements.singleton.get_all_of("total_energy_balance")), 1), "W/m^2")
+
+        multiple_measurements.singleton.reset_scope_to_all()
         # global dimming and brightening checking
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
             starttime=dt.datetime(2018, 6, 1), endtime=dt.datetime(2018, 9, 1))

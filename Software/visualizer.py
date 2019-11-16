@@ -124,6 +124,7 @@ class Visualize:
 
     def show_save_and_close_plot(self, type_, save_name=None):
         if self.show_plots or cfg["GUI"]:
+            plt.tight_layout()
             plt.show()
 
         if save_name is not None:

@@ -55,6 +55,8 @@ class EnergyBalance:
         return temperature
 
     def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out):  # E_E
+        # air_pressure in Pa
+        # wind_speed in m/s
         temperature_ice = self.calculate_ice_temperature(longwave_out)  # degree celcius
 
         return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - temperature_ice)

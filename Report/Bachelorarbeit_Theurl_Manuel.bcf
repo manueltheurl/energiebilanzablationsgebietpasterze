@@ -1924,24 +1924,25 @@
     <bcf:datasource type="file" datatype="bibtex">literature.bib</bcf:datasource>
   </bcf:bibdata>
   <bcf:section number="0">
+    <bcf:citekey order="1">Pasterze</bcf:citekey>
+    <bcf:citekey order="2">Pasterze</bcf:citekey>
     <bcf:citekey order="3">Pasterze</bcf:citekey>
     <bcf:citekey order="4">Pasterze</bcf:citekey>
-    <bcf:citekey order="5">Pasterze</bcf:citekey>
-    <bcf:citekey order="6">Pasterze</bcf:citekey>
-    <bcf:citekey order="7">LaengenaenderungPasterze</bcf:citekey>
-    <bcf:citekey order="8">LaengenaenderungPasterze</bcf:citekey>
+    <bcf:citekey order="5">LaengenaenderungPasterze</bcf:citekey>
+    <bcf:citekey order="6">LaengenaenderungPasterze</bcf:citekey>
+    <bcf:citekey order="7">Themicroclimateofvalleyglaciers</bcf:citekey>
+    <bcf:citekey order="8">Themicroclimateofvalleyglaciers</bcf:citekey>
     <bcf:citekey order="9">Themicroclimateofvalleyglaciers</bcf:citekey>
-    <bcf:citekey order="10">Themicroclimateofvalleyglaciers</bcf:citekey>
-    <bcf:citekey order="11">Themicroclimateofvalleyglaciers</bcf:citekey>
-    <bcf:citekey order="12">ThePhysicsOfGlaciers</bcf:citekey>
+    <bcf:citekey order="10">ThePhysicsOfGlaciers</bcf:citekey>
+    <bcf:citekey order="11">GlobalDimming</bcf:citekey>
+    <bcf:citekey order="12">GlobalDimming</bcf:citekey>
     <bcf:citekey order="13">GlobalDimming</bcf:citekey>
-    <bcf:citekey order="14">GlobalDimming</bcf:citekey>
-    <bcf:citekey order="15">GlobalDimming</bcf:citekey>
+    <bcf:citekey order="14">ThePhysicsOfGlaciers</bcf:citekey>
+    <bcf:citekey order="15">ThePhysicsOfGlaciers</bcf:citekey>
     <bcf:citekey order="16">ThePhysicsOfGlaciers</bcf:citekey>
     <bcf:citekey order="17">ThePhysicsOfGlaciers</bcf:citekey>
     <bcf:citekey order="18">ThePhysicsOfGlaciers</bcf:citekey>
     <bcf:citekey order="19">ThePhysicsOfGlaciers</bcf:citekey>
-    <bcf:citekey order="20">ThePhysicsOfGlaciers</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nyt">

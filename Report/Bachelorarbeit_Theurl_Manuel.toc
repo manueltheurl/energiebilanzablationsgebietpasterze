@@ -19,30 +19,30 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{8}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.2}Trendelimination}{10}
+\contentsline {subsection}{\numberline {3.2}Periodische Trendelimination}{10}
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{10}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.4}Programmierung in Python}{10}
+\contentsline {subsection}{\numberline {3.4}Programmierung in Python}{11}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.1}Umgebung}{10}
+\contentsline {subsubsection}{\numberline {3.4.1}Umgebung}{11}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.2}Unittesting}{10}
+\contentsline {subsubsection}{\numberline {3.4.2}Unittesting}{12}
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Transfer Koeffizient}{10}
+\contentsline {paragraph}{Transfer Koeffizient}{12}
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Sensible Hitze}{11}
+\contentsline {paragraph}{Sensible Hitze}{12}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.3}Graphical User Interface}{11}
+\contentsline {subsubsection}{\numberline {3.4.3}Grafisches Userinterface}{13}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.5}Softwareverwaltung}{11}
+\contentsline {subsection}{\numberline {3.5}Softwareverwaltung}{18}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.1}Download und Installation}{11}
+\contentsline {subsubsection}{\numberline {3.5.1}Download und Installation}{18}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.2}Update}{12}
+\contentsline {subsubsection}{\numberline {3.5.2}Update}{19}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{13}
+\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{20}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{21}
+\contentsline {section}{\numberline {5}Fazit}{28}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{21}
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{28}
