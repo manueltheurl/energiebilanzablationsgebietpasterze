@@ -171,8 +171,7 @@ Die Albedo bezeichnet das Verhältnis zwischen rückgestrahltem und einfallendem
 
 Auf der Pasterze verringert sich die Nettostrahlung welche sich positiv auf die Energiebilanz des Gletschers auswirkt mit zunehmender Höhe. Grund dafür ist eben genau die Albedo, denn Schnee bedeckt die höher liegenden Teile des Gletschers und reflektiert mehr Strahlung. Das Eis im Ablationsgebiet absorbiert sehr viel Strahlungsenergie (vgl. \cite[171]{ThePhysicsOfGlaciers}).
 
-\subsection{``Global dimming''}
-% TODO komplett weg?
+\subsection{``Global dimming'' und ``Global brigthening''}
 Mehrere Langzeitstudien von Oberflächenstrahlungsmessungen haben gezeigt, dass die Strahlung, welche auf der Erdoberfläche ankommt im Hinblick auf eine dekadische Zeit nicht konstant ist, d.h. sich innerhalb von 10er-Jahren signifikant ändern kann. Diese Änderungen wurden unter den Begriffen ``Global dimming'' und ``Global brightening'' zusammengefasst, wobei der Begriff ``global'' sich auf die Summe von diffuser und direkter Sonnenstrahlung bezieht und nicht auf global, im Sinne von ``auf der ganzen Welt''.\\
 Änderung der Oberflächenstrahlung können nicht nur bei wolkigen Bedingungen festgestellt werden, sondern auch bei einer wolkenfreien Atmosphäre. Das deutet darauf hin, dass sich der Mensch durch Einbringung von Aerosolen in die Atmosphäre auf diese Oberflächenstrahlung auswirkt (vgl. \cite[1]{GlobalDimming}).\\
 Aerosole können diese Oberflächenstrahlung verändern, indem sie die Sonnenstrahlen streuen oder absorbieren. Weiters können die Aerosole als Kondensationskerne bei der Wolkenbildung agieren und somit diese fördern. Insgesamt reduzieren also Aerosole die Oberflächenstrahlung. Eine der Hauptursachen von ``global dimming'' ist somit die Erzeugung von Aerosolen durch die Industrie (vgl. \cite[14]{GlobalDimming}).\\ 
@@ -264,38 +263,53 @@ Im Zuge der Durchführung wird nicht nur die errechnete Energiebilanz an sich tr
 \subsection{Berechnung des resultierenden Schmelzwassers}
 Formel (vgl. \cite[142]{ThePhysicsOfGlaciers})
 
+\begin{equation}
+\rho_{w} L_{f} \dot{m}_{s}\left[1-f_{r}\right]+\int_{0}^{\Delta z} \rho c \frac{\partial T}{\partial t} d z=E_{N}
+\end{equation}
 
-gibt einen Zusammenhang zwischen Nettoenenergiebilanz und der Schmelzrate TODO vom Gletschereis. Wenn die Temperatur im betrachteten Eislayer den Schmelzpunkt erreicht hat, dann fällt der zweite Term der Gleichung durch
+
+gibt einen Zusammenhang zwischen Nettoenenergiebilanz und der Schmelzrate $\dot{m}$ vom Gletschereis. Wenn die Temperatur im betrachteten Eislayer den Schmelzpunkt erreicht hat, dann fällt der zweite Term der Gleichung durch
 
 
-blabla = 0
+\begin{equation}
+\int_{0}^{\Delta z} \rho c \frac{\partial T}{\partial t} d z=0
+\end{equation}
 
-weg. Um die errechnete Energiebilanz auf Plausibilität zu überprüfen, indem die gemessene Ablation (später umgerechnet in Schmelzwasser) mit dem modellierten Schmelzwasser verglichen wird, reicht es für diese Analyse aus, nur den Zeitraum von 1. Juni bis 1. September zu betrachten. In diesem Zeitraum kann deshalb von einem isothermen Eislayer mit Temperatur beim Schmelzpunkt ausgegangen werden.
+weg. Um die errechnete Energiebilanz auf Plausibilität zu überprüfen, indem die gemessene Ablation (später umgerechnet in Schmelzwasser) mit dem modellierten Schmelzwasser verglichen wird, reicht es für diese Analyse aus, nur den Zeitraum von 1. Juni bis 1. September zu betrachten. In diesem Zeitraum kann deshalb von einem isothermen Eislayer mit Temperatur um den Schmelzpunkt ausgegangen werden.
 
 $f_r$ bezeichnet den Anteil vom Schmelzwasser, der im Eislayer wiedergefriert. Es folgt somit die für diese Fragestellung relevante Nettoablationsrate 
 
-ms 1- fr TODO
-Formel
+\begin{equation}
+\dot{m}_{s}\left[1-f_{r}\right]=E_{N} / \rho_{w} L_{f},
+\end{equation}
 
-, wobei TODO GRÖßEN ERKLÄREN
+wobei $\rho_{w}=1000~kg/m^{3}$ der Wasserdichte bei $0^\circ C$ und $L_{f}=3.34 \cdot 10^5 J/kg$ der latenten Schmelzwärme von purem Eis bei $0^\circ C$ entspricht (vgl. \cite[142]{ThePhysicsOfGlaciers}).
 
-Die errechnete Nettoablationsrate hat die Einheit $m^3/\delta t$, mit
+Die errechnete Nettoablationsrate hat die Einheit $m^3/\Delta T$, mit
 
-FORMEL * 1000
+\begin{equation}
+W = \dot{m}_{s}\left[1-f_{r}\right] \cdot \Delta T \cdot 1000
+\end{equation}
 
-folgt somit das tatsächliche Schmelzwasser über einen gewissen Zeitraum in Liter.
+
+folgt somit das tatsächliche Schmelzwasser in Liter über einen gewissen Zeitraum $\Delta T$.
 
 Durch 
 
-Formel
+\begin{equation}
+A_{meas} = W \cdot \rho_{i}
+\end{equation}
 
-kann die gemessene Ablation ebenfalls in Schmelzwasseräquivalent umgerechnet werden.\\
+
+kann die gemessene Ablation in Meter ebenfalls in Schmelzwasseräquivalent umgerechnet werden. $\rho_{w}=917~kg/m^3$ steht dabei für die Dichte von purem Eis bei $0^\circ C$.\\
 
 Analog dazu kann auch das modellierte Schmelzwasser durch
 
-Formel
+\begin{equation}
+A_{mod} = -\frac{W}{\rho_{i}}
+\end{equation}
 
-noch in Ablation bzw. Eisdickenverlust umgerechnet werden.
+noch in Ablation in Meter umgerechnet werden.
 
 
 \subsection{Programmierung in Python}

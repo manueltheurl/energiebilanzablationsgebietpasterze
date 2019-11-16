@@ -1,48 +1,48 @@
 \boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
 \babel@toc {german}{}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {1}Einleitung}{1}
+\contentsline {section}{\numberline {1}Einleitung}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2}Theoretisches Grundwissen}{1}
+\contentsline {section}{\numberline {2}Theoretisches Grundwissen}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.1}Pasterze und Ablationsgebiet}{1}
+\contentsline {subsection}{\numberline {2.1}Pasterze und Ablationsgebiet}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.2}Energiebilanz}{3}
+\contentsline {subsection}{\numberline {2.2}Energiebilanz}{3}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {2.2.1}Energiebilanz Komponenten}{3}
+\contentsline {subsubsection}{\numberline {2.2.1}Energiebilanz Komponenten}{3}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{5}
+\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{5}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.3}``Global dimming''}{6}
+\contentsline {subsection}{\numberline {2.3}``Global dimming''}{6}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3}Methodik}{8}
+\contentsline {section}{\numberline {3}Methodik}{8}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{8}
+\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{8}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.2}Periodische Trendelimination}{10}
+\contentsline {subsection}{\numberline {3.2}Periodische Trendelimination}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{10}
+\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.4}Programmierung in Python}{11}
+\contentsline {subsection}{\numberline {3.4}Programmierung in Python}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.1}Umgebung}{11}
+\contentsline {subsubsection}{\numberline {3.4.1}Umgebung}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.2}Unittesting}{12}
+\contentsline {subsubsection}{\numberline {3.4.2}Unittesting}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Transfer Koeffizient}{12}
+\contentsline {paragraph}{Transfer Koeffizient}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Sensible Hitze}{12}
+\contentsline {paragraph}{Sensible Hitze}{13}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.4.3}Grafisches Userinterface}{13}
+\contentsline {subsubsection}{\numberline {3.4.3}Grafisches Userinterface}{13}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.5}Softwareverwaltung}{18}
+\contentsline {subsection}{\numberline {3.5}Softwareverwaltung}{19}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.1}Download und Installation}{18}
+\contentsline {subsubsection}{\numberline {3.5.1}Download und Installation}{19}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.2}Update}{19}
+\contentsline {subsubsection}{\numberline {3.5.2}Update}{20}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{20}
+\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{21}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{28}
+\contentsline {section}{\numberline {5}Fazit}{29}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{28}
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{29}% 
