@@ -311,6 +311,10 @@ A_{mod} = -\frac{W}{\rho_{i}}
 
 noch in Ablation in Meter umgerechnet werden.
 
+\subsection{Bereinigung der Ablationsmessung}
+Die Ablation wird bei der Pasterze mit einem TODO gemessen blabla wie funktioniert usw. Der Sensor schmilzt allerdings von Zeit zu Zeit gänzlich aus und muss wieder neu positioniert werden. Dies hat zur Folge, dass in den Messdaten Sprünge sind. Um diese Sprünge softwareseitig zu bereinigen, wird darauf abgefragt ob sich die gemessene TODO von einem auf den nächsten Schritt über einen gewissen Threshold-Wert vergrößert. Dieser Grenzwert ist in der Software mit TODO $10~cm$ bei einer Messauflösung von 10 Minuten angenommen. Die Differenz des Sprunges wird dann bei den folgenden Messungen angebracht um so eine stetig abnehmende Kurve zu generieren.
+
+
 
 \subsection{Programmierung in Python}
 \subsubsection{Umgebung}
@@ -476,9 +480,18 @@ Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum} zeigt die errechnete 
 
 Es sind leider nur knapp drei Jahre ausreichend Messdaten zur Berechnung der Energiebilanz verfügbar. An den Daten ist deutlich ein periodischer Verlauf erkennbar mit Maximum im Sommer und Minimum im Winter. Die Spitzen der Energiebilanz liegen bei knapp 1500 $W/m^2$, die Minima bei ca $-250 W/m^2$. Diese ungleiche Verteilung ist erklärbar durch die Messungen im Ablationsgebiet des Gletschers. Hier sollte ja das Jahresmittel deutlich positiv sein. Folgende Tabelle zeigt die zwei Mittelwerte der Energiebilanz in den Jahren 2017 und 2018.
 
-TABELLE MITTEL 
-EB mean 2017 100.4 %W/m^2
-EB mean 2018 109.1 %W/m^2
+
+\begin{table}[H]
+\centering
+\setstretch{1.3} 
+\caption{Energiebilanz Mittel}
+\label{tab:Energiebilanz Mittel}
+\begin{tabular}{|l|l|l|}
+\hline
+                                                  & 2017  & 2018  \\ \hline
+Energiebilanz Mittel [$W/m^2$] & 100.4 & 109.1 \\ \hline
+\end{tabular}
+\end{table}
 
 Die nachfolgende Abbildung zeigt den gleichen Zusammenhang wie zuvor, jedoch wurden hier jeweils zwei Tage gemittelt.
 
@@ -489,10 +502,11 @@ Die nachfolgende Abbildung zeigt den gleichen Zusammenhang wie zuvor, jedoch wur
 \label{fig:..}
 \end{figure}
 
- Dies resultiert in einem glatteren Verlauf der Kurve, wobei es im Bereich des Sommers zwischen unterschiedlichen 2-Tages-Werten trotzdem noch Abweichungen von teils 300 $W/m^2$ gibt. Dies lässt sich auf unterschiedliche Wetterlagen zurückführen und könnte gut mit Sonnenscheinzeiten pro Tag usw. verglichen werden.\\
+Dies resultiert in einem glatteren Verlauf der Kurve, wobei es im Bereich des Sommers zwischen unterschiedlichen 2-Tages-Werten trotzdem noch Abweichungen von teils 300 $W/m^2$ gibt. Dies lässt sich auf unterschiedliche Wetterlagen zurückführen und könnte gut mit Sonnenscheinzeiten pro Tag usw. verglichen werden.\\
 Das Aufsummieren der Bilanzen bringt einen Ausreißer gegen Ende der Messreihe im Juni 2019 zum Vorschein. Dieses zweitätige Mittel von mehr als 700 $W/m^2$ ist mit knapp 200 $W/m^2$ Vorsprung der größe Wert im betrachteten Zeitraum. Durch Darstellung von einzelnen Komponenten der Energiebilanz kann erörtert werden, woraus dieser Maximalwert hervorgeht.\\
 
-Abbildung \ref{fig:Strahlungskomponente im gesamten Messzeitraum} zeigt die kombinierten Bestandteile ``Short wave in'', ``Short wave out'', ``Long wave in'' und ``Long wave out''
+Abbildung \ref{fig:Strahlungskomponente im gesamten Messzeitraum} zeigt die kombinierten Bestandteile ``Short wave in'', ``Short wave out'', ``Long wave in'' und ``Long wave out'', Abbildung \ref{Sensible und latente Wärme im gesamten Messzeitraum} hingegen nur die sensible und latente Wärme. Die periodische Schwimung ist bei der ersteren Abbildung deutlicher ausgeprägt. Bei der sensbilen und latenten Wärme ist ersichtlich, dass in den Wintermonaten die Summe der beiden relativ konstant bleibt. Es ist also nicht der Fall, dass um Winterbeginn Ende Dezember die Werte am niedrigsten sind.\\
+Der genannte Ausreißer zum Ende der Messreihe kann bei der latenten und sensiblen Wärme erkannt werden. Es muss also noch genauer differenziert werden.
 
 \begin{figure}[H]
 \centering
@@ -502,25 +516,40 @@ Abbildung \ref{fig:Strahlungskomponente im gesamten Messzeitraum} zeigt die komb
 \end{figure}
 
 
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=1\textwidth]{../Software/plots/Energy_balance_only_sens_and_latent_heat.png}
-\caption{Kompletter Zeitraum aufsummiert nur sensible und latent heat}
-\label{fig:..}
+\caption{Sensible und latente Wärme im gesamten Messzeitraum}
+\label{fig:Sensible und latente Wärme im gesamten Messzeitraum}
 \end{figure}
+
+Es stellt sich heraus, dass der genannte hohe Wert der Energiebilanz, siehe Abbildung \ref{fig:Sensible Hitze im gesamten Messzeitraum}, bei der sensiblen Wräme auftritt. In der Berechnung der sensiblen Hitze fließen die Messgrößen Luftdruck, Windgeschwindigkeit, Lufttemperatur und Eistemperatur mit ein. Bei genauerer Betrachtung der Messwerte fallen insbesondere hohe TODO Temperaturen  und evtl Hitzesommer nachweis Literatur Zeitungsartikel oder ähnliches???
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{../Software/plots/Energy_balance_only_sensible_heat.png}
+\caption{Sensible Hitze im gesamten Messzeitraum}
+\label{fig:Sensible Hitze im gesamten Messzeitraum}
+\end{figure}
+
+In Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung} wird zusätzlich zur errechneten Energiebilanz die bereinigte Ablation visualisiert. Wie zu erwarten, gibt es immer im Sommer bei hoher Energiebilanz Eisschmelze und im Winter Stagnation. Zu beobachten ist, dass die Energiebilanz schon vor dem eigentlichen Beginn der Schmelze erhöht ist. Grund dafür ist, dass zuerst der liegende Schnee noch wegeschmolzen werden muss und erst dann die positive Energiebilanz Eisschmelze verursacht.
+
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed_with_ablation.png}
-\caption{Kompletter Zeitraum aufsummiert nur sensible und latent heat}
-\label{fig:..}
+\caption{Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung}
+\label{fig:Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung}
 \end{figure}
+
+
 
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent.png}
-\caption{Kompletter Zeitraum aufsummiert nur sensible und latent heat}
+\caption{Energiebilanz im mgesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser}
 \label{fig:..}
 \end{figure}
 
