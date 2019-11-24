@@ -52,6 +52,7 @@ class Visualize:
     plot_type_initialized = {
         "energy_balance": False,
         "trend": False,
+        "temperature": False
     }
 
     def initialize_plot(self, type_):
@@ -61,21 +62,22 @@ class Visualize:
 
         yet_to_initialize = True
 
-        if self.accumulate_plots:
-            # close other plot types that are open
-            for plot_type in self.plot_type_initialized:
-                if type_ != plot_type:
-                    if self.plot_type_initialized[plot_type]:
-                        self.plot_type_initialized[plot_type] = False
-                        plt.close()
-                        break
+        if type_ is not None:
+            if self.accumulate_plots:
+                # close other plot types that are open
+                for plot_type in self.plot_type_initialized:
+                    if type_ != plot_type:
+                        if self.plot_type_initialized[plot_type]:
+                            self.plot_type_initialized[plot_type] = False
+                            plt.close()
+                            break
 
-            if self.plot_type_initialized[type_]:
-                yet_to_initialize = False
+                if self.plot_type_initialized[type_]:
+                    yet_to_initialize = False
+                else:
+                    self.plot_type_initialized[type_] = True
             else:
-                self.plot_type_initialized[type_] = True
-        else:
-            plt.close()  # should one be open
+                plt.close()  # should one be open
 
         if yet_to_initialize or not bool(cfg["PRO_VERSION"]):
             fig = plt.figure(figsize=(14, 9))
@@ -119,8 +121,6 @@ class Visualize:
 
         self.ax.grid(linestyle="--", alpha=0.5, which='major')
         self.ax.grid(linestyle="--", alpha=0.4, which='minor')
-
-        self.ax.set_ylabel("W/m^2")
 
     def show_save_and_close_plot(self, type_, save_name=None):
         if self.show_plots or cfg["GUI"]:
@@ -181,7 +181,7 @@ class Visualize:
                         theoretical_melt_water_per_sqm = np.delete(theoretical_melt_water_per_sqm, none_indexes)
 
                         print(save_name, "correlation coefficient:",
-                              round(np.ma.corrcoef(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)[0][1], 2))
+                              round(float(np.ma.corrcoef(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)[0][1]), 2))
 
                 second_ax.set_ylabel("l/m^2 per " + multiple_measurements.singleton.get_time_resolution(of="summed",
                                                                                                     as_beautiful_string=True))
@@ -198,9 +198,62 @@ class Visualize:
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
         # self.ax.set_title(main_title + summed_title_appendix)
+        self.ax.set_ylabel("W/m^2") 
+        self.modify_axes()
+        
+        self.show_save_and_close_plot("energy_balance", save_name=save_name)
+
+    def plot_single_component(self, component, component_unit, use_summed_measurements=False, save_name=None):
+        self.initialize_plot(None)
+
+        x_vals = multiple_measurements.singleton.get_all_of(component,
+                                                            use_summed_measurements=use_summed_measurements)
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
+
+        self.ax.plot(y_dates, x_vals, label=component)
+
+        self.ax.legend(loc="upper left")
+
+        self.ax.set_ylabel(component_unit)
+        self.modify_axes()
+
+        self.show_save_and_close_plot(None, save_name=save_name)
+
+    def plot_temperature_and_water_equivalent(self, use_summed_measurements=False, save_name=None):
+
+        self.initialize_plot("temperature")
+
+        x_vals = multiple_measurements.singleton.get_all_of("snow_depth",
+                                                            use_summed_measurements=use_summed_measurements)
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
+
+        self.ax.plot(y_dates, x_vals, label="Temperature")
+
+        second_ax = self.ax.twinx()
+
+        if use_summed_measurements:  # has to be summed here for now
+            actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
+                "actual_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
+
+            theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
+                "theoretical_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
+
+            second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Measured Meltwater")
+            second_ax.plot(
+                y_dates, theoretical_melt_water_per_sqm, color="green", label="Modelled Meltwater")
+
+        second_ax.set_ylabel("l/m^2 per " + multiple_measurements.singleton.get_time_resolution(of="summed",
+                                                                                            as_beautiful_string=True))
+        self.ax.legend(loc="upper left")
+        second_ax.legend(loc="upper right")      
 
         self.modify_axes()
-        self.show_save_and_close_plot("energy_balance", save_name=save_name)
+        self.ax.set_ylabel("Temperature °C")
+        self.show_save_and_close_plot("temperature", save_name=save_name)
 
     def plot_energy_balance_components(self,
                                        options, use_summed_measurements=False, save_name=None):
@@ -217,7 +270,7 @@ class Visualize:
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
         # self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
-
+        self.ax.set_ylabel("W/m^2") 
         self.modify_axes()
         self.show_save_and_close_plot("energy_balance", save_name=save_name)
 
@@ -289,6 +342,7 @@ class Visualize:
         self.ax.plot(diff_dates, diff_vals)
         self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
 
+        self.ax.set_ylabel("W/m^2") 
         self.modify_axes()
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
@@ -315,6 +369,7 @@ class Visualize:
         self.ax.plot(diff_dates, diff_vals)
         self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
 
+        self.ax.set_ylabel("W/m^2") 
         self.modify_axes()
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"

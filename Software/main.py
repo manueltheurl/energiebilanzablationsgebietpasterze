@@ -80,6 +80,15 @@ class NoGuiManager:
         visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
                                                        save_name="Total_energy_balance_summed")
 
+        # visualizer.singleton.plot_single_component("temperature", "°C", use_summed_measurements=True,
+        #                                            save_name="Temperature")
+
+        visualizer.singleton.plot_single_component("wind_speed", "m/s", use_summed_measurements=False,
+                                                   save_name="Wind_speed")
+
+        visualizer.singleton.plot_single_component("air_pressure", "Pa", use_summed_measurements=False,
+                                                   save_name="air_pressure")
+
         visualizer.singleton.plot_energy_balance_components({
             "sw_radiation_in": "Short wave in",
             "sw_radiation_out": "Short wave out",
@@ -121,6 +130,11 @@ class NoGuiManager:
                                                        ablation_or_water_equivalent="show_ablation",
                                                        save_name="Total_energy_balance_summed_with_ablation_2017")
 
+        # visualizer.singleton.plot_temperature_and_water_equivalent(use_summed_measurements=False,
+        #                                                            save_name="Temperature_and_waterequivalent_2017")
+
+
+
         multiple_measurements.singleton.reset_scope_to_all()
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
             starttime=dt.datetime(2018, 5, 15), endtime=dt.datetime(2018, 9, 15))
@@ -128,6 +142,9 @@ class NoGuiManager:
         visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
                                                        ablation_or_water_equivalent="show_water_equivalent",
                                                        save_name="Total_energy_balance_summed_with_water_equivalent_2018")
+
+        # visualizer.singleton.plot_temperature_and_water_equivalent(use_summed_measurements=False,
+        #                                                            save_name="Temperature_and_waterequivalent_2018")
 
         multiple_measurements.singleton.reset_scope_to_all()
         visualizer.singleton.plot_periodic_trend_eliminated_total_energy_balance(use_summed_measurements=True,
@@ -201,12 +218,19 @@ class NoGuiManager:
         modelled_ablation_3_months_plus_3 = sum(
             multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True))
 
+        reality_factor = measured_ablation_3_months/modelled_ablation_3_months
+
         print("Measured ablation in 3 months", round(measured_ablation_3_months, 2))
         print("Modelled ablation in 3 months", round(modelled_ablation_3_months, 2))  # measured stays the same .. cause thats wont be affected
-        print("Modelled ablation in 3 months -9", round(modelled_ablation_3_months_minus_9, 2))
-        print("Modelled ablation in 3 months -6", round(modelled_ablation_3_months_minus_6, 2))
-        print("Modelled ablation in 3 months -3", round(modelled_ablation_3_months_minus_3, 2))
-        print("Modelled ablation in 3 months +3", round(modelled_ablation_3_months_plus_3, 2))
+        print("With respect to the reality factor:", round(reality_factor, 2))
+        print("Modelled ablation in 3 months -9", round(modelled_ablation_3_months_minus_9*reality_factor, 2))
+        print("--> Diff:", round(modelled_ablation_3_months_minus_9*reality_factor - measured_ablation_3_months, 2))
+        print("Modelled ablation in 3 months -6", round(modelled_ablation_3_months_minus_6*reality_factor, 2))
+        print("--> Diff:", round(modelled_ablation_3_months_minus_6 * reality_factor - measured_ablation_3_months, 2))
+        print("Modelled ablation in 3 months -3", round(modelled_ablation_3_months_minus_3*reality_factor, 2))
+        print("--> Diff:", round(modelled_ablation_3_months_minus_3 * reality_factor - measured_ablation_3_months, 2))
+        print("Modelled ablation in 3 months +3", round(modelled_ablation_3_months_plus_3*reality_factor, 2))
+        print("--> Diff:", round(modelled_ablation_3_months_plus_3 * reality_factor - measured_ablation_3_months, 2))
 
 
 if __name__ == "__main__":

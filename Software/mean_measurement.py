@@ -53,6 +53,10 @@ class MeanMeasurement:
         self.contains_cumulated_ablation = 0
         self.contains_theoretical_melt_rate = 0
 
+        if cfg["PRO_VERSION"]:
+            self.__temperature = None
+            self.contains_temperature = 0
+
     def __iadd__(self, single_measurement: SingleMeasurement):
         if self.__datetime_begin is None or single_measurement.datetime < self.__datetime_begin:
             self.__datetime_begin = single_measurement.datetime
@@ -98,6 +102,14 @@ class MeanMeasurement:
                 self.__energy_balance_components["latent_heat"] = single_measurement.latent_heat
             else:
                 self.__energy_balance_components["latent_heat"] += single_measurement.latent_heat
+
+        if cfg["PRO_VERSION"]:
+            if single_measurement.temperature is not None:
+                self.contains_temperature += 1
+                if self.__temperature is None:
+                    self.__temperature = single_measurement.temperature
+                else:
+                    self.__temperature += single_measurement.temperature
 
         if single_measurement.theoretical_melt_rate is not None:
             self.contains_theoretical_melt_rate += 1
@@ -169,6 +181,10 @@ class MeanMeasurement:
         if self.__energy_balance_components["precipitation_heat"] is not None:
             self.__energy_balance_components["precipitation_heat"] /= self.contains_precipitation_heat
 
+        if cfg["PRO_VERSION"]:
+            if self.__temperature is not None:
+                self.__temperature /= self.contains_temperature
+
         if self.__theoretical_melt_rate is not None:
             self.__theoretical_melt_rate /= self.contains_theoretical_melt_rate
 
@@ -230,6 +246,11 @@ class MeanMeasurement:
     @property
     def precipitation_energy(self):
         return self.__energy_balance_components["precipitation_heat"]
+
+    if cfg["PRO_VERSION"]:
+        @property
+        def temperature(self):
+            return self.__temperature
 
     @property
     def ablation(self):

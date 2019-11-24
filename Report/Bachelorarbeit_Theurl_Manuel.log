@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.11)  17 NOV 2019 16:30
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.23)  24 NOV 2019 10:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -839,29 +839,7 @@ Package biblatex Warning: Conflicting options.
 (biblatex)                '<namepart>inits' conflicts with 'uniquename=full'.
 (biblatex)                Setting 'uniquename=init' on input line 36.
 
-(./Bachelorarbeit_Theurl_Manuel.aux
-
-LaTeX Warning: Label `fig:..' multiply defined.
-
-
-LaTeX Warning: Label `fig:..' multiply defined.
-
-
-LaTeX Warning: Label `fig:..' multiply defined.
-
-
-LaTeX Warning: Label `fig:..' multiply defined.
-
-
-LaTeX Warning: Label `fig:..' multiply defined.
-
-
-LaTeX Warning: Label `fig:..' multiply defined.
-
-
-LaTeX Warning: Label `fig:..' multiply defined.
-
-)
+(./Bachelorarbeit_Theurl_Manuel.aux)
 \openout1 = `Bachelorarbeit_Theurl_Manuel.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 36.
@@ -1023,49 +1001,42 @@ Underfull \hbox (badness 10000) in paragraph at lines 112--114
 
  []
 
-<pictures/Pasterze_Beschriftung_bw.jpg, id=31, 954.767pt x 461.725pt>
+<pictures/Pasterze_Beschriftung_bw.jpg, id=31, 2347.77126pt x 1011.78pt>
 File: pictures/Pasterze_Beschriftung_bw.jpg Graphic file (type jpg)
 <use pictures/Pasterze_Beschriftung_bw.jpg>
 Package pdftex.def Info: pictures/Pasterze_Beschriftung_bw.jpg  used on input l
 ine 120.
-(pdftex.def)             Requested size: 433.62pt x 209.69771pt.
+(pdftex.def)             Requested size: 433.62pt x 186.8676pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
 [1]
-Overfull \vbox (6.59328pt too high) has occurred while \output is active []
-
-
-[2 <./pictures/Pasterze_Beschriftung_bw.jpg>]
-<pictures/pasterze_laengenaenderung.jpg, id=42, 2248.4pt x 1985.4175pt>
+<pictures/pasterze_laengenaenderung.jpg, id=39, 2248.4pt x 1985.4175pt>
 File: pictures/pasterze_laengenaenderung.jpg Graphic file (type jpg)
 <use pictures/pasterze_laengenaenderung.jpg>
 Package pdftex.def Info: pictures/pasterze_laengenaenderung.jpg  used on input 
-line 130.
-(pdftex.def)             Requested size: 433.62pt x 382.8984pt.
+line 131.
+(pdftex.def)             Requested size: 368.57964pt x 325.4591pt.
+
+Overfull \vbox (6.59328pt too high) has occurred while \output is active []
+
+
+[2 <./pictures/Pasterze_Beschriftung_bw.jpg> <./pictures/pasterze_laengenaender
+ung.jpg>]
 <pictures/energy_balance_components.png, id=43, 860.21375pt x 402.50375pt>
 File: pictures/energy_balance_components.png Graphic file (type png)
 <use pictures/energy_balance_components.png>
 Package pdftex.def Info: pictures/energy_balance_components.png  used on input 
-line 142.
+line 143.
 (pdftex.def)             Requested size: 433.62pt x 202.89735pt.
 
-Overfull \vbox (6.59328pt too high) has occurred while \output is active []
-
-
-[3 <./pictures/pasterze_laengenaenderung.jpg>]
-Underfull \hbox (badness 10000) in paragraph at lines 147--148
+Underfull \hbox (badness 10000) in paragraph at lines 148--149
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 149--152
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 153--154
+Underfull \hbox (badness 10000) in paragraph at lines 150--153
 
  []
 
@@ -1073,54 +1044,73 @@ Underfull \hbox (badness 10000) in paragraph at lines 153--154
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[4 <./pictures/energy_balance_components.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 155--156
+[3 <./pictures/energy_balance_components.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 154--155
 
  []
 
-<pictures/spectral_reflectance_curves_for_ice_and_snow.png, id=52, 783.67781pt 
+
+Underfull \hbox (badness 10000) in paragraph at lines 156--157
+
+ []
+
+<pictures/spectral_reflectance_curves_for_ice_and_snow.png, id=49, 783.67781pt 
 x 721.19438pt>
 File: pictures/spectral_reflectance_curves_for_ice_and_snow.png Graphic file (t
 ype png)
 <use pictures/spectral_reflectance_curves_for_ice_and_snow.png>
 Package pdftex.def Info: pictures/spectral_reflectance_curves_for_ice_and_snow.
-png  used on input line 167.
+png  used on input line 168.
 (pdftex.def)             Requested size: 346.89731pt x 319.2413pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[5]
+[4]
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[6 <./pictures/spectral_reflectance_curves_for_ice_and_snow.png (PNG copy)>]
+[5 <./pictures/spectral_reflectance_curves_for_ice_and_snow.png (PNG copy)>]
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[7]
-Underfull \hbox (badness 10000) in paragraph at lines 190--191
+[6]
+Underfull \hbox (badness 10000) in paragraph at lines 191--192
 
  []
 
-LaTeX Font Info:    Try loading font information for OMS+cmr on input line 195.
+LaTeX Font Info:    Try loading font information for OMS+cmr on input line 196.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/omscmr.fd
 File: omscmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    Font shape `OMS/cmr/m/n' in size <12> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 195.
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 196.
+
+Overfull \vbox (6.59328pt too high) has occurred while \output is active []
+
+
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 221--222
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 249--250
+
+ []
+
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
 [8]
-Underfull \hbox (badness 10000) in paragraph at lines 220--221
+Underfull \hbox (badness 10000) in paragraph at lines 256--257
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 248--249
+Underfull \hbox (badness 10000) in paragraph at lines 258--260
 
  []
 
@@ -1129,12 +1119,7 @@ Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
 [9]
-Underfull \hbox (badness 10000) in paragraph at lines 255--256
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 257--259
+Underfull \hbox (badness 10000) in paragraph at lines 305--306
 
  []
 
@@ -1143,7 +1128,12 @@ Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
 [10]
-Underfull \hbox (badness 10000) in paragraph at lines 304--305
+Underfull \hbox (badness 10000) in paragraph at lines 323--325
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 351--352
 
  []
 
@@ -1152,122 +1142,104 @@ Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
 [11]
-Underfull \hbox (badness 10000) in paragraph at lines 322--324
+
+LaTeX Warning: Reference `TODO' on page 12 undefined on input line 358.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 358--359
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 350--351
+Underfull \hbox (badness 10000) in paragraph at lines 363--365
 
  []
 
-
-LaTeX Warning: Reference `eq:TODO' on page 12 undefined on input line 352.
-
-
-LaTeX Warning: Reference `eq:TODO' on page 12 undefined on input line 352.
-
-
-Overfull \vbox (6.59328pt too high) has occurred while \output is active []
-
-
-[12]
-
-LaTeX Warning: Reference `TODO' on page 13 undefined on input line 357.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 357--358
-
- []
-
-
-LaTeX Warning: Reference `TODO' on page 13 undefined on input line 362.
-
-
-LaTeX Warning: Reference `TODO' on page 13 undefined on input line 363.
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 362--364
-
- []
-
-<pictures/GUI/Read_Frame.png, id=85, 1003.75pt x 702.625pt>
+<pictures/GUI/Read_Frame.png, id=81, 1003.75pt x 702.625pt>
 File: pictures/GUI/Read_Frame.png Graphic file (type png)
 <use pictures/GUI/Read_Frame.png>
-Package pdftex.def Info: pictures/GUI/Read_Frame.png  used on input line 382.
+Package pdftex.def Info: pictures/GUI/Read_Frame.png  used on input line 383.
 (pdftex.def)             Requested size: 433.62pt x 303.53806pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[13]
-<pictures/GUI/Scope_Energy_Balance_Frame.png, id=89, 1003.75pt x 735.74875pt>
+[12]
+<pictures/GUI/Scope_Energy_Balance_Frame.png, id=86, 1003.75pt x 735.74875pt>
 File: pictures/GUI/Scope_Energy_Balance_Frame.png Graphic file (type png)
 <use pictures/GUI/Scope_Energy_Balance_Frame.png>
 Package pdftex.def Info: pictures/GUI/Scope_Energy_Balance_Frame.png  used on i
-nput line 391.
+nput line 392.
 (pdftex.def)             Requested size: 433.62pt x 317.8477pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[14 <./pictures/GUI/Read_Frame.png>]
+[13 <./pictures/GUI/Read_Frame.png>]
 File: pictures/GUI/Scope_Energy_Balance_Frame.png Graphic file (type png)
 <use pictures/GUI/Scope_Energy_Balance_Frame.png>
 Package pdftex.def Info: pictures/GUI/Scope_Energy_Balance_Frame.png  used on i
-nput line 400.
+nput line 401.
 (pdftex.def)             Requested size: 433.62pt x 317.8477pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[15 <./pictures/GUI/Scope_Energy_Balance_Frame.png>]
-<pictures/GUI/Plot_Frame.png, id=98, 1003.75pt x 756.8275pt>
+[14 <./pictures/GUI/Scope_Energy_Balance_Frame.png>]
+<pictures/GUI/Plot_Frame.png, id=95, 1003.75pt x 756.8275pt>
 File: pictures/GUI/Plot_Frame.png Graphic file (type png)
 <use pictures/GUI/Plot_Frame.png>
-Package pdftex.def Info: pictures/GUI/Plot_Frame.png  used on input line 409.
+Package pdftex.def Info: pictures/GUI/Plot_Frame.png  used on input line 410.
 (pdftex.def)             Requested size: 433.62pt x 326.95384pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[16]
-<pictures/GUI/Sample_Plot.png, id=102, 1154.3125pt x 813.0375pt>
+[15]
+<pictures/GUI/Sample_Plot.png, id=99, 1154.3125pt x 813.0375pt>
 File: pictures/GUI/Sample_Plot.png Graphic file (type png)
 <use pictures/GUI/Sample_Plot.png>
-Package pdftex.def Info: pictures/GUI/Sample_Plot.png  used on input line 418.
+Package pdftex.def Info: pictures/GUI/Sample_Plot.png  used on input line 419.
 (pdftex.def)             Requested size: 433.62pt x 305.42177pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[17 <./pictures/GUI/Plot_Frame.png>]
-<pictures/GUI/Download_Frame.png, id=107, 1003.75pt x 756.8275pt>
+[16 <./pictures/GUI/Plot_Frame.png>]
+<pictures/GUI/Download_Frame.png, id=104, 1003.75pt x 756.8275pt>
 File: pictures/GUI/Download_Frame.png Graphic file (type png)
 <use pictures/GUI/Download_Frame.png>
 Package pdftex.def Info: pictures/GUI/Download_Frame.png  used on input line 42
-7.
+8.
 (pdftex.def)             Requested size: 433.62pt x 326.95384pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[18 <./pictures/GUI/Sample_Plot.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 437--438
+[17 <./pictures/GUI/Sample_Plot.png>]
+LaTeX Font Info:    Try loading font information for T1+cmss on input line 435.
 
- []
-
-LaTeX Font Info:    Try loading font information for T1+cmss on input line 441.
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmss.fd
 File: t1cmss.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
+Overfull \hbox (12.57004pt too wide) in paragraph at lines 435--437
+[]\T1/cmss/m/n/10.95 https://bitbucket.org/atraxoo/energiebilanzablationsgebiet
+pasterze/wiki/Home \T1/cmr/m/n/12 im Wi-ki des Pro-
+ []
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 441--442
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 444--445
+Underfull \hbox (badness 10000) in paragraph at lines 445--446
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 448--449
 
  []
 
@@ -1275,39 +1247,39 @@ Underfull \hbox (badness 10000) in paragraph at lines 444--445
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[19 <./pictures/GUI/Download_Frame.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 446--447
+[18 <./pictures/GUI/Download_Frame.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 450--451
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 448--450
+Underfull \hbox (badness 10000) in paragraph at lines 452--454
 
  []
 
 
-Overfull \hbox (59.1711pt too wide) in paragraph at lines 453--454
+Overfull \hbox (59.1711pt too wide) in paragraph at lines 457--458
 \T1/cmr/m/n/12 in Py-thon. In der of-fi-zi-el-len Py-thon Do-ku-men-ta-ti-on un
 -ter \T1/cmss/m/n/10.95 htt-ps://docs.python.org/3/library/venv.html
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 455--456
+Underfull \hbox (badness 10000) in paragraph at lines 459--460
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 457--459
+Underfull \hbox (badness 10000) in paragraph at lines 461--463
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 463--464
+Underfull \hbox (badness 10000) in paragraph at lines 467--468
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 465--466
+Underfull \hbox (badness 10000) in paragraph at lines 469--470
 
  []
 
@@ -1315,109 +1287,113 @@ Underfull \hbox (badness 10000) in paragraph at lines 465--466
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[20]
+[19]
 
 LaTeX Warning: Reference `fig:Energiebilanz im gesamten Messzeitraum' on page 2
-1 undefined on input line 472.
+0 undefined on input line 476.
 
-<../Software/plots/Total_energy_balance.png, id=121, 845.559pt x 559.18912pt>
+<../Software/plots/Total_energy_balance.png, id=118, 845.559pt x 559.18912pt>
 File: ../Software/plots/Total_energy_balance.png Graphic file (type png)
 <use ../Software/plots/Total_energy_balance.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance.png  used on in
-put line 476.
+put line 480.
 (pdftex.def)             Requested size: 433.62pt x 286.76971pt.
-<../Software/plots/Total_energy_balance_summed.png, id=122, 838.332pt x 559.189
+<../Software/plots/Total_energy_balance_summed.png, id=119, 838.332pt x 559.189
 12pt>
 File: ../Software/plots/Total_energy_balance_summed.png Graphic file (type png)
 
 <use ../Software/plots/Total_energy_balance_summed.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed.png  use
-d on input line 500.
+d on input line 504.
 (pdftex.def)             Requested size: 433.62pt x 289.23563pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[21 <../Software/plots/Total_energy_balance.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 505--507
+[20 <../Software/plots/Total_energy_balance.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 509--511
 
  []
 
 
 LaTeX Warning: Reference `Sensible und latente W\IeC {\"a}rme im gesamten Messz
-eitraum' on page 22 undefined on input line 508.
+eitraum' on page 21 undefined on input line 512.
 
-<../Software/plots/Energy_balance_only_radiation.png, id=127, 840.13875pt x 559
+<../Software/plots/Energy_balance_only_radiation.png, id=124, 840.13875pt x 559
 .18912pt>
 File: ../Software/plots/Energy_balance_only_radiation.png Graphic file (type pn
 g)
 <use ../Software/plots/Energy_balance_only_radiation.png>
 Package pdftex.def Info: ../Software/plots/Energy_balance_only_radiation.png  u
-sed on input line 513.
+sed on input line 517.
 (pdftex.def)             Requested size: 433.62pt x 288.61275pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[22 <../Software/plots/Total_energy_balance_summed.png>]
-<../Software/plots/Energy_balance_only_sens_and_latent_heat.png, id=132, 846.46
+[21 <../Software/plots/Total_energy_balance_summed.png>]
+<../Software/plots/Energy_balance_only_sens_and_latent_heat.png, id=129, 846.46
 237pt x 559.18912pt>
 File: ../Software/plots/Energy_balance_only_sens_and_latent_heat.png Graphic fi
 le (type png)
 <use ../Software/plots/Energy_balance_only_sens_and_latent_heat.png>
 Package pdftex.def Info: ../Software/plots/Energy_balance_only_sens_and_latent_
-heat.png  used on input line 522.
+heat.png  used on input line 526.
 (pdftex.def)             Requested size: 433.62pt x 286.46255pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[23 <../Software/plots/Energy_balance_only_radiation.png> <../Software/plots/En
+[22 <../Software/plots/Energy_balance_only_radiation.png> <../Software/plots/En
 ergy_balance_only_sens_and_latent_heat.png>]
-<../Software/plots/Energy_balance_only_sensible_heat.png, id=138, 838.332pt x 5
+<../Software/plots/Energy_balance_only_sensible_heat.png, id=135, 838.332pt x 5
 59.18912pt>
 File: ../Software/plots/Energy_balance_only_sensible_heat.png Graphic file (typ
 e png)
 <use ../Software/plots/Energy_balance_only_sensible_heat.png>
 Package pdftex.def Info: ../Software/plots/Energy_balance_only_sensible_heat.pn
-g  used on input line 531.
+g  used on input line 535.
 (pdftex.def)             Requested size: 433.62pt x 289.23563pt.
-<../Software/plots/Total_energy_balance_summed_with_ablation.png, id=139, 878.0
+<../Software/plots/Total_energy_balance_summed_with_ablation.png, id=136, 878.0
 805pt x 559.18912pt>
 File: ../Software/plots/Total_energy_balance_summed_with_ablation.png Graphic f
 ile (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_ablation.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_abl
-ation.png  used on input line 541.
+ation.png  used on input line 545.
 (pdftex.def)             Requested size: 433.62pt x 276.14673pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[24 <../Software/plots/Energy_balance_only_sensible_heat.png>]
+[23 <../Software/plots/Energy_balance_only_sensible_heat.png>]
 <../Software/plots/Total_energy_balance_summed_with_water_equivalent.png, id=14
-5, 876.27374pt x 559.18912pt>
+1, 876.27374pt x 559.18912pt>
 File: ../Software/plots/Total_energy_balance_summed_with_water_equivalent.png G
 raphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_water_equivalent.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_wat
-er_equivalent.png  used on input line 551.
+er_equivalent.png  used on input line 561.
 (pdftex.def)             Requested size: 433.62pt x 276.7184pt.
+
+Overfull \vbox (6.59328pt too high) has occurred while \output is active []
+
+
+[24 <../Software/plots/Total_energy_balance_summed_with_ablation.png>]
 <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.png, 
-id=146, 876.27374pt x 531.1845pt>
+id=147, 876.27374pt x 531.1845pt>
 File: ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.
 png Graphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.p
 ng>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_wat
-er_equivalent_2017.png  used on input line 559.
+er_equivalent_2017.png  used on input line 587.
 (pdftex.def)             Requested size: 433.62pt x 262.86012pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[25 <../Software/plots/Total_energy_balance_summed_with_ablation.png> <../Softw
-are/plots/Total_energy_balance_summed_with_water_equivalent.png>]
+[25 <../Software/plots/Total_energy_balance_summed_with_water_equivalent.png>]
 <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.png, 
 id=152, 876.27374pt x 531.1845pt>
 File: ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.
@@ -1425,15 +1401,13 @@ png Graphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.p
 ng>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_wat
-er_equivalent_2018.png  used on input line 566.
+er_equivalent_2018.png  used on input line 594.
 (pdftex.def)             Requested size: 433.62pt x 262.86012pt.
-File: ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.
-png Graphic file (type png)
-<use ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.p
-ng>
-Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_wat
-er_equivalent_2017.png  used on input line 576.
-(pdftex.def)             Requested size: 433.62pt x 262.86012pt.
+
+Underfull \hbox (badness 10000) in paragraph at lines 599--600
+
+ []
+
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
@@ -1441,6 +1415,13 @@ Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 [26 <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.p
 ng> <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.p
 ng>]
+Underfull \hbox (badness 10000) in paragraph at lines 615--616
+
+ []
+
+
+LaTeX Warning: Reference `d' on page 27 undefined on input line 617.
+
 <../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.png, i
 d=158, 845.559pt x 559.18912pt>
 File: ../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.p
@@ -1448,64 +1429,69 @@ ng Graphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.pn
 g>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_periodic
-_trend_eliminated.png  used on input line 586.
+_trend_eliminated.png  used on input line 621.
 (pdftex.def)             Requested size: 433.62pt x 286.76971pt.
-<../Software/plots/Radiation_summed_periodic_trend_eliminated.png, id=159, 845.
+
+Overfull \vbox (6.59328pt too high) has occurred while \output is active []
+
+
+[27]
+<../Software/plots/Radiation_summed_periodic_trend_eliminated.png, id=162, 845.
 559pt x 559.18912pt>
 File: ../Software/plots/Radiation_summed_periodic_trend_eliminated.png Graphic 
 file (type png)
 <use ../Software/plots/Radiation_summed_periodic_trend_eliminated.png>
 Package pdftex.def Info: ../Software/plots/Radiation_summed_periodic_trend_elim
-inated.png  used on input line 593.
+inated.png  used on input line 630.
 (pdftex.def)             Requested size: 433.62pt x 286.76971pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[27 <../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.pn
+[28 <../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.pn
 g>]
 <../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png, id
-=164, 845.559pt x 559.18912pt>
+=167, 845.559pt x 559.18912pt>
 File: ../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.pn
 g Graphic file (type png)
 <use ../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png
 >
 Package pdftex.def Info: ../Software/plots/Latent_and_Sensible_summed_periodic_
-trend_eliminated.png  used on input line 600.
+trend_eliminated.png  used on input line 637.
 (pdftex.def)             Requested size: 433.62pt x 286.76971pt.
 
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[28 <../Software/plots/Radiation_summed_periodic_trend_eliminated.png> <../Soft
+[29 <../Software/plots/Radiation_summed_periodic_trend_eliminated.png> <../Soft
 ware/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png>]
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[29]
-Underfull \hbox (badness 10000) in paragraph at lines 621--622
+[30]
+Underfull \hbox (badness 10000) in paragraph at lines 655--656
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 623--624
+Underfull \hbox (badness 10000) in paragraph at lines 657--658
 
  []
 
 
-Overfull \hbox (7.60368pt too wide) in paragraph at lines 625--626
+Overfull \hbox (7.60368pt too wide) in paragraph at lines 659--660
 \T1/cmr/m/n/12 tut für Geo-gra-phie und Raum-for-schung. On-li-ne ver-füg-bar u
 n-ter https://geographie.uni-
  []
 
 
-Overfull \hbox (99.43863pt too wide) in paragraph at lines 625--626
+Overfull \hbox (99.43863pt too wide) in paragraph at lines 659--660
 \T1/cmr/m/n/12 graz.at/de/forschung/forschungsgruppen/aladyn/projekte/pasterze/
 messergebnisse/laengenaenderung/,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 625--626
+Underfull \hbox (badness 10000) in paragraph at lines 659--660
 
  []
 
@@ -1513,12 +1499,9 @@ Underfull \hbox (badness 10000) in paragraph at lines 625--626
 Overfull \vbox (6.59328pt too high) has occurred while \output is active []
 
 
-[30] (./Bachelorarbeit_Theurl_Manuel.aux)
+[31] (./Bachelorarbeit_Theurl_Manuel.aux)
 
 LaTeX Warning: There were undefined references.
-
-
-LaTeX Warning: There were multiply-defined labels.
 
 Package logreq Info: Writing requests to 'Bachelorarbeit_Theurl_Manuel.run.xml'
 .
@@ -1526,10 +1509,10 @@ Package logreq Info: Writing requests to 'Bachelorarbeit_Theurl_Manuel.run.xml'
 
  ) 
 Here is how much of TeX's memory you used:
- 12565 strings out of 494830
- 205518 string characters out of 6177366
- 624361 words of memory out of 5000000
- 15676 multiletter control sequences out of 15000+600000
+ 12576 strings out of 494830
+ 206243 string characters out of 6177366
+ 624425 words of memory out of 5000000
+ 15687 multiletter control sequences out of 15000+600000
  17397 words of font info for 44 fonts, out of 8000000 for 9000
  38 hyphenation exceptions out of 8191
  45i,11n,54p,1153b,1706s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1549,10 +1532,10 @@ e/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-
 dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/f
 onts/type1/public/amsfonts/cm/cmsy8.pfb>
-Output written on Bachelorarbeit_Theurl_Manuel.pdf (37 pages, 4652127 bytes).
+Output written on Bachelorarbeit_Theurl_Manuel.pdf (38 pages, 2908651 bytes).
 PDF statistics:
- 493 PDF objects out of 1000 (max. 8388607)
- 141 compressed objects within 2 object streams
+ 498 PDF objects out of 1000 (max. 8388607)
+ 143 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  111 words of extra memory for PDF output out of 10000 (max. 10000000)
 
