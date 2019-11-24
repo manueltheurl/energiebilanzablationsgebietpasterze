@@ -45,6 +45,14 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{20}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{30}
+\contentsline {subsection}{\numberline {4.1}Energiebilanz}{20}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{31}
+\contentsline {subsection}{\numberline {4.2}Ablation, Schmelzwasser}{24}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.3}\IeC {\"A}nderung des Eisdickenverlustes bei ``global dimming'' bzw. ``global brightening''}{28}
+\defcounter {refsection}{0}\relax 
+\contentsline {subsection}{\numberline {4.4}Periodische Trendelimination der Energiebilanz}{28}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {5}Fazit}{31}
+\defcounter {refsection}{0}\relax 
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{32}

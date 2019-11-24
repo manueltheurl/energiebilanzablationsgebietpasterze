@@ -19,62 +19,13 @@
 
 \refsection{0}
   \datalist[entry]{nyt/global//global/global}
-    \entry{LaengenaenderungPasterze}{online}{}
-      \name{author}{3}{}{%
-        {{uniquename=0,uniquepart=base,hash=fb96b5e30b26ee098704f352d2c87bad}{%
-           family={Breininger},
-           familyi={B\bibinitperiod}}}%
-        {{uniquename=0,uniquepart=base,hash=f1477e4ac77c2bd2ce9d511a2b834b05}{%
-           family={Wakonigg},
-           familyi={W\bibinitperiod},
-           given={Herwig},
-           giveni={H\bibinitperiod},
-           givenun=0}}%
-        {{uniquename=1,uniquepart=given,hash=00378925a8040a875560701f5d74eb39}{%
-           family={Lieb},
-           familyi={L\bibinitperiod},
-           given={Gerhard},
-           giveni={G\bibinitperiod},
-           givenun=1}}%
-      }
-      \name{editor}{1}{}{%
-        {{hash=61bf1fb612c78c36e42469ee23460e67}{%
-           family={Geographie\bibnamedelimb und\bibnamedelima Raumforschung},
-           familyi={G\bibinitperiod\bibinitdelim u\bibinitperiod\bibinitdelim R\bibinitperiod},
-           given={Institut},
-           giveni={I\bibinitperiod},
-           prefix={für},
-           prefixi={f\bibinitperiod}}}%
-      }
-      \strng{namehash}{4f35ef8c2a67120849fc5d6631e901c1}
-      \strng{fullhash}{4f35ef8c2a67120849fc5d6631e901c1}
-      \strng{bibnamehash}{4f35ef8c2a67120849fc5d6631e901c1}
-      \strng{authorbibnamehash}{4f35ef8c2a67120849fc5d6631e901c1}
-      \strng{authornamehash}{4f35ef8c2a67120849fc5d6631e901c1}
-      \strng{authorfullhash}{4f35ef8c2a67120849fc5d6631e901c1}
-      \strng{editorbibnamehash}{61bf1fb612c78c36e42469ee23460e67}
-      \strng{editornamehash}{61bf1fb612c78c36e42469ee23460e67}
-      \strng{editorfullhash}{61bf1fb612c78c36e42469ee23460e67}
-      \field{sortinit}{B}
-      \field{sortinithash}{276475738cc058478c1677046f857703}
-      \field{labeldatesource}{nodate}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{title}{Längenänderung der Pasterze}
-      \verb{urlraw}
-      \verb https://geographie.uni-graz.at/de/forschung/forschungsgruppen/aladyn/projekte/pasterze/messergebnisse/laengenaenderung/
-      \endverb
-      \verb{url}
-      \verb https://geographie.uni-graz.at/de/forschung/forschungsgruppen/aladyn/projekte/pasterze/messergebnisse/laengenaenderung/
-      \endverb
-    \endentry
     \entry{ThePhysicsOfGlaciers}{book}{}
       \name{author}{2}{}{%
-        {{uniquename=0,uniquepart=base,hash=6ece570d779689151138da43d95c8d7b}{%
+        {{uniquename=0,uniquepart=base,hash=0261f81b2e9c1484f944057ce69ef4dd}{%
            family={Cuffey},
            familyi={C\bibinitperiod},
-           given={Kurt\bibnamedelima M.},
-           giveni={K\bibinitperiod\bibinitdelim M\bibinitperiod},
+           given={Kurt},
+           giveni={K\bibinitperiod},
            givenun=0}}%
         {{uniquename=0,uniquepart=base,hash=bfccfbfb8b2ebbf3b5f86435a5e37f71}{%
            family={Paterson},
@@ -83,49 +34,60 @@
            giveni={W\bibinitperiod\bibinitdelim S\bibinitperiod\bibinitdelim B\bibinitperiod},
            givenun=0}}%
       }
-      \list{publisher}{1}{%
-        {Academic Press}%
+      \list{location}{1}{%
+        {Burlington MA}%
       }
-      \strng{namehash}{a1d207a7ec763d33dba88f0473861797}
-      \strng{fullhash}{a1d207a7ec763d33dba88f0473861797}
-      \strng{bibnamehash}{a1d207a7ec763d33dba88f0473861797}
-      \strng{authorbibnamehash}{a1d207a7ec763d33dba88f0473861797}
-      \strng{authornamehash}{a1d207a7ec763d33dba88f0473861797}
-      \strng{authorfullhash}{a1d207a7ec763d33dba88f0473861797}
+      \list{publisher}{1}{%
+        {Butterworth-Heinemann/Elsevier}%
+      }
+      \strng{namehash}{6ac6c7a43d6ea3ac77051ee9c3174a5e}
+      \strng{fullhash}{6ac6c7a43d6ea3ac77051ee9c3174a5e}
+      \strng{bibnamehash}{6ac6c7a43d6ea3ac77051ee9c3174a5e}
+      \strng{authorbibnamehash}{6ac6c7a43d6ea3ac77051ee9c3174a5e}
+      \strng{authornamehash}{6ac6c7a43d6ea3ac77051ee9c3174a5e}
+      \strng{authorfullhash}{6ac6c7a43d6ea3ac77051ee9c3174a5e}
       \field{sortinit}{C}
       \field{sortinithash}{963e9d84a3da2344e8833203de5aed05}
       \field{extradatescope}{labelyear}
       \field{labeldatesource}{year}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{edition}{4th ed.}
       \field{isbn}{0123694612}
-      \field{title}{The Physics of Glaciers}
+      \field{title}{The physics of glaciers}
       \field{year}{2010}
     \endentry
     \entry{Pasterze}{book}{}
       \name{author}{2}{}{%
-        {{uniquename=1,uniquepart=given,hash=4ce40c55e0e980dd63da660ff211c41f}{%
+        {{uniquename=0,uniquepart=base,hash=4ce40c55e0e980dd63da660ff211c41f}{%
            family={Lieb},
            familyi={L\bibinitperiod},
            given={Gerhard\bibnamedelima Karl},
            giveni={G\bibinitperiod\bibinitdelim K\bibinitperiod},
-           givenun=1}}%
-        {{uniquename=0,uniquepart=base,hash=98f18f5c1457021acc13850b2b6aa414}{%
+           givenun=0}}%
+        {{uniquename=0,uniquepart=base,hash=b330be138e5ccf4c3ad906fd3d795351}{%
            family={Slupetzky},
            familyi={S\bibinitperiod},
-           given={Heinz},
+           given={H.},
            giveni={H\bibinitperiod},
            givenun=0}}%
       }
-      \list{publisher}{1}{%
-        {Pustet Anton}%
+      \list{institution}{2}{%
+        {Nationalpark Hohe Tauern (Agency : Austria)}%
+        {{Ö}sterreichischer Alpenverein (1950- )}%
       }
-      \strng{namehash}{64c6b5a39c9be9194677d61e441f6a0c}
-      \strng{fullhash}{64c6b5a39c9be9194677d61e441f6a0c}
-      \strng{bibnamehash}{64c6b5a39c9be9194677d61e441f6a0c}
-      \strng{authorbibnamehash}{64c6b5a39c9be9194677d61e441f6a0c}
-      \strng{authornamehash}{64c6b5a39c9be9194677d61e441f6a0c}
-      \strng{authorfullhash}{64c6b5a39c9be9194677d61e441f6a0c}
+      \list{location}{1}{%
+        {Salzburg}%
+      }
+      \list{publisher}{1}{%
+        {A. Pustet}%
+      }
+      \strng{namehash}{fe692e6efb03c0b7674abd813e04bc06}
+      \strng{fullhash}{fe692e6efb03c0b7674abd813e04bc06}
+      \strng{bibnamehash}{fe692e6efb03c0b7674abd813e04bc06}
+      \strng{authorbibnamehash}{fe692e6efb03c0b7674abd813e04bc06}
+      \strng{authornamehash}{fe692e6efb03c0b7674abd813e04bc06}
+      \strng{authorfullhash}{fe692e6efb03c0b7674abd813e04bc06}
       \field{sortinit}{L}
       \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
       \field{extradatescope}{labelyear}
@@ -133,43 +95,57 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{isbn}{3702506527}
-      \field{title}{Die Pasterze: Der Gletscher am Großglockner}
+      \field{title}{Die Pasterze}
       \field{year}{2011}
     \endentry
-    \entry{Themicroclimateofvalleyglaciers}{article}{}
-      \name{author}{1}{}{%
-        {{uniquename=0,uniquepart=base,hash=5d5b44452fe6dc3ebcd84342bdd7000b}{%
-           family={Oerlemans},
-           familyi={O\bibinitperiod},
-           given={Johannes},
-           giveni={J\bibinitperiod},
+    \entry{LaengenaenderungPasterze}{misc}{}
+      \name{author}{3}{}{%
+        {{uniquename=1,uniquepart=given,hash=e9c5fbc6e0e34c600ead180cefbbac64}{%
+           family={Wakonigg},
+           familyi={W\bibinitperiod},
+           given={Breininger},
+           giveni={B\bibinitperiod},
+           givenun=1}}%
+        {{uniquename=1,uniquepart=given,hash=f1477e4ac77c2bd2ce9d511a2b834b05}{%
+           family={Wakonigg},
+           familyi={W\bibinitperiod},
+           given={Herwig},
+           giveni={H\bibinitperiod},
+           givenun=1}}%
+        {{uniquename=0,uniquepart=base,hash=4ce40c55e0e980dd63da660ff211c41f}{%
+           family={Lieb},
+           familyi={L\bibinitperiod},
+           given={Gerhard\bibnamedelima Karl},
+           giveni={G\bibinitperiod\bibinitdelim K\bibinitperiod},
            givenun=0}}%
       }
-      \list{publisher}{1}{%
-        {Cambridge University Press ({CUP})}%
+      \name{editor}{1}{}{%
+        {{hash=b06943fd6161fab3f20b238a1b4202ae}{%
+           family={{Institut f{ü}r Geographie und Raumforschung}},
+           familyi={I\bibinitperiod}}}%
       }
-      \strng{namehash}{5d5b44452fe6dc3ebcd84342bdd7000b}
-      \strng{fullhash}{5d5b44452fe6dc3ebcd84342bdd7000b}
-      \strng{bibnamehash}{5d5b44452fe6dc3ebcd84342bdd7000b}
-      \strng{authorbibnamehash}{5d5b44452fe6dc3ebcd84342bdd7000b}
-      \strng{authornamehash}{5d5b44452fe6dc3ebcd84342bdd7000b}
-      \strng{authorfullhash}{5d5b44452fe6dc3ebcd84342bdd7000b}
-      \field{sortinit}{O}
-      \field{sortinithash}{dad3efd0836470093a7b4a7bb756eb8c}
-      \field{extradatescope}{labelyear}
-      \field{labeldatesource}{year}
+      \strng{namehash}{1096e30de4881285011b12be17e15705}
+      \strng{fullhash}{1096e30de4881285011b12be17e15705}
+      \strng{bibnamehash}{1096e30de4881285011b12be17e15705}
+      \strng{authorbibnamehash}{1096e30de4881285011b12be17e15705}
+      \strng{authornamehash}{1096e30de4881285011b12be17e15705}
+      \strng{authorfullhash}{1096e30de4881285011b12be17e15705}
+      \strng{editorbibnamehash}{b06943fd6161fab3f20b238a1b4202ae}
+      \strng{editornamehash}{b06943fd6161fab3f20b238a1b4202ae}
+      \strng{editorfullhash}{b06943fd6161fab3f20b238a1b4202ae}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{labeldatesource}{nodate}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{journaltitle}{Journal of Glaciology}
-      \field{number}{206}
-      \field{title}{The microclimate of valley glaciers}
-      \field{volume}{57}
-      \field{year}{2010}
-      \field{pages}{1173\bibrangedash 1174}
-      \range{pages}{2}
-      \verb{doi}
-      \verb 10.3189/002214311798843313
+      \field{title}{L{ä}ngen{ä}nderung der Pasterze}
+      \verb{urlraw}
+      \verb https://geographie.uni-graz.at/de/forschung/forschungsgruppen/aladyn/projekte/pasterze/messergebnisse/laengenaenderung/
       \endverb
+      \verb{url}
+      \verb https://geographie.uni-graz.at/de/forschung/forschungsgruppen/aladyn/projekte/pasterze/messergebnisse/laengenaenderung/
+      \endverb
+      \warn{\item Entry 'LaengenaenderungPasterze' (literature.bib): Invalid format '10.06.2019' of date field 'urldate' - ignoring}
     \endentry
     \entry{GlobalDimming}{article}{}
       \name{author}{1}{}{%
@@ -179,9 +155,6 @@
            given={Martin},
            giveni={M\bibinitperiod},
            givenun=0}}%
-      }
-      \list{publisher}{1}{%
-        {American Geophysical Union ({AGU})}%
       }
       \strng{namehash}{0e7e72898c38b2205e8a57d64662f07f}
       \strng{fullhash}{0e7e72898c38b2205e8a57d64662f07f}
@@ -195,16 +168,62 @@
       \field{labeldatesource}{year}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
+      \field{issn}{0148-0227}
       \field{journaltitle}{Journal of Geophysical Research}
-      \field{month}{6}
+      \field{number}{21}
       \field{title}{Global dimming and brightening: A review}
       \field{volume}{114}
       \field{year}{2009}
+      \field{pages}{1319}
+      \range{pages}{1}
       \verb{doi}
       \verb 10.1029/2008jd011470
       \endverb
     \endentry
+    \entry{EnlighteningGlobalDimming}{article}{}
+      \name{author}{1}{}{%
+        {{uniquename=0,uniquepart=base,hash=0e7e72898c38b2205e8a57d64662f07f}{%
+           family={Wild},
+           familyi={W\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod},
+           givenun=0}}%
+      }
+      \list{publisher}{1}{%
+        {American Meteorological Society}%
+      }
+      \strng{namehash}{0e7e72898c38b2205e8a57d64662f07f}
+      \strng{fullhash}{0e7e72898c38b2205e8a57d64662f07f}
+      \strng{bibnamehash}{0e7e72898c38b2205e8a57d64662f07f}
+      \strng{authorbibnamehash}{0e7e72898c38b2205e8a57d64662f07f}
+      \strng{authornamehash}{0e7e72898c38b2205e8a57d64662f07f}
+      \strng{authorfullhash}{0e7e72898c38b2205e8a57d64662f07f}
+      \field{sortinit}{W}
+      \field{sortinithash}{ecb89ff85896a47dc313960773ac311d}
+      \field{extradatescope}{labelyear}
+      \field{labeldatesource}{year}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Bulletin of the American Meteorological Society}
+      \field{month}{1}
+      \field{number}{1}
+      \field{title}{Enlightening Global Dimming and Brightening}
+      \field{volume}{93}
+      \field{year}{2012}
+      \field{pages}{27\bibrangedash 37}
+      \range{pages}{11}
+      \verb{doi}
+      \verb 10.1175/bams-d-11-00074.1
+      \endverb
+      \verb{urlraw}
+      \verb https://doi.org/10.1175/bams-d-11-00074.1
+      \endverb
+      \verb{url}
+      \verb https://doi.org/10.1175/bams-d-11-00074.1
+      \endverb
+    \endentry
   \enddatalist
+  \missing{Themicroclimateofvalleyglaciers}
 \endrefsection
 \endinput
 
