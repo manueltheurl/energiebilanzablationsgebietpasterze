@@ -29,7 +29,6 @@ import frame_read
 import frame_energy_balance as frame_scope
 import frame_sum
 import visualizer
-TEST = False
 sys.path.append("GUI")
 
 
@@ -47,7 +46,7 @@ class NoGuiManager:
 
         reader.singleton.fetch_file_metadata()
 
-        if not os.path.exists(self.pickle_file_name):
+        if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"]:
             reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
                                                               endtime=self.endTime,
                                                               resolution_by_percentage=100,
@@ -63,8 +62,9 @@ class NoGuiManager:
 
             multiple_measurement_singleton = multiple_measurements.singleton
 
-            with open(self.pickle_file_name, 'wb') as f:
-                pickle.dump(multiple_measurement_singleton, f)
+            if cfg["USE_PICKLE_FOR_SAVING_TIME"]:
+                with open(self.pickle_file_name, 'wb') as f:
+                    pickle.dump(multiple_measurement_singleton, f)
         else:
             with open(self.pickle_file_name, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
@@ -89,26 +89,27 @@ class NoGuiManager:
         visualizer.singleton.plot_single_component("air_pressure", "Pa", use_summed_measurements=False,
                                                    save_name="air_pressure")
 
-        visualizer.singleton.plot_energy_balance_components({
-            "sw_radiation_in": "Short wave in",
-            "sw_radiation_out": "Short wave out",
-            "lw_radiation_in": "Long wave in",
-            "lw_radiation_out": "Long wave out"},
+        visualizer.singleton.plot_energy_balance_components([
+            "sw_radiation_in",
+            "sw_radiation_out",
+            "lw_radiation_in",
+            "lw_radiation_out"],
             use_summed_measurements=True, save_name="Energy_balance_only_radiation")
 
-        visualizer.singleton.plot_energy_balance_components({
-            "sensible_heat": "Sensible heat",
-            "latent_heat": "Latent heat"},
-            use_summed_measurements=True, save_name="Energy_balance_only_sens_and_latent_heat")
+        # visualizer.singleton.plot_energy_balance_components(["sensible_heat",
+        #     "latent_heat"],
+        #     use_summed_measurements=True, save_name="Energy_balance_only_sens_and_latent_heat")
+        #
 
-        visualizer.singleton.plot_energy_balance_components({
-            "latent_heat": "Latent heat"},
-            use_summed_measurements=True, save_name="Energy_balance_only_latent_heat")
+        visualizer.singleton.accumulate_plots = True
+        visualizer.singleton.plot_energy_balance_components([
+            "latent_heat"],
+            use_summed_measurements=True)
 
-        visualizer.singleton.plot_energy_balance_components({
-            "sensible_heat": "Sensible heat"},
-            use_summed_measurements=True, save_name="Energy_balance_only_sensible_heat")
-
+        visualizer.singleton.plot_energy_balance_components([
+            "sensible_heat"],
+            use_summed_measurements=True, save_name="Energy_balance_only_sens_and_latent_heat_accum")
+        visualizer.singleton.accumulate_plots = False
 
         visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True,
                                                        ablation_or_water_equivalent="show_ablation",
@@ -132,7 +133,6 @@ class NoGuiManager:
 
         # visualizer.singleton.plot_temperature_and_water_equivalent(use_summed_measurements=False,
         #                                                            save_name="Temperature_and_waterequivalent_2017")
-
 
 
         multiple_measurements.singleton.reset_scope_to_all()
@@ -252,47 +252,6 @@ if __name__ == "__main__":
         frame_download.create_singleton()
         frame_sum.create_singleton()
         frame_read.create_singleton()
-
-        if TEST:
-            navigation_bar.singleton.btn_energybalanceframe["state"] = "normal"
-            navigation_bar.singleton.btn_sumframe["state"] = "normal"
-            navigation_bar.singleton.btn_plotframe["state"] = "normal"
-
-            reader.singleton.add_file_path("PAS_10min_MED.csv")
-
-            read_in_measurements = reader.singleton.read_meterologic_file_to_objects(resolution_by_percentage=20)
-
-            reader.singleton.fetch_file_metadata()
-
-            info_bar_text_list = [
-                "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),
-                "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement()),
-                "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement()),
-                "Time resolution: " + str(multiple_measurements.singleton.get_time_resolution()) + " minutes"
-            ]
-            info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
-
-            frame_energy_balance.singleton.fill_fields_with_read_in_values()
-            multiple_measurements.singleton.calculate_energy_balance_for_scope()
-
-            info_bar_text = ""
-            sum_by_amount = "30"
-            sum_by_time_interval = None
-
-            if sum_by_amount is not None and sum_by_amount.isdigit():
-                info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
-                multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
-                frame_plot.singleton.enable_option_to_use_summed_measurements()
-            elif sum_by_time_interval is not None:
-                info_bar_text += "Measurements every " + str(int(sum_by_time_interval.total_seconds() // 60)) + " minutes summed"
-                multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
-                frame_plot.singleton.enable_option_to_use_summed_measurements()
-
-            info_bar.singleton.change_sum_info(info_bar_text)
-
-            navigation_bar.singleton.show_plot_frame()
-
-            visualizer.singleton.plot_total_energy_balance(use_summed_measurements=True, add_ablation=True)
 
         gui_thread = threading.Thread(target=gui_main.singleton.mainloop())
         gui_thread.start()

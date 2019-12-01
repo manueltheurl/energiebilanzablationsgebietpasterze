@@ -19,6 +19,8 @@ from scipy import optimize
 import functions as fc
 import calendar
 
+matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
+
 DAYS_365 = dt.timedelta(days=365)  # hours=5, minutes=48     365.2422 days in year approximately  dont change to that
 
 
@@ -88,34 +90,40 @@ class Visualize:
         months = mdates.MonthLocator()
         year_labels = mdates.DateFormatter('%Y')
         month_labels = mdates.DateFormatter('%b')  # Jan, Feb, ..
-        # mondays = mdates.WeekdayLocator(mdates.MONDAY)
+        mondays = mdates.WeekdayLocator(mdates.MONDAY)
 
         # calculate time_spawn between first and last measurement
         time_spawn = dt.timedelta(days=self.ax.get_xlim()[1] - self.ax.get_xlim()[0])
 
         time_border_1 = dt.timedelta(days=3*365)
-        time_border_2 = dt.timedelta(days=150)
-        # time_border_3 = dt.timedelta(days=30*2)
+        time_border_2 = dt.timedelta(days=2*365)
+        time_border_3 = dt.timedelta(days=150)
+        time_border_4 = dt.timedelta(days=60)
 
         # major and ax title
         if time_spawn >= time_border_1:
             self.ax.set_xlabel("Year")
             self.ax.xaxis.set_major_locator(years)
             self.ax.xaxis.set_major_formatter(year_labels)
-        elif time_border_2 <= time_spawn <= time_border_1:
+        elif time_border_3 <= time_spawn <= time_border_1:  # 1 till 3 beware
             self.ax.xaxis.set_major_locator(years)
             self.ax.xaxis.set_major_formatter(year_labels)
             self.ax.set_xlabel("Year")
-            self.ax.xaxis.set_tick_params(rotation=45)  # only major are rotated
-            self.ax.xaxis.set_minor_formatter(month_labels)
+            self.ax.xaxis.set_tick_params(rotation=45, pad=15)  # only major are rotated
+            self.ax.xaxis.set_tick_params(which="minor", labelsize=float(cfg["plot_text_size_minor"]))  # only major are rotated
             self.ax.xaxis.set_minor_locator(months)
 
-        # elif time_border_3 <= time_spawn <= time_border_2:
-        #     self.ax.xaxis.set_major_locator(months)
-        #     self.ax.xaxis.set_major_formatter(month_labels)
-        #     self.ax.set_xlabel("Month")
-        #     self.ax.xaxis.set_minor_locator(months)
-        #     self.ax.xaxis.set_minor_formatter(month_labels)
+            if time_border_3 <= time_spawn <= time_border_2:
+                self.ax.xaxis.set_minor_formatter(month_labels)
+        elif time_border_4 <= time_spawn <= time_border_3:
+            self.ax.xaxis.set_major_locator(months)
+            self.ax.xaxis.set_major_formatter(month_labels)
+            self.ax.set_xlabel("Month")
+            # self.ax.xaxis.set_tick_params()  # only major are rotated
+            self.ax.xaxis.set_tick_params(which="minor")  # only major are rotated
+            self.ax.xaxis.set_minor_locator(mondays)
+
+        # else even smaller take month as major, and days as minor maybe?
 
         # ELSE just take default tick and ticklabels
 
@@ -155,16 +163,21 @@ class Visualize:
                     "cumulated_ablation", use_summed_measurements=use_summed_measurements)
 
                 second_ax.plot(y_dates, second_ax_vals, label="Ablation", color="red")
-                second_ax.set_ylabel("m")
+                second_ax.set_ylabel("Ablation [m]")
+
+                # hack .. but will always start at the upper left, so this is legitim
+                y_lims = second_ax.get_ylim()
+                second_ax.set_ylim([y_lims[0], y_lims[1]+0.5])
+
                 main_title = "Total Energy balance with Ablation"
 
             elif ablation_or_water_equivalent == "show_water_equivalent":
                 if use_summed_measurements:  # has to be summed here for now
                     actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                        "actual_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
+                        "actual_mm_we_per_a", use_summed_measurements=use_summed_measurements)
 
                     theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                        "theoretical_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
+                        "theoretical_mm_we_per_a", use_summed_measurements=use_summed_measurements)
 
                     second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Measured Meltwater")
                     second_ax.plot(
@@ -183,8 +196,7 @@ class Visualize:
                         print(save_name, "correlation coefficient:",
                               round(float(np.ma.corrcoef(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)[0][1]), 2))
 
-                second_ax.set_ylabel("l/m^2 per " + multiple_measurements.singleton.get_time_resolution(of="summed",
-                                                                                                    as_beautiful_string=True))
+                second_ax.set_ylabel("Water equivalent [m/a]")
                 main_title = "Total Energy balance with actual and theoretical Ablation as water equivalent"
 
             else:
@@ -198,7 +210,7 @@ class Visualize:
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
         # self.ax.set_title(main_title + summed_title_appendix)
-        self.ax.set_ylabel("W/m^2") 
+        self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
         
         self.show_save_and_close_plot("energy_balance", save_name=save_name)
@@ -252,7 +264,7 @@ class Visualize:
         second_ax.legend(loc="upper right")      
 
         self.modify_axes()
-        self.ax.set_ylabel("Temperature °C")
+        self.ax.set_ylabel("Temperature [°C]")
         self.show_save_and_close_plot("temperature", save_name=save_name)
 
     def plot_energy_balance_components(self,
@@ -260,7 +272,11 @@ class Visualize:
         x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
         self.initialize_plot("energy_balance")
-        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
+
+        if len(options) == 4 and "sw_radiation_in" in options and "sw_radiation_out" in options and "lw_radiation_in" in options and "lw_radiation_out" in options:
+            title_used_options = "Net radiation (SW and LW)"
+        else:
+            title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
 
         self.ax.plot(y_dates, x_vals,
                      zorder=3, label=title_used_options, linewidth=2)
@@ -270,7 +286,7 @@ class Visualize:
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
         # self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
-        self.ax.set_ylabel("W/m^2") 
+        self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
         self.show_save_and_close_plot("energy_balance", save_name=save_name)
 
@@ -342,7 +358,7 @@ class Visualize:
         self.ax.plot(diff_dates, diff_vals)
         self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
 
-        self.ax.set_ylabel("W/m^2") 
+        self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
@@ -369,7 +385,7 @@ class Visualize:
         self.ax.plot(diff_dates, diff_vals)
         self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
 
-        self.ax.set_ylabel("W/m^2") 
+        self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"

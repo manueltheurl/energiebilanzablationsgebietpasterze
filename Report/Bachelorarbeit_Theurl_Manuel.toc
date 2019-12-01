@@ -1,58 +1,58 @@
 \boolfalse {citerequest}\boolfalse {citetracker}\boolfalse {pagetracker}\boolfalse {backtracker}\relax 
 \babel@toc {german}{}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {1}Einleitung}{1}
+\contentsline {section}{\numberline {1}Einleitung}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {2}Theoretisches Grundwissen}{1}
+\contentsline {section}{\numberline {2}Theoretisches Grundwissen}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.1}Pasterze und Ablationsgebiet}{1}
+\contentsline {subsection}{\numberline {2.1}Pasterze und Ablationsgebiet}{1}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.2}Energiebilanz}{3}
+\contentsline {subsection}{\numberline {2.2}Energiebilanz}{3}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {2.2.1}Energiebilanz Komponenten}{3}
+\contentsline {subsubsection}{\numberline {2.2.1}Energiebilanz Komponenten}{3}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{4}
+\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{4}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.3}``Global dimming'' und ``Global brigthening''}{5}
+\contentsline {subsection}{\numberline {2.3}``Global dimming'' und ``Global brigthening''}{5}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3}Methodik}{7}
+\contentsline {section}{\numberline {3}Methodik}{7}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{7}
+\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{7}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.2}Periodische Trendelimination}{9}
+\contentsline {subsection}{\numberline {3.2}Periodische Trendelimination}{9}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{9}
+\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{9}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.4}Bereinigung der Ablationsmessung}{10}
+\contentsline {subsection}{\numberline {3.4}Bereinigung der Ablationsmessung}{10}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.5}Programmierung in Python}{11}
+\contentsline {subsection}{\numberline {3.5}Programmierung in Python}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.1}Umgebung}{11}
+\contentsline {subsubsection}{\numberline {3.5.1}Umgebung}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.2}Unittesting}{11}
+\contentsline {subsubsection}{\numberline {3.5.2}Unittesting}{11}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Transfer Koeffizient}{12}
+\contentsline {paragraph}{Transfer Koeffizient}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Sensible Hitze}{12}
+\contentsline {paragraph}{Sensible W\IeC {\"a}rme}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.3}Grafisches Userinterface}{12}
+\contentsline {subsubsection}{\numberline {3.5.3}Grafisches Userinterface}{12}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.6}Softwareverwaltung}{18}
+\contentsline {subsection}{\numberline {3.6}Softwareverwaltung}{16}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.6.1}Download und Installation}{18}
+\contentsline {subsubsection}{\numberline {3.6.1}Download und Installation}{16}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.6.2}Update}{19}
+\contentsline {subsubsection}{\numberline {3.6.2}Update}{17}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{20}
+\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{18}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.1}Energiebilanz}{20}
+\contentsline {subsection}{\numberline {4.1}Energiebilanz}{18}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.2}Ablation, Schmelzwasser}{24}
+\contentsline {subsection}{\numberline {4.2}Ablation, Schmelzwasser}{21}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.3}\IeC {\"A}nderung des Eisdickenverlustes bei ``global dimming'' bzw. ``global brightening''}{28}
+\contentsline {subsection}{\numberline {4.3}\IeC {\"A}nderung des Eisdickenverlustes bei ``global dimming'' bzw. ``global brightening''}{24}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.4}Periodische Trendelimination der Energiebilanz}{28}
+\contentsline {subsection}{\numberline {4.4}Periodische Trendelimination der Energiebilanz}{25}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{31}
+\contentsline {section}{\numberline {5}Fazit}{28}% 
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{32}
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{29}% 

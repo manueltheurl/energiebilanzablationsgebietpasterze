@@ -19,6 +19,15 @@ maxbibnames=9,
 firstinits=true,
 ]{biblatex}
 
+% DEFINES
+\newcommand{\guiplotsize}{0.75}
+\newcommand{\resultplotsize}{0.9}
+
+
+
+
+
+
 \addbibresource{literature.bib}
 
 
@@ -78,11 +87,21 @@ Manuel Theurl, 01610570\\
 \pagenumbering{Roman} 
 \section*{Abstract}
 
-\pagebreak
-\section*{Vorwort}
+Ziel dieser Arbeit ist es, aus Wetterdaten ein Modell für die Energiebilanz für das Ablationsgebiet eines Gletschers zu finden. Als Beispielgletscher dient hier die Pasterze in Österreich. Es soll ein gesamtheitliches Programm entwickelt werden, dass die Aufbereitung der Daten, die Berechnung der Energiebilanz und anschauliche Darstellungsmethoden bietet. Im Falle der Pasterze liegen auch Ablationsmessungen vor, wodurch eine Untersuchung des berechneten und des aus der Energiebilanz modellierten Schmelzwassers möglich ist.\\
+
+Es soll somit erörtert werden, ob das modellieren der Energiebilanz aus Wetterdaten sinnvoll ist und ähnliche Werte für die Ablation bzw. das Schmelzwasser folgen, wie aus den Messungen dazu. Mit dem fertigen Modell kann auch der Fragestellung nachgegangen werden, inwieweit sich die Phänomene ``Global dimming'' bzw. ``Global brightening'' auf das Abschmelzen des Gletschers im Ablationsgebiet auswirken.\\
+
+Die Untersuchungen erfolgen mit der Programmiersprache Python, wobei die Formeln zur Berechnung der Energiebilanz stark an \cite[153-157]{ThePhysicsOfGlaciers} angelehnt sind. Im Zuge der Programmierung wird ein GUI mitentwickelt, welches die Funktionalität der Software anschaulich aufbereitet darbietet. Das GUI ist öffentlich zugänglich, eine Beschreibung zum Download und zur Installation ist in der Arbeit ersichtlich.\\
+
+Als Resultat folgt, dass es eine starke Korrelation zwischen dem aus den Ablationsmessungen errechneten Schmelzwasser und dem modellierten Schmelzwasser gibt. Das Modell repräsentiert die Realität somit gut. Weiters stellt sich außerdem heraus, dass sich Phänomene wie ``Global dimming'' bzw. ``Global brightening'' signifikant auf das Abschmelzen eines Gletschers im Ablationsgebiet auswirken.\\
+
 
 \pagebreak
-\section*{Danksagung}
+\section*{Vorwort und Danksagung}
+Mein persönlicher Wunsch war ein Thema für die Bachelorarbeit zu finden, welches einerseits eine Verbindung zu den Bergen hat und andererseits Programmierkenntnisse verlangt. Als begnadeter Osttiroler Bergläufer und ``Schitouren-Geher'' war die Energiebilanz im Ablationsgebiet der Pasterze somit ein perfektes Thema.\\
+
+Ich danke an dieser Stelle meinem Bachelorarbeit-Betreuer Herrn Ass.-Prof. Dr. Abermann Jakob der mir einerseits viel Freiraum zur selbstständigen Gestaltung der Arbeit gelassen hat und mich andererseits tatkräftig mit tollen Ideen, zahlreicher wissenschaftlicher Literatur und persönlich bei zahlreichen Treffen unterstützt hat. Ein Dank geht außerdem auch an die Wetterstation bei der Pasterze (TODO Name?), die Wetterdaten vom Ablationsgebiet der Pasterze zur Verfügung gestellt hat.
+
 
 \pagebreak
 
@@ -141,7 +160,7 @@ Um die Energiebilanz in der oberen Schicht eines Gletschers zu verstehen, müsse
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/energy_balance_components.png}
+\includegraphics[width=0.8\textwidth]{pictures/energy_balance_components.png}
 \caption[Energiebilanz Komponenten]{Energiebilanz Komponenten \parencite{Themicroclimateofvalleyglaciers}}
 \label{fig:Energiebilanz Komponenten}
 \end{figure}
@@ -257,10 +276,10 @@ $\mu(z)$ und $T_a(z)$ stehen für die Windgeschwindigkeit und Lufttemperatur gem
 \subsection{Periodische Trendelimination}\label{Periodische Trendelimination}
 Im Falle der Pasterze liegen leider nur für 3 Jahre Messdaten für die Berechnung der Energiebilanz zur Verfügung. Deshalb kann durch eine periodische Trendelimination keine aussagekräftige Annahme über eventuellen Trend getroffen werden. Trotzdem wird die Möglichkeit zur periodischen Trendelimination in die Software implementiert, um z.B. bei anderen Gletschern und längeren Datenaufzeichnungen bzw. in Zukunft auch bei der Pasterze Trendanalysen durchzuführen.\\
 
-Eine Periode dauert bei der Energiebilanz genau ein Jahr. Die Bereinigung von der Periode erfolgt auf die Weise, dass der erste Wert nach dem vollendeten Jahr vom Wert im ersten Jahr zu dieser Zeit abgezogen wird. Es wird dabei immer jener Wert vom ersten Jahr gesucht, welcher datumsmäßig (abzüglich von der Jahresanzahl) am nächsten zum betrachteten Wert liegt. Dieser Vorgang wird für alle weiteren Werte wiederholt. Soll ein eventueller linearer Trend erhalten bleiben, so müssen die Werte immer bezogen auf das erste Jahr abgezogen werden. Wird nämlich immer nur das Vorjahr dafür verwendet, so fällt dieser lineare Trend auch noch weg. In diesem Fall könnten dann die enstandenen Residuen auf Normalverteilung überprüft werden.\\
+Eine Periode dauert bei der Energiebilanz genau ein Jahr. Die Bereinigung von der Periode erfolgt auf die Weise, dass der erste Wert nach dem vollendeten Jahr vom Wert im ersten Jahr zu dieser Zeit abgezogen wird. Es wird dabei immer jener Wert vom ersten Jahr gesucht, welcher datumsmäßig (abzüglich von der Jahresanzahl) am nächsten zum betrachteten Wert liegt. Dieser Vorgang wird für alle weiteren Werte wiederholt. Soll ein eventueller linearer Trend erhalten bleiben, so müssen die Werte immer bezogen auf das erste Jahr abgezogen werden. Wird nämlich immer nur das Vorjahr dafür verwendet, so fällt dieser lineare Trend auch noch weg. In diesem Fall könnten dann die entstandenen Residuen auf Normalverteilung überprüft werden.\\
 Bei dieser Trendelimination soll aber der lineare Trend eben aufrecht erhalten bleiben. Aus der genannten Methode folgt somit, dass die Wertereihe zumindest größer als ein Jahr sein muss, ansonsten kann kein periodischer Trend eliminiert werden.\\
 
-Im Zuge der Durchführung wird nicht nur die errechnete Energiebilanz an sich trendeliminiert, sonder auch Einzelteile, wie z.B. nur die Strahlungsenergie oder nur der sensible und latente Hitzeeintrag.
+Im Zuge der Durchführung wird nicht nur die errechnete Energiebilanz an sich trendeliminiert, sonder auch Einzelteile, wie z.B. nur die Strahlungsenergie oder nur der sensible und latente Wärmeeintrag.
 
 
 \subsection{Berechnung des resultierenden Schmelzwassers}
@@ -271,7 +290,7 @@ Formel (vgl. \cite[142]{ThePhysicsOfGlaciers})
 \end{equation}
 
 
-gibt einen Zusammenhang zwischen Nettoenenergiebilanz und der Schmelzrate $\dot{m}$ vom Gletschereis. Wenn die Temperatur im betrachteten Eislayer den Schmelzpunkt erreicht hat, dann fällt der zweite Term der Gleichung durch
+gibt einen Zusammenhang zwischen Nettoenergiebilanz und der Schmelzrate $\dot{m}$ vom Gletschereis. Wenn die Temperatur im betrachteten Eislayer den Schmelzpunkt erreicht hat, dann fällt der zweite Term der Gleichung durch
 
 
 \begin{equation}
@@ -300,7 +319,7 @@ folgt somit das tatsächliche Schmelzwasser in Liter über einen gewissen Zeitra
 Durch 
 
 \begin{equation}
-A_{meas} = W \cdot \rho_{i}
+a_{meas} = W \cdot \rho_{i}
 \end{equation}
 
 
@@ -309,7 +328,7 @@ kann die gemessene Ablation in Meter ebenfalls in Schmelzwasseräquivalent umger
 Analog dazu kann auch das modellierte Schmelzwasser durch
 
 \begin{equation}
-A_{mod} = -\frac{W}{\rho_{i}}
+a_{mod} = -\frac{W}{\rho_{i}}
 \end{equation}
 
 noch in Ablation in Meter umgerechnet werden.
@@ -352,7 +371,7 @@ unittest		   & Erstellung einer Testumgebung   \\  \hline
 \subsubsection{Unittesting}
 Das Python Modul unittest wird dazu verwendet, Funktionen des Programmes zu überprüfen. Für diese Arbeit wird es dazu verwendet, die Richtigkeit der Formeln für die Berechnung der Energiebilanz zu gewährleisten.\\
 
-Cuffey und Paterson bieten auf Seite 157 Testwerte und das dazugehörige Ergebnis für den Transfer Koeffizienten $C^*$ von Formel \ref{eq:Transferkoeffizient} und für die Berechnungen der sensiblen Hitze \ref{eq:Berechnung sensibler Energiefluss} an.
+Cuffey und Paterson bieten auf Seite 157 Testwerte und das dazugehörige Ergebnis für den Transfer Koeffizienten $C^*$ von Formel \ref{eq:Transferkoeffizient} und für die Berechnungen der sensiblen Wärme \ref{eq:Berechnung sensibler Energiefluss} an.
 
 
 \paragraph{Transfer Koeffizient}
@@ -361,9 +380,9 @@ Bei gegebener Messhöhe zwischen 1 und 2 Metern und Oberflächenrauheit von  1 -
 
 Der Test mit einer Messhöhe von 1.5 Metern und Oberflächenrauheit von 2 Millimetern wird angenommen.
 
-\paragraph{Sensible Hitze}
-Bei gegebenem Luftdruck von $800~hPa$, Windeschgeschwindigkeit von $5~m/s$, Lufttemperatur von $5^\circ C$ und Transferkoeffizienten von $0.002$ soll das Ergebnis der sensiblen Hitze (Formel \ref{eq:Berechnung sensibler Energiefluss}) zwischen 47 und $53~W/m^2$ liegen. \\
-Weiters erwähnt ist, dass von einer schmelzenden Eisoberläche ausgegangen wird und weil die Eisoberflächentemperatur nach Stefan Boltzmann (Formel \ref{eq:Boltzmann-Gesetz}) berechnet wird, wird der Funktion als langwellige Ausstrahlung ein Wert von $1000~W/m^2$ mitgegeben, womit die Eistemperatur in der Berechnung bei 0 liegt.\\
+\paragraph{Sensible Wärme}
+Bei gegebenem Luftdruck von $800~hPa$, Windgeschwindigkeit von $5~m/s$, Lufttemperatur von $5^\circ C$ und Transferkoeffizienten von $0.002$ soll das Ergebnis der sensiblen Wärme (Formel \ref{eq:Berechnung sensibler Energiefluss}) zwischen 47 und $53~W/m^2$ liegen. \\
+Weiters erwähnt ist, dass von einer schmelzenden Eisoberfläche ausgegangen wird und weil die Eisoberflächentemperatur nach Stefan Boltzmann (Formel \ref{eq:Boltzmann-Gesetz}) berechnet wird, wird der Funktion als langwellige Ausstrahlung ein Wert von $1000~W/m^2$ mitgegeben, womit die Eistemperatur in der Berechnung bei 0 liegt.\\
 
 Der Test wird wiederum angenommen.
 
@@ -382,7 +401,7 @@ In \textbf{Read} kann eine Messdatei eingelesen werden.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/GUI/Read_Frame.png}
+\includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Read_Frame.png}
 \caption{GUI Read-Frame}
 \label{fig:GUI Read-Frame}
 \end{figure}
@@ -391,7 +410,7 @@ Im Fenster \textbf{Scope/Energy balance} kann der momentane Betrachungszeitraum 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/GUI/Scope_Energy_Balance_Frame.png}
+\includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Scope_Energy_Balance_Frame.png}
 \caption{GUI Scope/Energy Balance-Frame}
 \label{fig:GUI Scope/Energy Balance-Frame}
 \end{figure}
@@ -400,7 +419,7 @@ Bei \textbf{Sum} können einzelne Messungen zusammengefasst werden.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/GUI/Scope_Energy_Balance_Frame.png}
+\includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Scope_Energy_Balance_Frame.png}
 \caption{GUI Sum-Frame}
 \label{fig:GUI Sum-Frame}
 \end{figure}
@@ -409,7 +428,7 @@ In \textbf{Plot} können die Ergebnisse als graphische Darstellungen betrachtet 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/GUI/Plot_Frame.png}
+\includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Plot_Frame.png}
 \caption{GUI Plot-Frame}
 \label{fig:GUI Plot-Frame}
 \end{figure}
@@ -418,7 +437,7 @@ Beim erstellen des Plots erscheint ein neues Fenster in welchem der Plot vergrö
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/GUI/Sample_Plot.png}
+\includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Sample_Plot.png}
 \caption{GUI Beispiel Plot}
 \label{fig:GUI Beispiel Plot}
 \end{figure}
@@ -427,7 +446,7 @@ Im \textbf{Download}-Bereich können die erzielten Ergebnisse noch in Form von W
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/GUI/Download_Frame.png}
+\includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Download_Frame.png}
 \caption{GUI Download-Frame}
 \label{fig:GUI Download-Frame}
 \end{figure}
@@ -475,16 +494,16 @@ heruntergeladen werden. Zur direkt ausführbaren .exe Version gibt es keine Upda
 \pagebreak
 \section{Ergebnisse und Interpretation}
 \subsection{Energiebilanz}
-Abbildung \ref{fig:Energiebilanz gesamter Messzeitraum} zeigt die errechnete Energiebilanz über den gesamten Messzeitraum von Ende 2016 bis Mitte 2019. 
+Abbildung \ref{fig:Energiebilanz gesamter Messzeitraum, Zeitintervall 10 Minuten} zeigt die errechnete Energiebilanz über den gesamten Messzeitraum von Ende 2016 bis Mitte 2019. 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance.png}
-\caption{Energiebilanz gesamter Messzeitraum}
-\label{fig:Energiebilanz gesamter Messzeitraum}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance.png}
+\caption{Energiebilanz gesamter Messzeitraum, Zeitintervall 10 Minuten}
+\label{fig:Energiebilanz gesamter Messzeitraum, Zeitintervall 10 Minuten}
 \end{figure}
 
-Es sind leider nur knapp drei Jahre ausreichend Messdaten zur Berechnung der Energiebilanz verfügbar. An den Daten ist deutlich ein periodischer Verlauf erkennbar mit Maximum im Sommer und Minimum im Winter. Die Spitzen der Energiebilanz liegen bei knapp 1500 $W/m^2$, die Minima bei ca $-250 W/m^2$. Diese ungleiche Verteilung ist erklärbar durch die Messungen im Ablationsgebiet des Gletschers. Hier sollte ja das Jahresmittel deutlich positiv sein. Folgende Tabelle zeigt die zwei Mittelwerte der Energiebilanz in den Jahren 2017 und 2018.
+Es sind leider nur knapp drei Jahre ausreichend Messdaten zur Berechnung der Energiebilanz verfügbar. An den Daten ist deutlich ein periodischer Verlauf erkennbar mit Maximum im Sommer und Minimum im Winter. Die Spitzen der Energiebilanz liegen bei knapp 1500 $W/m^2$, die Minima bei ca. $-250 W/m^2$. Diese ungleiche Verteilung ist erklärbar durch die Messungen im Ablationsgebiet des Gletschers. Hier sollte ja das Jahresmittel deutlich positiv sein. Folgende Tabelle zeigt die zwei Mittelwerte der Energiebilanz in den Jahren 2017 und 2018.
 
 
 \begin{table}[H]
@@ -503,55 +522,46 @@ Die nachfolgende Abbildung zeigt den gleichen Zusammenhang wie zuvor, jedoch wur
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed.png}
-\caption{Energiebilanz gesamter Messzeitraum 2 tägiges Mittel}
-\label{fig:..}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed.png}
+\caption{Energiebilanz gesamter Messzeitraum 2, tägiges Mittel}
+\label{Energiebilanz gesamter Messzeitraum 2, tägiges Mittel}
 \end{figure}
 
 Dies resultiert in einem glatteren Verlauf der Kurve, wobei es im Bereich des Sommers zwischen unterschiedlichen 2-Tages-Werten trotzdem noch Abweichungen von teils 300 $W/m^2$ gibt. Dies lässt sich auf unterschiedliche Wetterlagen zurückführen und könnte gut mit Sonnenscheinzeiten pro Tag usw. verglichen werden.\\
-Das Aufsummieren der Bilanzen bringt einen Ausreißer gegen Ende der Messreihe im Juni 2019 zum Vorschein. Dieses zweitätige Mittel von mehr als 700 $W/m^2$ ist mit knapp 200 $W/m^2$ Vorsprung der größe Wert im betrachteten Zeitraum. Durch Darstellung von einzelnen Komponenten der Energiebilanz kann erörtert werden, woraus dieser Maximalwert hervorgeht.\\
+Das Aufsummieren der Bilanzen bringt einen Ausreißer gegen Ende der Messreihe im Juni 2019 zum Vorschein. Dieses zweitägige Mittel von mehr als 700 $W/m^2$ ist mit knapp 200 $W/m^2$ Vorsprung der größte Wert im betrachteten Zeitraum. Durch Darstellung von einzelnen Komponenten der Energiebilanz kann erörtert werden, woraus dieser Maximalwert hervorgeht.\\
 
-Abbildung \ref{fig:Strahlungskomponente im gesamten Messzeitraum} zeigt die kombinierten Bestandteile ``Short wave in'', ``Short wave out'', ``Long wave in'' und ``Long wave out'', Abbildung \ref{fig:Sensible und latente Wärme im gesamten Messzeitraum} hingegen nur die sensible und latente Wärme. Die periodische Schwimgung ist bei der ersteren Abbildung deutlicher ausgeprägt. Bei der sensbilen und latenten Wärme ist ersichtlich, dass in den Wintermonaten die Summe der beiden relativ konstant bleibt. Es ist also nicht der Fall, dass um den Winterbeginn Ende Dezember die Werte am niedrigsten sind.\\
-Der genannte Ausreißer zum Ende der Messreihe kann bei der latenten und sensiblen Wärme erkannt werden. Es muss also noch genauer differenziert werden.
+Abbildung \ref{fig:Nettostrahlung (SW und LW) im gesamten Messzeitraum} zeigt die kombinierten Bestandteile ``Short wave in'', ``Short wave out'', ``Long wave in'' und ``Long wave out'', Abbildung \ref{fig:Sensible und latente Wärme im gesamten Messzeitraum} hingegen nur die sensible und latente Wärme. Die periodische Schwingung ist bei der ersteren Abbildung deutlicher ausgeprägt.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Energy_balance_only_radiation.png}
-\caption{Strahlungskomponente im gesamten Messzeitraum}
-\label{fig:Strahlungskomponente im gesamten Messzeitraum}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Energy_balance_only_radiation.png}
+\caption{Strahlungskomponente im gesamten Messzeitraum, 2 tägiges Mittel}
+\label{fig:Nettostrahlung (SW und LW) im gesamten Messzeitraum}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Energy_balance_only_sens_and_latent_heat.png}
-\caption{Sensible und latente Wärme im gesamten Messzeitraum}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Energy_balance_only_sens_and_latent_heat_accum.png}
+\caption{Sensible und latente Wärme im gesamten Messzeitraum, 2 tägiges Mittel}
 \label{fig:Sensible und latente Wärme im gesamten Messzeitraum}
 \end{figure}
 
-Es stellt sich heraus, dass der genannte hohe Wert der Energiebilanz, bei der sensiblen Wärme auftritt (siehe Abbildung \ref{fig:Sensible Hitze im gesamten Messzeitraum}). In der Berechnung der sensiblen Hitze fließen die Messgrößen Luftdruck, Windgeschwindigkeit, Lufttemperatur und Eistemperatur mit ein. Bei genauerer Betrachtung der Messwerte stellt sich heraus, dass alle drei Komponenten zu dieser Zeit hohe Werte aufweisen. Hohe Temperatur, hoher Luftdruck und gleichzeitig hohe Windgeschwindigkeit resultiert in einem hohen sensiblen Hitzeeintrag. 
-
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1\textwidth]{../Software/plots/Energy_balance_only_sensible_heat.png}
-\caption{Sensible Hitze im gesamten Messzeitraum}
-\label{fig:Sensible Hitze im gesamten Messzeitraum}
-\end{figure}
+Es stellt sich heraus, dass der genannte hohe Wert der Energiebilanz, bei der sensiblen Wärme auftritt. In der Berechnung der sensiblen Wärme fließen die Messgrößen Luftdruck, Windgeschwindigkeit, Lufttemperatur und Eistemperatur mit ein. Bei genauerer Betrachtung der Messwerte stellt sich heraus, dass alle drei Komponenten zu dieser Zeit hohe Werte aufweisen. Hohe Temperatur, hoher Luftdruck und gleichzeitig hohe Windgeschwindigkeit resultiert in einem hohen sensiblen Wärmeeintrag. 
 
 
 \subsection{Ablation, Schmelzwasser}
-In Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung} wird zusätzlich zur errechneten Energiebilanz die bereinigte Ablation visualisiert. Wie zu erwarten, gibt es immer im Sommer bei hoher Energiebilanz Eisschmelze und im Winter Stagnation. Zu beobachten ist, dass die Energiebilanz schon vor dem eigentlichen Beginn der Schmelze erhöht ist. Grund dafür ist, dass zuerst der liegende Schnee noch wegeschmolzen werden muss und erst dann die positive Energiebilanz Eisschmelze verursacht.
+In Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung} wird zusätzlich zur errechneten Energiebilanz die bereinigte Ablation visualisiert. Wie zu erwarten, gibt es immer im Sommer bei hoher Energiebilanz Eisschmelze und im Winter keine Änderung der Ablation. Dies bedeutet allerdings nicht, dass die Masse des Gletschers im Winter stagniert, da in diesem Zeitraum durch Schneefall Akkumulation auftritt, diese aber in der Ablationsmessung nicht sichtbar ist. Zu beobachten ist, dass die Energiebilanz schon vor dem eigentlichen Beginn der Schmelze erhöht ist. Grund dafür ist, dass zuerst der liegende Schnee noch weggeschmolzen werden muss und erst dann die positive Energiebilanz Eisschmelze verursacht.
 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed_with_ablation.png}
-\caption{Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_ablation.png}
+\caption{Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung, 2 tägiges Mittel}
 \label{fig:Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung}
 \end{figure}
 
 
-Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusätzlich das durch die Ablationsmessung errechnete und das modellierte Schmelwasser aus der Energiebilanz dargestellt wird. Wie bereits in der Durchführung erwähnt, wird für die Modellierung nur der Teil zwischen 1. Juni und 1. September pro Jahr verwendet, da zu dieser Zeit der Eislayer als isotherm mit 0 Grad angenommen werden kann, was die Modellierung erleichtert. Auffallend ist, dass das gemessene Schmelzwasser im Jahr 2017 abweichend zum modellierten teilweise deutlich weniger ist. Dies kann im Jahr 2018 nicht beobachtet werden. Kein gemessenes Schmelzwasser bedeutet, dass in der Ablationsmessung kein Rückgang der Eisdicke zu erkennen ist. Grund dafür könnte sein, dass? TODO
+Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusätzlich das durch die Ablationsmessung errechnete und das modellierte Schmelzwasser aus der Energiebilanz dargestellt wird. Wie bereits in der Durchführung erwähnt, wird für die Modellierung nur der Teil zwischen 1. Juni und 1. September pro Jahr verwendet, da zu dieser Zeit der Eislayer als isotherm mit 0 Grad angenommen werden kann, was die Modellierung erleichtert. Auffallend ist, dass das gemessene Schmelzwasser im Jahr 2017 abweichend zum modellierten teilweise deutlich weniger ist. Dies kann im Jahr 2018 nicht beobachtet werden. Kein gemessenes Schmelzwasser bedeutet, dass in der Ablationsmessung kein Rückgang der Eisdicke zu erkennen ist. Grund dafür könnte sein, dass? TODO
 
 % dass auch im Sommer evtl. Schnellfall auftreten kann und somit die Eisdickenabnahme kurzeitig komplett stoppt. Leider gibt es keine Niederschlagsmessungen, ansonsten könnten diese zusammen mit der Temperatur analysiert werden um so eventuelle    .. sollte nicht der Fall sein
 
@@ -561,13 +571,13 @@ Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusä
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent.png}
-\caption{Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent.png}
+\caption{Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser, 2 tägiges Mittel}
 \label{fig:Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser}
 \end{figure}
 
 
-Abbildung \ref{fig:Energiebilanz im Sommer 2017 inklusive gemessenem und modellierten Schmelzwasser} und \ref{fig:Energiebilanz im Sommer 2018 inklusive gemessenem und modellierten Schmelzwasser} zeigen den Zusammenhang in Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser} für die zwei Jahre 2017 und 2018 vergrößert auf. Tendenziell wird im Modell insbesondere bei Energiebilanzspitzen eine größerere Menge an Schmelzwasser angenommen. Der Verlauf der Kurve vom gemessenen Schmelzwasser an sich wird aber sehr gut von der Kurve des modellierten Schmelzwasser wiedergegeben. In folgender Tabelle wird diese visuelle Interpretation in Form vom Korrelationskoeffizienten nach Pearson in Zahlen ausgedrückt. 
+Abbildung \ref{fig:Energiebilanz im Sommer 2017 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser} und \ref{Energiebilanz im Sommer 2018 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser} zeigen den Zusammenhang in Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser} für die zwei Jahre 2017 und 2018 vergrößert auf. Tendenziell wird im Modell insbesondere bei Energiebilanzspitzen eine größere Menge an Schmelzwasser angenommen. Der Verlauf der Kurve vom gemessenen Schmelzwasser an sich wird aber sehr gut von der Kurve des modellierten Schmelzwasser wiedergegeben. In folgender Tabelle wird diese visuelle Interpretation in Form vom Korrelationskoeffizienten nach Pearson in Zahlen ausgedrückt. 
 
 
 \begin{table}[H]
@@ -587,22 +597,22 @@ Ab einer Korrelation von 0.7 wird von einer starken Korrelation gesprochen. Das 
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.png}
-\caption{Energiebilanz im Sommer 2017 inklusive gemessenem und modellierten Schmelzwasser}
-\label{fig:Energiebilanz im Sommer 2017 inklusive gemessenem und modellierten Schmelzwasser}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.png}
+\caption{Energiebilanz im Sommer 2017 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser, 2 tägiges Mittel}
+\label{fig:Energiebilanz im Sommer 2017 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.png}
-\caption{Energiebilanz im Sommer 2018 inklusive gemessenem und modellierten Schmelzwasser}
-\label{fig:Energiebilanz im Sommer 2018 inklusive gemessenem und modellierten Schmelzwasser}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.png}
+\caption{Energiebilanz im Sommer 2018 inklusive gemessenem und modellierten Schmelzwasser, 2 tägiges Mittel}
+\label{Energiebilanz im Sommer 2018 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser}
 \end{figure}
 
 \subsection{Änderung des Eisdickenverlustes bei ``global dimming'' bzw. ``global brightening''}
 Da das theoretische Modell der Energiebilanz und das daraus folgende Schmelzwasser gut mit der Realität übereinstimmt, können auch weitere Analysen über Veränderung der Energiebilanz durch ``global dimming'' und ``global brightening'' und dessen Auswirkung auf das Schmelzwasser vorgenommen werden. Um die Veränderung greifbarer zu machen, wird das Schmelzwasser, wie in der Durchführung beschrieben, in Eisdickenverlust umgerechnet.\\
 
-Für diese Analyse wird wieder das Jahr 2018 von 1. Juni bis 1. September (siehe Abbildung \ref{fig:Energiebilanz im Sommer 2018 inklusive gemessenem und modellierten Schmelzwasser}) verwendet. In diesem Zeitraum ergibt sich ein gemessener Gesamteisdickenverlust von $5.99~m$ und ein modellierter von $7.59~m$. Bei der Simulation von ``global dimming'' und ``global brightening'' wird die Veränderung dieses Eisdickenverlustes im Modell untersucht. Damit diese Änderungen so gut wie möglich der Realität entsprechen, werden alle Änderung noch mit dem Faktor $5.99/7.59$ multipliziert. Das Ergebnis ist in Tabelle zusammengefasst.
+Für diese Analyse wird wieder das Jahr 2018 von 1. Juni bis 1. September (siehe Abbildung \ref{Energiebilanz im Sommer 2018 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser}) verwendet. In diesem Zeitraum ergibt sich ein gemessener Gesamteisdickenverlust von $5.99~m$ und ein modellierter von $7.59~m$. Bei der Simulation von ``global dimming'' und ``global brightening'' wird die Veränderung dieses Eisdickenverlustes im Modell untersucht. Damit diese Änderungen so gut wie möglich der Realität entsprechen, werden alle Änderung noch mit dem Faktor $5.99/7.59$ multipliziert. Das Ergebnis ist in Tabelle zusammengefasst.
 
 \begin{table}[H]
 \centering
@@ -616,7 +626,7 @@ Differenz {[}cm{]} & -18    & -12 & -6 & 0  & 6  \\ \hline
 \end{tabular}
 \end{table}
 
-Es kann erkannt werden, dass sich ``global dimming'' und ``global brightening'' sehr wohl signifikant auf die Eisdicke eines Gletschers im Ablationsgebiet auswirken. Bei knapp $10~W/m^2$ kleinerer Energiebilanz über  die Sommermonate ergibt sich bereits ein um $18~cm$ geringerer Eisdickenverlust. Der Zusammenhang ist linear und kann somit mit ca. $6~cm$ pro $3 W/m^2$ weiter forgesetzt werden.\\
+Es kann erkannt werden, dass sich ``global dimming'' und ``global brightening'' sehr wohl signifikant auf die Eisdicke eines Gletschers im Ablationsgebiet auswirken. Bei knapp $10~W/m^2$ kleinerer Energiebilanz über  die Sommermonate ergibt sich bereits ein um $18~cm$ geringerer Eisdickenverlust. Der Zusammenhang ist linear und kann somit mit ca. $6~cm$ pro $3 W/m^2$ weiter fortgesetzt werden.\\
 
 \subsection{Periodische Trendelimination der Energiebilanz}
 
@@ -624,24 +634,24 @@ Wie bereits erwähnt, machen Trendeliminationen bei einer so kurzen Zeitreihe we
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.png}
-\caption{Trendelimination der Energiebilanz}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.png}
+\caption{Trendelimination der Energiebilanz, 2 tägiges Mittel}
 \label{fig:Trendelimination der Energiebilanz}
 \end{figure}
 
-Werden die Strahlungskomponente, sowie die der sensible und latente Hitzeeintrag der Energiebilanz separat betrachtet, kann erkannt werden, dass  die Abnahme aus der Strahlungskomponente resultiert. Die sensible und latente Wärme bleibt im Mittel über den betrachteten Zeitraum annährend Konstant.
+Werden die Strahlungskomponente, sowie die der sensible und latente Wärmeeintrag der Energiebilanz separat betrachtet, kann erkannt werden, dass  die Abnahme aus der Strahlungskomponente resultiert. Die sensible und latente Wärme bleibt im Mittel über den betrachteten Zeitraum annähernd Konstant.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Radiation_summed_periodic_trend_eliminated.png}
-\caption{Trendelimination der Strahlungskomponente der Energiebilanz}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Radiation_summed_periodic_trend_eliminated.png}
+\caption{Trendelimination der Strahlungskomponente der Energiebilanz, 2 tägiges Mittel}
 \label{fig:Trendelimination der Strahlungskomponente der Energiebilanz}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png}
-\caption{Trendelimination der sensiblen und latenten Wärme der Energiebilanz}
+\includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png}
+\caption{Trendelimination der sensiblen und latenten Wärme der Energiebilanz, 2 tägiges Mittel}
 \label{fig:Trendelimination der sensiblen und latenten Wärme der Energiebilanz}
 \end{figure}
 
