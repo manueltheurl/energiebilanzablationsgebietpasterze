@@ -36,8 +36,8 @@ class MeanMeasurement:
         self.__total_energy_balance = None
         self.__theoretical_melt_rate = None
 
-        self.__actual_m_we_per_a = None
-        self.__theoretical_m_we_per_a = None
+        self.__actual_mm_we_per_d = None
+        self.__theoretical_mm_we_per_d = None
 
         self.__actual_melt_water_per_sqm = None
         self.__theoretical_melt_water_per_sqm = None
@@ -212,14 +212,14 @@ class MeanMeasurement:
                 self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
                     self.__relative_ablation_measured)
 
-                self.__actual_m_we_per_a = energy_balance.singleton.melt_water_per_m2_to_m_we_per_a(
+                self.__actual_mm_we_per_d = energy_balance.singleton.melt_water_per_m2_to_mm_we_per_d(
                     self.__actual_melt_water_per_sqm, self.__datetime_end - self.__datetime_begin)
 
             if self.__theoretical_melt_rate is not None:
                 self.__theoretical_melt_water_per_sqm = energy_balance.singleton.meltrate_to_melt_water(
                     self.__theoretical_melt_rate, self.__datetime_end - self.__datetime_begin)
 
-                self.__theoretical_m_we_per_a = energy_balance.singleton.melt_rate_to_m_we_per_a(
+                self.__theoretical_mm_we_per_d = energy_balance.singleton.melt_rate_to_mm_we_per_d(
                     self.__theoretical_melt_rate)
 
                 self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
@@ -283,14 +283,12 @@ class MeanMeasurement:
         return self.__relative_ablation_modelled
 
     @property
-    def actual_mm_we_per_a(self):
-        return self.__actual_m_we_per_a
+    def actual_mm_we_per_d(self):
+        return self.__actual_mm_we_per_d
 
     @property
-    def theoretical_mm_we_per_a(self):
-        return self.__theoretical_m_we_per_a
-
-
+    def theoretical_mm_we_per_d(self):
+        return self.__theoretical_mm_we_per_d
 
     @property
     def total_energy_balance(self):

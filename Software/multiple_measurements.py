@@ -83,6 +83,21 @@ class MultipleMeasurements:
                 [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]
             ))
 
+    def get_vals_and_dates_of_selected_options(self, options, use_summed_measurements=False):
+        if use_summed_measurements:
+            x_vals = [0] * self.get_measurement_amount(of="summed")
+        else:
+            x_vals = [0] * self.get_measurement_amount()
+
+        for option in options:
+            x_vals = list(map(
+                fc.save_add, x_vals,
+                self.get_all_of(option, use_summed_measurements=use_summed_measurements)))
+
+        y_dates = self.get_all_of("datetime", use_summed_measurements=use_summed_measurements)
+
+        return x_vals, y_dates
+
     def sum_measurements_by_amount(self, amount):
         self.clear_summed_measurements()
 

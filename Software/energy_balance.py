@@ -10,6 +10,7 @@ PURE_ICE_DENSITY_AT_ZERO_DEG = 917  # kg/cubic meter  - taken from P. 142 Cuffey
 WATER_DENSITY_AT_ZERO_DEG = 1000  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
 PURE_ICE_LATENT_HEAD_OF_FUSION_AT_ZERO_DEG = 3.34 * 10 ** 5  # J/kg  - taken from P. 142 Cuffey and Paterson
 ONE_YEAR = dt.timedelta(days=365)
+ONE_DAY = dt.timedelta(days=1)
 
 
 class EnergyBalance:
@@ -111,15 +112,15 @@ class EnergyBalance:
         return 0
 
     @staticmethod
-    def melt_water_per_m2_to_m_we_per_a(melt_water, time_interval):
+    def melt_water_per_m2_to_mm_we_per_d(melt_water, time_interval):
         # 1 liter equals one mm
         # melt_water_in liters here
-        return melt_water * ONE_YEAR/time_interval / 1000
+        return melt_water * ONE_DAY/time_interval
 
     @staticmethod
-    def melt_rate_to_m_we_per_a(melt_rate):
+    def melt_rate_to_mm_we_per_d(melt_rate):
         # 1 liter equals one mm
-        return melt_rate * ONE_YEAR.total_seconds()
+        return melt_rate * ONE_DAY.total_seconds() * 1000
 
     @staticmethod
     def melt_water_to_meter_ablation(melt_water):

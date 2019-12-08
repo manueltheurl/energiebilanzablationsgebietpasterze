@@ -14,6 +14,7 @@ import datetime as dt
 # rc('text', usetex=True)
 import multiple_measurements
 import scipy
+import scipy.stats
 import numpy as np
 from scipy import optimize
 import functions as fc
@@ -138,10 +139,11 @@ class Visualize:
         if save_name is not None:
             plt.savefig(cfg["RESULT_PLOT_PATH"] + "/" + save_name + ".png", dpi=cfg["PLOT_RESOLUTION"],
                         bbox_inches='tight')
+            self.plot_type_initialized = dict.fromkeys(self.plot_type_initialized, False)
 
         if not self.accumulate_plots or not bool(cfg["PRO_VERSION"]):
             plt.close()
-            dict.fromkeys(self.plot_type_initialized, False)
+            self.plot_type_initialized = dict.fromkeys(self.plot_type_initialized, False)
 
     def plot_total_energy_balance(self, use_summed_measurements=False, ablation_or_water_equivalent=False,
                                   save_name=None):
@@ -174,10 +176,10 @@ class Visualize:
             elif ablation_or_water_equivalent == "show_water_equivalent":
                 if use_summed_measurements:  # has to be summed here for now
                     actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                        "actual_mm_we_per_a", use_summed_measurements=use_summed_measurements)
+                        "actual_mm_we_per_d", use_summed_measurements=use_summed_measurements)
 
                     theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                        "theoretical_mm_we_per_a", use_summed_measurements=use_summed_measurements)
+                        "theoretical_mm_we_per_d", use_summed_measurements=use_summed_measurements)
 
                     second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Measured Meltwater")
                     second_ax.plot(
@@ -185,18 +187,14 @@ class Visualize:
 
                     # calculate correlation coefficient
                     if save_name is not None:
-                        none_indexes = []
-                        for i, values in enumerate(zip(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)):
-                            if None in values:
-                                none_indexes.append(i)
 
-                        actual_melt_water_per_sqm = np.delete(actual_melt_water_per_sqm, none_indexes)
-                        theoretical_melt_water_per_sqm = np.delete(theoretical_melt_water_per_sqm, none_indexes)
+                        actual_melt_water_per_sqm, theoretical_melt_water_per_sqm = fc.remove_none_in_lists(
+                            [actual_melt_water_per_sqm, theoretical_melt_water_per_sqm])
 
                         print(save_name, "correlation coefficient:",
                               round(float(np.ma.corrcoef(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)[0][1]), 2))
 
-                second_ax.set_ylabel("Water equivalent [m/a]")
+                second_ax.set_ylabel("Water equivalent [mm/d]")
                 main_title = "Total Energy balance with actual and theoretical Ablation as water equivalent"
 
             else:
@@ -214,6 +212,67 @@ class Visualize:
         self.modify_axes()
         
         self.show_save_and_close_plot("energy_balance", save_name=save_name)
+
+    def plot_scatter_measured_and_component(self, years_to_plot, component, save_name=None):
+        # could be further generalized of course .. but this ist just needed for the thesis here
+
+        self.initialize_plot(None)
+
+        marker_types = ["o", "x"]  # extend how you like .. currently only 2, cause only 2 years
+        marker_colors = ["orange", "blue"]
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=True)
+
+        actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
+            "actual_mm_we_per_d", use_summed_measurements=True)
+
+        theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
+            component, use_summed_measurements=True)
+
+        for date, actual, theoretical in zip(y_dates, actual_melt_water_per_sqm, theoretical_melt_water_per_sqm):
+            if actual is not None and theoretical is not None:
+                year_index = years_to_plot.index(date.year)
+
+                self.ax.scatter(actual, theoretical, marker=marker_types[year_index], c=marker_colors[year_index])
+
+        # get rid of none values
+        actual_melt_water_per_sqm, theoretical_melt_water_per_sqm = fc.remove_none_in_lists(
+            [actual_melt_water_per_sqm, theoretical_melt_water_per_sqm])
+
+        actual_melt_water_per_sqm = np.array(actual_melt_water_per_sqm, dtype=np.float)
+        theoretical_melt_water_per_sqm = np.array(theoretical_melt_water_per_sqm, dtype=np.float)
+
+        # regression line
+
+        slope, intercept, r_value, p_value, std_err = scipy.stats.linregress(actual_melt_water_per_sqm,
+                                                                             theoretical_melt_water_per_sqm)
+
+        poly1d_fn = np.poly1d([slope, intercept])
+
+        print("Scatter measured and modelled w.e. slope:", round(slope, 2), "intercept", round(intercept, 2))
+
+        # poly1d_fn is now a function which takes in x and returns an estimate for y
+
+        self.ax.plot(actual_melt_water_per_sqm,
+                     poly1d_fn(actual_melt_water_per_sqm), linestyle="--", label="Regression line")
+
+        if component == "theoretical_mm_we_per_d":
+            self.ax.set_aspect("equal")
+            self.ax.set_ylabel("Modelled water equivalent [mm/d]")
+        elif component == "temperature":
+            self.ax.set_ylabel("Temperature [°C]")
+
+        self.ax.set_xlabel("Measured water equivalent [mm/d]")
+
+        # create legend entries
+        for i, year in enumerate(years_to_plot):
+            self.ax.scatter(None, None, marker=marker_types[i], c=marker_colors[i], label=str(year))
+
+        self.ax.legend()
+        self.ax.grid(linestyle="--", alpha=0.5)
+
+        self.show_save_and_close_plot(None, save_name=save_name)
 
     def plot_single_component(self, component, component_unit, use_summed_measurements=False, save_name=None):
         self.initialize_plot(None)
@@ -269,7 +328,7 @@ class Visualize:
 
     def plot_energy_balance_components(self,
                                        options, use_summed_measurements=False, save_name=None):
-        x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
+        x_vals, y_dates = multiple_measurements.singleton.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
 
         self.initialize_plot("energy_balance")
 
@@ -281,7 +340,7 @@ class Visualize:
         self.ax.plot(y_dates, x_vals,
                      zorder=3, label=title_used_options, linewidth=2)
 
-        self.ax.legend()
+        self.ax.legend(loc="upper right")
 
         summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
 
@@ -368,7 +427,7 @@ class Visualize:
 
     def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True,
                                                        save_name=None):
-        x_vals, y_dates = self.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
+        x_vals, y_dates = multiple_measurements.singleton.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
         self.initialize_plot("trend")
 
         days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
@@ -393,29 +452,6 @@ class Visualize:
         title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
         # self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
         self.show_save_and_close_plot("trend", save_name=save_name)
-
-    @staticmethod
-    def save_add(first, second):
-        if None not in [first, second]:
-            return first + second
-        return None
-
-    def get_vals_and_dates_of_selected_options(self, options, use_summed_measurements=False):
-        if use_summed_measurements:
-            x_vals = [0] * multiple_measurements.singleton.get_measurement_amount(of="summed")
-        else:
-            x_vals = [0] * multiple_measurements.singleton.get_measurement_amount()
-
-        for option in options:
-            x_vals = list(map(
-                self.save_add, x_vals,
-                multiple_measurements.singleton.get_all_of(option,
-                                                           use_summed_measurements=use_summed_measurements)))
-
-        y_dates = multiple_measurements.singleton.get_all_of("datetime",
-                                                             use_summed_measurements=use_summed_measurements)
-
-        return x_vals, y_dates
 
 
 singleton = Visualize()

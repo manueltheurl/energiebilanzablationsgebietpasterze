@@ -58,7 +58,7 @@ class NoGuiManager:
             multiple_measurements.singleton.check_for_snow_covering_for_scope()  # yet TODO
             multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
 
-            multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+            multiple_measurements.singleton.sum_measurements_by_months(1)
 
             multiple_measurement_singleton = multiple_measurements.singleton
 
@@ -74,6 +74,35 @@ class NoGuiManager:
         # multiple_measurements.singleton.change_measurement_resolution_by_time_interval(dt.timedelta(days=1))
         # multiple_measurements.singleton.sum_measurements_by_amount(30)
         # END --- NOT NEEDED JUST FOR REFERENCE
+
+        visualizer.singleton.accumulate_plots = True
+        visualizer.singleton.plot_energy_balance_components([
+            "sw_radiation_in"],
+            use_summed_measurements=True)
+        visualizer.singleton.plot_energy_balance_components([
+            "sw_radiation_out"],
+            use_summed_measurements=True)
+        visualizer.singleton.plot_energy_balance_components([
+            "lw_radiation_in"],
+            use_summed_measurements=True)
+        visualizer.singleton.plot_energy_balance_components([
+            "lw_radiation_out"],
+            use_summed_measurements=True)
+        visualizer.singleton.plot_energy_balance_components([
+            "latent_heat"],
+            use_summed_measurements=True)
+        visualizer.singleton.plot_energy_balance_components([
+            "sensible_heat"],
+            use_summed_measurements=True, save_name="Energy_balance_components_monthly_mean")
+        visualizer.singleton.accumulate_plots = False
+
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
+
+        visualizer.singleton.plot_scatter_measured_and_component(
+            [2017, 2018], "theoretical_mm_we_per_d", save_name="Scatter_measured_and_modelled_water_equivalent")
+
+        visualizer.singleton.plot_scatter_measured_and_component(
+            [2017, 2018], "temperature", save_name="Scatter_measured_water_equivalent_and_temperature")
 
         # BEGIN --- plots in use
         visualizer.singleton.plot_total_energy_balance(save_name="Total_energy_balance")
@@ -134,7 +163,6 @@ class NoGuiManager:
         # visualizer.singleton.plot_temperature_and_water_equivalent(use_summed_measurements=False,
         #                                                            save_name="Temperature_and_waterequivalent_2017")
 
-
         multiple_measurements.singleton.reset_scope_to_all()
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
             starttime=dt.datetime(2018, 5, 15), endtime=dt.datetime(2018, 9, 15))
@@ -143,12 +171,12 @@ class NoGuiManager:
                                                        ablation_or_water_equivalent="show_water_equivalent",
                                                        save_name="Total_energy_balance_summed_with_water_equivalent_2018")
 
-        # visualizer.singleton.plot_temperature_and_water_equivalent(use_summed_measurements=False,
+                # visualizer.singleton.plot_temperature_and_water_equivalent(use_summed_measurements=False,
         #                                                            save_name="Temperature_and_waterequivalent_2018")
 
         multiple_measurements.singleton.reset_scope_to_all()
-        visualizer.singleton.plot_periodic_trend_eliminated_total_energy_balance(use_summed_measurements=True,
-                                                                                 save_name="Total_energy_balance_summed_periodic_trend_eliminated")
+        visualizer.singleton.plot_periodic_trend_eliminated_total_energy_balance(
+            use_summed_measurements=True, save_name="Total_energy_balance_summed_periodic_trend_eliminated")
 
         visualizer.singleton.plot_periodic_trend_eliminated_selected_option({
             "sw_radiation_in": "Short wave in",
@@ -163,23 +191,37 @@ class NoGuiManager:
             use_summed_measurements=True, save_name="Latent_and_Sensible_summed_periodic_trend_eliminated")
 
         # END --- plots in use
+
+        # some info printed -----------------------------------------
+
         multiple_measurements.singleton.reset_scope_to_all()
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
             starttime=dt.datetime(2017, 1, 1), endtime=dt.datetime(2018, 1, 1))
-        print(
-            "EB mean 2017", round(np.mean(multiple_measurements.singleton.get_all_of("total_energy_balance")), 1), "W/m^2")
+        self.print_info("2017")
+
+        multiple_measurements.singleton.reset_scope_to_all()
+        multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+            starttime=dt.datetime(2017, 6, 1), endtime=dt.datetime(2018, 9, 1))
+        self.print_info("2017_JJA")
 
         multiple_measurements.singleton.reset_scope_to_all()
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
             starttime=dt.datetime(2018, 1, 1), endtime=dt.datetime(2019, 1, 1))
-        print("EB mean 2018", round(np.mean(multiple_measurements.singleton.get_all_of("total_energy_balance")), 1), "W/m^2")
+        self.print_info("2018")
+
+        multiple_measurements.singleton.reset_scope_to_all()
+        multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+            starttime=dt.datetime(2018, 6, 1), endtime=dt.datetime(2019, 9, 1))
+        self.print_info("2018_JJA")
+
+        # --------------------------------------------------------------
 
         multiple_measurements.singleton.reset_scope_to_all()
         # global dimming and brightening checking
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
             starttime=dt.datetime(2018, 6, 1), endtime=dt.datetime(2018, 9, 1))
 
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
 
         measured_ablation_3_months = sum(
             multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True))
@@ -188,15 +230,14 @@ class NoGuiManager:
 
         multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=-9)
         multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
-
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
 
         modelled_ablation_3_months_minus_9 = sum(
             multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True))
 
         multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=-6)
         multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
 
 
         modelled_ablation_3_months_minus_6 = sum(
@@ -204,7 +245,7 @@ class NoGuiManager:
 
         multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=-3)
         multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
 
 
         modelled_ablation_3_months_minus_3 = sum(
@@ -212,7 +253,7 @@ class NoGuiManager:
 
         multiple_measurements.singleton.calculate_energy_balance_for_scope(simulate_global_dimming_brightening=3)
         multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
-        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=2))
+        multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
 
 
         modelled_ablation_3_months_plus_3 = sum(
@@ -231,6 +272,32 @@ class NoGuiManager:
         print("--> Diff:", round(modelled_ablation_3_months_minus_3 * reality_factor - measured_ablation_3_months, 2))
         print("Modelled ablation in 3 months +3", round(modelled_ablation_3_months_plus_3*reality_factor, 2))
         print("--> Diff:", round(modelled_ablation_3_months_plus_3 * reality_factor - measured_ablation_3_months, 2))
+
+    @staticmethod
+    def print_info(date_range: str):
+        print(
+            "EB mean " + date_range, round(
+                float(
+                    np.mean(multiple_measurements.singleton.get_all_of("total_energy_balance"))
+                ), 1), "W/m^2")
+
+        print(
+            "Radiation mean " + date_range, round(
+                float(np.mean(multiple_measurements.singleton.get_vals_and_dates_of_selected_options(
+                    ["sw_radiation_in",
+                     "sw_radiation_out",
+                     "lw_radiation_in",
+                     "lw_radiation_out"])[0]
+                )), 1),
+            "W/m^2")
+
+        print(
+            "Sensible/latent heat mean " + date_range, round(
+                float(np.mean(multiple_measurements.singleton.get_vals_and_dates_of_selected_options(
+                    ["sensible_heat",
+                     "latent_heat"])[0]
+                )), 1),
+            "W/m^2")
 
 
 if __name__ == "__main__":
