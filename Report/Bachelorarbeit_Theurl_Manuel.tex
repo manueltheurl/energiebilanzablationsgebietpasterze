@@ -516,7 +516,7 @@ Es sind leider nur knapp drei Jahre ausreichend Messdaten zur Berechnung der Ene
 \begin{table}[H]
 \centering
 \setstretch{1.3} 
-\caption{Energiebilanz Mittel}
+\caption{Energiebilanz Mittel (Einheit $W/m^2$)}
 \label{tab:Energiebilanz Mittel}
 \begin{tabular}{|l|cc|cc|cc|}
 \hline
@@ -535,7 +535,7 @@ Jahr & Jun-Aug           & Gesamt           & Jun-Aug               & Gesamt    
 \label{Energiebilanzkomponenten Monatsmittel}
 \end{figure}
 
-Der stärkste periodische Trend ist bei der eintreffenden kurzwelligen Strahlung zu erkennen. Den größten positiven Energieeintrag stellt allerdings die langwellige eintreffende Strahlung dar. Generell lässt sich feststellen, dass die langwelligen Strahlungskomponenten einen geringeren periodischen Trend aufweisen, als die kurzwelligen. Der Wärmeeintrag (bzw. Verlust) der sensiblen und latenten Wärme ist zwar deutlich kleiner als der der einzelnen Strahlungskomponenten, kann aber trotzdem keineswegs ignoriert werden. 
+Der stärkste periodische Trend ist bei der eintreffenden kurzwelligen Strahlung zu erkennen. Den größten positiven Energieeintrag stellt allerdings die langwellige eintreffende Strahlung dar. Generell lässt sich feststellen, dass die langwelligen Strahlungskomponenten einen geringeren periodischen Trend aufweisen, als die kurzwelligen. Der Wärmeeintrag (bzw. Verlust) der sensiblen und latenten Wärme ist zwar deutlich kleiner, als der der einzelnen Strahlungskomponenten, kann aber trotzdem keineswegs ignoriert werden. 
 
 
 
@@ -598,7 +598,7 @@ Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusä
 \label{fig:Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser}
 \end{figure}
 
-Auffallend ist, dass das gemessene Schmelzwasser abweichend zum modellierten teilweise deutlich weniger ist und im Jahr 2017 sogar häufig bei 0 [mm/d] liegt. Kein gemessenes Schmelzwasser bedeutet, dass in der Ablationsmessung kein Rückgang der Eisdicke zu erkennen ist. Wird Abbildung \ref{Vergleich gemessenes Schmelzwasser und Temperatur} betrachet, so kann erkannt werden, dass teils trotz Tagesdurchschnittstemperatur über ca. $4^\circ C$ keine Ablation gemessen wird.
+Auffallend ist, dass das gemessene Schmelzwasser abweichend zum modellierten teilweise deutlich weniger ist und im Jahr 2017 sogar häufig bei 0 [mm/d] liegt. Kein gemessenes Schmelzwasser bedeutet, dass in der Ablationsmessung kein Rückgang der Eisdicke zu erkennen ist. Wird Abbildung \ref{Vergleich gemessenes Schmelzwasser und Temperatur} betrachet, so kann erkannt werden, dass teils trotz Tagesdurchschnittstemperatur über ca. $4^\circ C$ keine Ablation gemessen wird. Ob nun das Modell in diesen Fällen falsch ist, oder ob die Ablationsmessung mit groben Fehlern behaftet ist, könnte anhand von anderen Gletschern und damit verbunden anderen Messwerten überprüft werden.
 
 \begin{figure}[H]
 \centering
@@ -606,9 +606,6 @@ Auffallend ist, dass das gemessene Schmelzwasser abweichend zum modellierten tei
 \caption{Vergleich gemessenes Schmelzwasser und Temperatur in den Jahren 2017 und 2018}
 \label{Vergleich gemessenes Schmelzwasser und Temperatur}
 \end{figure}
-
-
-
 
 Abbildung \ref{fig:Energiebilanz im Sommer 2017 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser} und \ref{Energiebilanz im Sommer 2018 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser} zeigen den Zusammenhang in Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser} für die zwei Jahre 2017 und 2018 vergrößert auf. Tendenziell wird im Modell insbesondere bei Energiebilanzspitzen eine größere Menge an Schmelzwasser angenommen. Der Verlauf der Kurve vom gemessenen Schmelzwasser an sich wird aber sehr gut von der Kurve des modellierten Schmelzwasser wiedergegeben. In folgender Tabelle wird diese visuelle Interpretation in Form vom Korrelationskoeffizienten nach Pearson in Zahlen ausgedrückt. 
 
@@ -675,7 +672,7 @@ Differenz {[}cm{]} & -18    & -12 & -6 & 0  & 6  \\ \hline
 Es kann erkannt werden, dass sich ``global dimming'' und ``global brightening'' sehr wohl signifikant auf die Änderung der Eisdicke eines Gletschers im Ablationsgebiet auswirken. Bei knapp $10~W/m^2$ kleinerer Energiebilanz über  die Sommermonate ergibt sich bereits ein um $18~cm$ geringerer Eisdickenverlust. Der Zusammenhang ist linear und kann somit mit ca. $6~cm$ pro $3 W/m^2$ weiter fortgesetzt werden.\\
 
 \subsubsection{``Greenhouse Gas Forcings''}
-Eine weitere Untersuchung kann in dieser Hinsicht auch beim Thema des ``Greenhouse Gas forcings'' durchgeführt werden. Abbildung \ref{Globale Temperatur und ``Greenhouse Gas Forcings''} zeigt dies zusammen mit der Temperatur seit dem Jahr 1900. 
+Eine weitere Untersuchung kann in dieser Hinsicht auch beim Thema der ``Greenhouse Gas forcings'' durchgeführt werden. Abbildung \ref{Globale Temperatur und ``Greenhouse Gas Forcings''} zeigt diese zusammen mit der Temperatur seit dem Jahr 1900. 
 
 \begin{figure}[H]
 \centering
@@ -694,9 +691,9 @@ Die Formel zur Berechnung kann durch
 \Delta I =\sum_{i=1}^{100}\left ( \frac{a}{100}\cdot i \cdot b \right )
 \end{equation}
 
-angegeben werden, wobei $a=2.5\frac{W}{m^2}$ dem Greenhouse forcing in der betrachteten Zeit entspricht und $b=2 \frac{cm \cdot m^2}{W}$ (abgeleitet aus Tabelle \ref{tab:Auswirkung von global dimming oder global brightening auf den Eisdickenverlust innerhalb vom 1. Juni bis 1. September im Jahr 2018}) der Eisdickenänderung pro $W/m^2$ in den betrachteten Monaten Juli-August darstellt. 
+angegeben werden, wobei $a=2.5\frac{W}{m^2}$ dem Greenhouse forcing in der betrachteten Zeit entspricht und $b=2 \frac{cm \cdot m^2}{W}$ (abgeleitet aus Tabelle \ref{tab:Auswirkung von global dimming oder global brightening auf den Eisdickenverlust innerhalb vom 1. Juni bis 1. September im Jahr 2018}) die Eisdickenänderung pro $W/m^2$ in den betrachteten Monaten Juli-August darstellt.\\
 
-Als Ergebnis folgt mit $\Delta I = 252.5~cm,$, dass in den betrachteten 100 Jahren die Eisdicke im Ablationsgebiet der Pasterze bei Betrachtng der Sommermonate um ca. $2.5~m$ weniger abgenommen hätte, wenn die kurzwellige Strahlung seit dem Jahr 1900 konstant geblieben wäre.
+Als Ergebnis folgt mit $\Delta I = 252.5~cm,$, dass in den betrachteten 100 Jahren die Eisdicke im Ablationsgebiet der Pasterze bei Betrachtng der Sommermonate um ca. $\mathbf{2.5~m}$ \textbf{weniger abgenommen} hätte, wenn die kurzwellige Strahlung seit dem Jahr 1900 konstant geblieben wäre.
 
 
 
@@ -732,7 +729,7 @@ Werden die Strahlungskomponente, sowie die der sensible und latente Wärmeeintra
 \section{Fazit}
 Die starke Korrelation vom modellierten und von dem aus den Ablationsmessungen errechneten Schmelzwasser bestätigt die Richtigkeit des angenommenen Modelles zur Berechnung der Energiebilanz im Ablationsgebiet eines Gleschters. Warum es aber trotzdem noch teils große Abweichungen, besonders bei kleiner Energiebilanz gibt kann vorerst nicht beantwortet werden. Es könnte einerseits sein, dass das Modell noch weiter verfeinert werden muss aber andererseits besteht auch die Möglichkeit, dass die Ablationsmessung teils fehlerbehaftet ist. Am besten könnte man dies durch Anwendung des gleichen Modelles auf andere Gletscher überprüfen.\\
 
-Durch die Simulation von ``global dimming'' bzw. ``global brightening'' kann jetzt abgeschätzt werden, wie stark sich die Abnahme der Eisdicke im Ablationsgebiet tatsächlich verändert, sollte sich die Intensität der kurzwelligen Strahlung im Durchschnitt vergrößern oder verkleinern. \\
+Durch die Simulation von ``global dimming'' bzw. ``global brightening'' kann jetzt abgeschätzt werden, wie stark sich die Abnahme der Eisdicke im Ablationsgebiet tatsächlich verändert, sollte sich die Intensität der kurzwelligen Strahlung im Durchschnitt vergrößern oder verkleinern. Bei Betrachtung von den ``Greenhouse Gas forcings'' kann das Resultat bereits anschaulich angewendet werden.
 
 Bei anderen Gletschern mit längeren Zeitreihen wäre vor allem auch die Trendelimination sehr spannend. Es könnten dabei die einzelnen Komponenten der Energiebilanz aber auch die Gesamtenergiebilanz im Verlauf der Zeit betrachtet und analysiert werden.\\
 
