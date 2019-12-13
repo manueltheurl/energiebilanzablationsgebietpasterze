@@ -11,52 +11,52 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsubsection}{\numberline {2.2.1}Energiebilanz Komponenten}{3}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{5}
+\contentsline {subsubsection}{\numberline {2.2.2}Albedo}{4}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {2.3}``Global dimming'' und ``Global brigthening''}{6}
+\contentsline {subsection}{\numberline {2.3}``Global dimming'' und ``Global brigthening''}{5}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {3}Methodik}{8}
+\contentsline {section}{\numberline {3}Methodik}{7}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{8}
+\contentsline {subsection}{\numberline {3.1}Berechnung der Energiebilanz}{7}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.2}Periodische Trendelimination}{10}
+\contentsline {subsection}{\numberline {3.2}Periodische Trendelimination}{8}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{10}
+\contentsline {subsection}{\numberline {3.3}Berechnung des resultierenden Schmelzwassers}{9}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.4}Bereinigung der Ablationsmessung}{11}
+\contentsline {subsection}{\numberline {3.4}Bereinigung der Ablationsmessung}{10}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.5}Programmierung in Python}{12}
+\contentsline {subsection}{\numberline {3.5}Programmierung in Python}{10}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.1}Umgebung}{12}
+\contentsline {subsubsection}{\numberline {3.5.1}Umgebung}{10}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.2}Unittesting}{12}
+\contentsline {subsubsection}{\numberline {3.5.2}``Unittesting''}{11}
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Transfer Koeffizient}{13}
+\contentsline {paragraph}{Transfer-Koeffizient}{11}
 \defcounter {refsection}{0}\relax 
-\contentsline {paragraph}{Sensible W\IeC {\"a}rme}{13}
+\contentsline {paragraph}{Sensible W\IeC {\"a}rme}{11}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.5.3}Grafisches Userinterface}{13}
+\contentsline {subsubsection}{\numberline {3.5.3}Grafisches Userinterface}{12}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {3.6}Softwareverwaltung}{17}
+\contentsline {subsection}{\numberline {3.6}Softwareverwaltung}{15}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.6.1}Download und Installation}{17}
+\contentsline {subsubsection}{\numberline {3.6.1}Download und Installation}{15}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {3.6.2}Update}{18}
+\contentsline {subsubsection}{\numberline {3.6.2}Update}{16}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{19}
+\contentsline {section}{\numberline {4}Ergebnisse und Interpretation}{17}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.1}Energiebilanz}{19}
+\contentsline {subsection}{\numberline {4.1}Energiebilanz}{17}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.2}Ablation, Schmelzwasser}{23}
+\contentsline {subsection}{\numberline {4.2}Ablation $\&$ Schmelzwasser}{21}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.3}\IeC {\"A}nderung des Eisdickenverlustes}{27}
+\contentsline {subsection}{\numberline {4.3}\IeC {\"A}nderung des Eisdickenverlustes}{25}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {4.3.1}``global dimming'' bzw. ``global brightening''}{27}
+\contentsline {subsubsection}{\numberline {4.3.1}``global dimming'' bzw. ``global brightening''}{25}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsubsection}{\numberline {4.3.2}``Greenhouse Gas Forcings''}{28}
+\contentsline {subsubsection}{\numberline {4.3.2}``Greenhouse Gas Forcings''}{26}
 \defcounter {refsection}{0}\relax 
-\contentsline {subsection}{\numberline {4.4}Periodische Trendelimination der Energiebilanz}{30}
+\contentsline {subsection}{\numberline {4.4}Periodische Trendelimination der Energiebilanz}{28}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{32}
+\contentsline {section}{\numberline {5}Fazit}{31}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{33}
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{32}

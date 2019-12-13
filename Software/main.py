@@ -21,6 +21,7 @@ import numpy as np
 # The gui is constructed as singletons .. this order therefor has to be maintained
 import gui_main_frame as gui_main
 import navigation_bar
+import version_bar
 import info_bar
 import frame_plot
 import frame_energy_balance
@@ -319,6 +320,7 @@ if __name__ == "__main__":
         frame_download.create_singleton()
         frame_sum.create_singleton()
         frame_read.create_singleton()
+        version_bar.create_singleton()
 
         gui_thread = threading.Thread(target=gui_main.singleton.mainloop())
         gui_thread.start()

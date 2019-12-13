@@ -1,4 +1,4 @@
-\documentclass[12pt,a4paper]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage[a4paper, total={6in, 9in}]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[german]{babel}
@@ -19,9 +19,13 @@ maxbibnames=9,
 firstinits=true,
 ]{biblatex}
 
+\usepackage{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+
 % DEFINES
 \newcommand{\guiplotsize}{0.75}
 \newcommand{\resultplotsize}{0.9}
+\newcommand{\guiversion}{1.0}
 
 
 
@@ -49,32 +53,42 @@ firstinits=true,
 %Titelseite:
 \begin{titlepage}
 
-\begin{flushright}
-\begin{normalsize}
-Seminar zur Integrativen Geographie (Ansätze in der Hydrologie), 402.212
-\\
-Sommersemester 2018/19
-\end{normalsize}
-\end{flushright}
-
 \vspace{5cm}
 
+
+\includegraphics[width=0.18\textwidth]{pictures/logo_uni_graz.jpg}
+\hfill
+\includegraphics[width=0.18\textwidth]{pictures/logo_geo_raum.jpg}
+
+
+
 \begin{center}
-\includegraphics[width=0.3\textwidth]{logo_uni_graz.jpg}
 
 \vspace{1.5cm}
 
 \textbf{\Large Energiebilanz im Ablationsgebiet der Pasterze}\\
 \vspace{2cm}
-\textsc{\large {Bachelorarbeit}}\\[4cm]
+\textsc{\Large {Bachelorarbeit}}\\
+\vspace{1.5cm}
+zur Erlangung des akademischen Grades\\
+\vspace{1cm}
+\textbf{Bachelor of Science}\\
+\vspace{1cm}
+der Studienrichtung Umweltsystemwissenschaften - Geographie\\
+an der Karl-Franzens-Universität Graz\\
+\vspace{1cm}
+vorgelegt von\\
+\vspace{1cm}
+\textbf{Manuel Theurl}\\
+\vspace{1cm}
+am Institut für: Geographie und Raumforschung\\
+\vspace{1cm}
+Begutachter: Jakob Abermann, Ass.-Prof. Dr.rer.nat.\\
+\vspace{1cm}
+Graz, 2019
+
 \end{center}
 
-\vspace{2cm}
-
-\begin{flushright}
-Manuel Theurl, 01610570\\
-\today
-\end{flushright}
 
 \end{titlepage} 
 
@@ -83,20 +97,20 @@ Manuel Theurl, 01610570\\
 \ofoot{{\small \pagemark}}
 \pagenumbering{Roman} 
 \section*{Abstract (English)}
-The aim of this thesis is to create a model for the energy balance in the ablation area of a glacier by using weather data. The chosen glacier for this study is the Pasterze in Austria. The developed program should be a useful tool to edit the data, calculate the energy balance and create visualizations to represent the generated data. Because there are also ablation measurements included in case of the Pasterze, it is possible to analyze the measured and modeled melting water.\\
+The aim of this thesis is to create a model for the energy balance in the ablation area of a glacier by using weather data. The observed glacier in this study is the Pasterze in Austria. The developed program should be a useful tool to edit the data, calculate the energy balance and create visualizations to represent the generated data. Because there are also ablation measurements included in case of the Pasterze, it is possible to compare the measured and modeled melting water..
 
-By comparing the measured and modeled melting water a conclusion over the validity of the modeled energy balance can be made. With a functioning model the effect of phenomena like ``global dimming’’ and ``global brightening’’ on the melting of the glacier in the ablation area can be examined.\\
+By comparing the measured and modeled melting water, the validity of the modeled energy balance can be checked. The research question therefore would be, if the model properly represents the reality. With a functioning model the effect of phenomena like ``global dimming’’ and ``global brightening’’ on the melting of the glacier in the ablation area can be examined.\\
 
-All the necessary logic, the calculations and visualizations are done with the programming language Python. The formulas used are mainly taken from \cite[153-157]{ThePhysicsOfGlaciers}. While programming, a graphical user interface (GUI) will be developed as well. With the GUI the functionality of the software is easy accessible and applicable. The GUI is public, a download and installation description is included in the thesis.\\
+All the necessary logic, the calculations and visualizations are done with the programming language Python. The formulas used are mainly taken from Cuffey and Paterson (\citeyear[153-157]{ThePhysicsOfGlaciers}). While programming, a graphical user interface (GUI) will be developed as well. With the GUI the functionality of the software is easy accessible and applicable. The GUI is public, a download and installation description is included in the thesis.\\
 
- As a result it can be said, that the meltwater calculated out of the ablation measurements is strongly correlating with  the modeled meltwater. The model therefore is representing the reality well. Further, it turns out, that phenomena like ``global dimming’’ and ``global brightening’’ have a significant impact on the melting of a glacier in the ablation area.
+As a result the meltwater calculated out of the ablation measurements is strongly correlating with  the modeled meltwater. The model therefore is representing the reality well. Further, it turns out that phenomena like ``global dimming’’ and ``global brightening’’ have a significant impact on the melting of a glacier in the ablation area.
  
 \pagebreak
 \section*{Abstract}
 
 Ziel dieser Arbeit ist es, aus Wetterdaten ein Modell für die Energiebilanz für das Ablationsgebiet eines Gletschers zu finden. Als Beispielgletscher dient hier die Pasterze in Österreich. Es soll ein gesamtheitliches Programm entwickelt werden, dass die Aufbereitung der Daten, die Berechnung der Energiebilanz und anschauliche Darstellungsmethoden bietet. Im Falle der Pasterze liegen auch Ablationsmessungen vor, wodurch eine Untersuchung des berechneten und des aus der Energiebilanz modellierten Schmelzwassers möglich ist.\\
 
-Es soll somit erörtert werden, ob das modellieren der Energiebilanz aus Wetterdaten sinnvoll ist und ähnliche Werte für die Ablation bzw. das Schmelzwasser folgen, wie aus den Messungen dazu. Mit dem fertigen Modell kann auch der Fragestellung nachgegangen werden, inwieweit sich die Phänomene ``Global dimming'' bzw. ``Global brightening'' auf das Abschmelzen des Gletschers im Ablationsgebiet auswirken.\\
+Es soll somit erörtert werden, ob das Modellieren der Energiebilanz aus Wetterdaten sinnvoll ist und ähnliche Werte für die Ablation bzw. das Schmelzwasser folgen, wie aus den Messungen dazu. Als Forschungsfrage ergbit sich somit, ob das Modell ausreichend der Realität entspricht. Mit dem fertigen Modell kann auch der Fragestellung nachgegangen werden, inwieweit sich die Phänomene ``Global dimming'' bzw. ``Global brightening'' auf das Abschmelzen des Gletschers im Ablationsgebiet auswirken.\\
 
 Die Untersuchungen erfolgen mit der Programmiersprache Python, wobei die Formeln zur Berechnung der Energiebilanz stark an \cite[153-157]{ThePhysicsOfGlaciers} angelehnt sind. Im Zuge der Programmierung wird ein GUI mitentwickelt, welches die Funktionalität der Software anschaulich aufbereitet darbietet. Das GUI ist öffentlich zugänglich, eine Beschreibung zum Download und zur Installation ist in der Arbeit ersichtlich.\\
 
@@ -129,8 +143,8 @@ Ich danke an dieser Stelle meinem Bachelorarbeit-Betreuer Herrn Ass.-Prof. Dr. A
 \setcounter{page}{1}
 
 \section{Einleitung}
-Die Pasterze am Fuße des Großglockners in Österreich ist Gegenstand vieler wissenschaftlicher Untersuchungen. Durch eine Betrachtung der Energiebilanz im Ablationsgebiet dieser, soll es ermöglicht werden, das Wissen über die Pasterze und vor allem auch über das Abschmelzen dieser zu vertiefen. Durch Wetterdaten von der Wetterstation bei der Pasterze und geeignete Energiebilanz-Kalkulationen soll somit ein Modell generiert werden, dass die Vergangenheit beschreibt, die Gegenwart bestätigt und Prognosen für die Zukunft erstellt. Da auch Ablationsmessungen vorliegen, kann das errechnete und modellierte Schmelzwasser verglichen werden und es können somit auch Aussagen über die Veränderung des Eisdickenverlustes bei Phänomenen wie ``global dimming'' und ``global brightening'' getroffen werden. \\
-Die erstellte Grafische Benutzeroberfläche bietet die Möglichkeit selber am Thema weiterzuarbeiten, Analysen durchzuführen und, bei längeren Zeitreihen, Trends zu identifizieren. Sofern die benötigten Messdaten vorhanden sind, kann diese bei jedem beliebigen Gletscher zum Einsatz kommmen.
+Die Pasterze am Fuße des Großglockners in Österreich (Grenze Osttirol/Kärnten) ist Gegenstand vieler wissenschaftlicher Untersuchungen. Durch eine Betrachtung der Energiebilanz im Ablationsgebiet dieser, soll es ermöglicht werden, das Wissen über die Pasterze und vor allem auch über das Abschmelzen dieser zu vertiefen. Durch Wetterdaten der Wetterstation bei der Pasterze und geeigneten Energiebilanz-Kalkulationen soll somit ein Modell generiert werden, dass die Vergangenheit beschreibt, die Gegenwart bestätigt und Prognosen für die Zukunft erstellt. Da auch Ablationsmessungen vorliegen, kann das errechnete und modellierte Schmelzwasser verglichen werden und es können somit auch Aussagen über die Veränderung des Eisdickenverlustes bei Phänomenen wie ``global dimming'' und ``global brightening'' getroffen werden. \\
+Die erstellte Grafische Benutzeroberfläche bietet die Möglichkeit selber am Thema weiterzuarbeiten, Analysen durchzuführen und bei längeren Zeitreihen Trends zu identifizieren. Sofern die benötigten Messdaten vorhanden sind, kann diese bei jedem beliebigen Gletscher zum Einsatz kommmen.
 
 
 \section{Theoretisches Grundwissen}
@@ -145,8 +159,8 @@ Die kleine Eiszeit von ca. 1260-1860 zerstörte (durch den Hochstand 1850) Spure
 Folgende Abbildung zeigt einen Überblick vom Großglockner, den umliegenden Bergen und der Pasterze. 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{pictures/Pasterze_Beschriftung_bw.jpg}
-\caption[Großglockner und Pasterze]{Großglockner und Pasterze (Fotos: Gerhard K. Lieb vom 22.09.2006, Bildbearbeitung: Ulf Oberth)}
+\includegraphics[width=0.9\textwidth]{pictures/Pasterze_Beschriftung_bw.jpg}
+\caption[Großglockner und Pasterze]{Großglockner und Pasterze (Foto: Gerhard K. Lieb vom 22.09.2006, Bildbearbeitung: Ulf Oberth)}
 \label{fig:Grossglockner und Pasterze}
 \end{figure}
 
@@ -156,7 +170,7 @@ Der erwähnte Längenverlust wird mit folgender Abbildung ersichtlich.
 % cited correctly??
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.85\textwidth]{pictures/pasterze_laengenaenderung.jpg}
+\includegraphics[width=0.81\textwidth]{pictures/pasterze_laengenaenderung.jpg}
 \caption[Längenverluste der Pasterze nach Einzeljahren und in Summe seit 1856]{Längenverluste der Pasterze nach Einzeljahren und in Summe seit 1856  (Quelle:  \cite{LaengenaenderungPasterze})}
 \label{fig:Längenverluste der Pasterze}
 \end{figure}
@@ -169,23 +183,23 @@ Um die Energiebilanz in der oberen Schicht eines Gletschers zu verstehen, müsse
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.8\textwidth]{pictures/energy_balance_components.png}
-\caption[Energiebilanz Komponenten]{Energiebilanz Komponenten \parencite{Themicroclimateofvalleyglaciers}}
+\caption[Energiebilanz Komponenten]{Energiebilanz Komponenten (Quelle: \cite{Themicroclimateofvalleyglaciers)}}
 \label{fig:Energiebilanz Komponenten}
 \end{figure}
 
-Den größten Anteil am Energiefluss hat die Strahlungskomponente. Typischerweise liegt dieser Anteil bei ein paar Hundert Watt pro Quadratmeter. Je nach Beschaffenheit der Gletscheroberfläche wird mehr oder weniger dieser kurzwelligen Strahlung reflektiert. Der Prozentsatz, welcher angibt, wie viel Strahlung reflektiert wird, wird mit Albedo bezeichnet (siehe Kapitel \ref{Albedo}). Jener Teil, der nicht reflektiert wird, dringt in den Gletscher ein, wirkt sich also positiv auf die Energiebilanz aus.\\
+Den größten Anteil am Energiefluss hat die Strahlungskomponente. Typischerweise liegt dieser Anteil bei ein paar Hundert Watt pro Quadratmeter. Je nach Beschaffenheit der Gletscheroberfläche wird mehr oder weniger dieser kurzwelligen Strahlung reflektiert. Der Prozentsatz, welcher angibt, wie viel Strahlung reflektiert wird, wird mit Albedo bezeichnet (siehe Kapitel \ref{Albedo}). Jener Teil, der nicht reflektiert wird, dringt in den Gletscher ein, wirkt sich also positiv auf die Energiebilanz aus(vgl. \cite[16]{Themicroclimateofvalleyglaciers}).\\
 
 Langwellige Strahlung wird (fast) vollständig vom Gletscher absorbiert. Der Gletscher strahlt gleichzeitig aber auch langwellige Strahlung wieder ab. Bei warmen Temperaturen, hoher Luftfeuchtigkeit und Präsenz von Wolken, ist die Bilanz der langwelligen Strahlung positiv, ansonsten ist sie im Normalfall negativ.\\
-Wolken führen nämlich dazu, dass weniger kurzwellige Sonnenstrahlung und mehr langwellige Strahlung zur Gletscheroberfläche gelangt. Für die Energiebilanz ist dabei aber noch wichtig zu wissen, ob der Gletscher ein hohes Albedo (z.B. Neuschnee) oder niedriges Albedo (z.B. Eis) aufweist. Ein hohes Albedo würde dazu führen, dass der Großteil an kurzwelliger Strahlung reflektiert wird. Nimmt also die Bewölkung zu, so gibt es mehr langwellige Strahlung die trotzdem absorbiert werden kann. Daraus folgt eine positive Auswirkung auf die Energiebilanz.\\
-Simultan dazu wirkt sich Bewölkung bei niedrigem Albedo negativ auf die Energiebilanz aus. Der kurzwellige Strahlungseffekt würde dabei nämlich dem langwelligen überwiegen, da kurzwellige Strahlung energiereicher ist als langwellige.\\
+Wolken führen nämlich dazu, dass weniger kurzwellige Sonnenstrahlung und mehr langwellige Strahlung zur Gletscheroberfläche gelangt. Für die Energiebilanz ist dabei aber noch wichtig zu wissen, ob der Gletscher eine hohe Albedo (z.B. Neuschnee) oder niedrige Albedo (z.B. Eis) aufweist. Eine hohe Albedo würde dazu führen, dass der Großteil an kurzwelliger Strahlung reflektiert wird. Nimmt also die Bewölkung zu, so gibt es mehr langwellige Strahlung die trotzdem absorbiert werden kann. Daraus folgt eine positive Auswirkung auf die Energiebilanz.\\
+Simultan dazu wirkt sich Bewölkung bei niedriger Albedo negativ auf die Energiebilanz aus. Der kurzwellige Strahlungseffekt würde dabei nämlich dem langwelligen überwiegen, da kurzwellige Strahlung energiereicher ist als langwellige(vgl. \cite[16, 17]{Themicroclimateofvalleyglaciers}).\\
 
-Ob sich der Niederschlag positiv oder negativ auf die Energiebilanz des Gletschers auswirkt hängt von der Temperatur von diesem ab. Je nachdem ob die Temperatur höher oder niedriger ist als die Gletscheroberflächentemperatur ist die Auswirkung positiv oder negativ. Die Energieflüsse, welche hier wirken, sind aber sehr klein.\\
+Ob sich der Niederschlag positiv oder negativ auf die Energiebilanz des Gletschers auswirkt hängt von der Temperatur von diesem ab. Je nachdem ob die Temperatur höher oder niedriger ist als die Gletscheroberflächentemperatur ist die Auswirkung positiv oder negativ. Die Energieflüsse, welche hier wirken, sind aber sehr gering(vgl. \cite[17]{Themicroclimateofvalleyglaciers}).\\
 
-Turbulente Energieflüsse zwischen der Gletscheroberfläche und der Atmosphäre wirken sich signifikant auf den Energiefluss aus. Grundvoraussetzung für diese turbulenten Energieflüsse ist, dass die Lufttemperatur über dem Gefrierpunkt liegt. Grund dafür ist, dass die Energieflussrichtung im Gletscher dem Gradienten der Temperatur entspricht, was bedeutet, dass der Energiefluss in Richtung der Gletscheroberfläche verläuft. Je nach dem wie hoch die Lufttemperatur und wie hoch die Luftfeuchtigkeit ist, kann nun entweder durch Verdunstung Kälte oder durch Kondensation Wärme entstehen. Bei einer Lufttemperatur von $10^\circ C$ beispielsweise, stellt die relative Feuchtigkeit von $50~\%$ den Wendepunkt zwischen positiver ($>50~\%$) und negativer ($<50~\%$) Auswirkung auf die Energiebilanz dar.\\
+Turbulente Energieflüsse zwischen der Gletscheroberfläche und der Atmosphäre wirken sich signifikant auf den Energiefluss aus. Grundvoraussetzung für diese turbulenten Energieflüsse ist, dass die Lufttemperatur über dem Gefrierpunkt liegt. Grund dafür ist, dass die Energieflussrichtung im Gletscher dem Gradienten der Temperatur entspricht, was bedeutet, dass der Energiefluss in Richtung der Gletscheroberfläche verläuft. Je nach dem wie hoch die Lufttemperatur und wie hoch die Luftfeuchtigkeit ist, kann nun entweder durch Verdunstung Kälte oder durch Kondensation Wärme entstehen. Bei einer Lufttemperatur von $10^\circ C$ beispielsweise, stellt die relative Feuchtigkeit von $50~\%$ den Wendepunkt zwischen positiver ($>50~\%$) und negativer ($<50~\%$) Auswirkung auf die Energiebilanz dar(vgl. \cite[17]{Themicroclimateofvalleyglaciers}).\\
 
 Der Fluss von Schmelzwasser innerhalb des Gletschers stellt einen latenten Wärmefluss dar. 
 ``Molecular conduction'' bezeichnet die Wärmeleitung durch Kollision von mikroskopisch kleinen Partikeln. Die Reibungshitze wirkt sich durch das Reiben des Eises an der Oberfläche ebenfalls positiv auf die Energiebilanz auf.\\
-Kleine Energieflüsse entstehen auch noch durch Hitze- und Wasserdampftransport durch Konvektion im Schnee oder Firn. Diese Flüsse wirken sich aber vor allem auf die Metamorphose der Schneekristalle aus und sind abhängig von der Dichte des Schnees und vom Temperaturgradienten im Schnee (vgl. \cite[16, 17]{Themicroclimateofvalleyglaciers}).
+Kleine Energieflüsse entstehen auch noch durch Hitze- und Wasserdampftransport durch Konvektion im Schnee oder Firn. Diese Flüsse wirken sich aber vor allem auf die Metamorphose der Schneekristalle aus und sind abhängig von der Dichte des Schnees und vom Temperaturgradienten im Schnee (vgl. \cite[17]{Themicroclimateofvalleyglaciers}).
 
 
 \subsubsection{Albedo}\label{Albedo}
@@ -193,24 +207,24 @@ Die Albedo bezeichnet das Verhältnis zwischen rückgestrahltem und einfallendem
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.8\textwidth]{pictures/spectral_reflectance_curves_for_ice_and_snow.png}
-\caption[Spektrale Relektorkurven von Eis und Schnee]{Spektrale Relektorkurven von Eis und Schnee \parencite{Themicroclimateofvalleyglaciers}}
+\includegraphics[width=0.63\textwidth]{pictures/spectral_reflectance_curves_for_ice_and_snow.png}
+\caption[Spektrale Relektorkurven von Eis und Schnee]{Spektrale Relektorkurven von Eis und Schnee (Quelle: \cite{Themicroclimateofvalleyglaciers})}
 \label{fig:Spektrale Relektorkurven von Eis und Schnee}
 \end{figure}
 
-Auf der Pasterze verringert sich die Nettostrahlung welche sich positiv auf die Energiebilanz des Gletschers auswirkt mit zunehmender Höhe. Grund dafür ist eben genau die Albedo, denn Schnee bedeckt die höher liegenden Teile des Gletschers und reflektiert mehr Strahlung. Das Eis im Ablationsgebiet absorbiert sehr viel Strahlungsenergie (vgl. \cite[171]{ThePhysicsOfGlaciers}).
+Bei einem Gletscher verringert sich die Nettostrahlung, welche sich positiv auf die Energiebilanz des Gletschers auswirkt, mit zunehmender Höhe. Grund dafür ist eben genau die Albedo, denn Schnee bedeckt die höher liegenden Teile des Gletschers und reflektiert mehr Strahlung. Das Eis im Ablationsgebiet absorbiert sehr viel Strahlungsenergie, da hier die Albedo geringer ist. (vgl. \cite[171]{ThePhysicsOfGlaciers}).
 
 \subsection{``Global dimming'' und ``Global brigthening''}
-Mehrere Langzeitstudien von Oberflächenstrahlungsmessungen haben gezeigt, dass die Strahlung, welche auf der Erdoberfläche ankommt im Hinblick auf eine dekadische Zeit nicht konstant ist, d.h. sich innerhalb von 10er-Jahren signifikant ändern kann. Diese Änderungen wurden unter den Begriffen ``Global dimming'' und ``Global brightening'' zusammengefasst, wobei der Begriff ``global'' sich auf die Summe von diffuser und direkter Sonnenstrahlung bezieht und nicht auf global, im Sinne von ``auf der ganzen Welt''.\\
-Änderung der Oberflächenstrahlung können nicht nur bei wolkigen Bedingungen festgestellt werden, sondern auch bei einer wolkenfreien Atmosphäre. Das deutet darauf hin, dass sich der Mensch durch Einbringung von Aerosolen in die Atmosphäre auf diese Oberflächenstrahlung auswirkt (vgl. \cite[1]{GlobalDimming}).\\
+Mehrere Langzeitstudien von Oberflächenstrahlungsmessungen haben gezeigt, dass die Strahlung, welche auf der Erdoberfläche ankommt im Hinblick auf eine dekadische Zeit nicht konstant ist, d.h. sich innerhalb von 10er-Jahren signifikant ändern kann. Diese Änderungen wurden unter den Begriffen ``Global dimming'' und ``Global brightening'' (Globale Verdunkelung/Aufhellung) zusammengefasst, wobei der Begriff ``global'' sich auf die Summe von diffuser und direkter Sonnenstrahlung bezieht und nicht auf global, im Sinne von ``auf der ganzen Welt''.\\
+Änderungen der Oberflächenstrahlung können nicht nur bei wolkigen Bedingungen festgestellt werden, sondern auch bei einer wolkenfreien Atmosphäre. Das deutet darauf hin, dass sich anthropogene Einflüsse z.B. durch Einbringung von Aerosolen in die Atmosphäre auf diese Oberflächenstrahlung auswirken (vgl. \cite[1]{GlobalDimming}).\\
 Aerosole können diese Oberflächenstrahlung verändern, indem sie die Sonnenstrahlen streuen oder absorbieren. Weiters können die Aerosole als Kondensationskerne bei der Wolkenbildung agieren und somit diese fördern. Insgesamt reduzieren also Aerosole die Oberflächenstrahlung. Eine der Hauptursachen von ``global dimming'' ist somit die Erzeugung von Aerosolen durch die Industrie (vgl. \cite[14]{GlobalDimming}).\\ 
-Die Oberflächenstrahlung bzw. die kurzwellige Sonnenstrahlung spielt, wie bereits in Kapitel \ref{Energiebilanz Komponenten} erwähnt, eine große Rolle in der Energiebilanz der Gletscher. Auf der Nordhalbkugel sei zu beobachten gewesen, dass bis zu den 1980-Jahren keine signifikanten Änderungen in den Flächenbedeckungen der Gletscher stattgefunden hat, aber ab ca. 1980 mit dem Effekt des ``global brigthening'' die Gletscher schlagartig an Größe verloren hätten (vgl. \cite[24]{GlobalDimming}). Zwischen $-3$ und $-9$ $W/m^2$ wird von ``global dimming'' gesprochen, von $+1$ bis $+4$ von ``global brightening'' (vgl. \cite[28]{EnlighteningGlobalDimming}).
+Die Oberflächenstrahlung bzw. die kurzwellige Sonnenstrahlung spielt, wie bereits in Kapitel \ref{Energiebilanz Komponenten} erwähnt, eine große Rolle in der Energiebilanz der Gletscher. Auf der Nordhalbkugel sei zu beobachten gewesen, dass bis zu den 1980-Jahren keine signifikanten Änderungen in den Flächenbedeckungen der Gletscher stattgefunden hat, aber ab ca. 1980 mit dem Effekt des ``global brigthening'' die Gletscher schlagartig an Größe verloren hätten (vgl. \cite[24]{GlobalDimming}). Zwischen $-3$ und $-9$ $W/m^2$ wird von ``global dimming'' gesprochen, von $+1$ bis $+4$ $W/m^2$ von ``global brightening'' (vgl. \cite[28]{EnlighteningGlobalDimming}).
 
 
 \pagebreak
 \section{Methodik}
 \subsection{Berechnung der Energiebilanz}
-\citeauthor{ThePhysicsOfGlaciers} (\citeyear{ThePhysicsOfGlaciers}) geben in Kapitel 5 ``Mass Balance Processes: 2. Surface Ablation and Energy Budget'' detaillierte Formeln zur Berechnung der Energiebilanz an. Ausgegangen wird von Formel 
+Um das Ziel der Arbeit zu erreichen, muss die Energiebilanz eines Gletschers errechnet werden. \citeauthor{ThePhysicsOfGlaciers} (\citeyear{ThePhysicsOfGlaciers}) geben in Kapitel 5 ``Mass Balance Processes: 2. Surface Ablation and Energy Budget'' detaillierte Formeln zur Berechnung der Energiebilanz an. Ausgegangen wird von Formel 
 
 \begin{equation}
 E_{N}=\underbrace{E_{S}^{\downarrow}+E_{S}^{\uparrow}+E_{L}^{\downarrow}+E_{L}^{\uparrow}}_{E_{\mathrm{R}}}+E_{G}+E_{H}+E_{E}+E_{P},
@@ -218,7 +232,7 @@ E_{N}=\underbrace{E_{S}^{\downarrow}+E_{S}^{\uparrow}+E_{L}^{\downarrow}+E_{L}^{
 
 wobei $E_{N}$ dem Nettoenergiefluss in die Oberfläche, $E_{S}^{\downarrow}$ der ankommenden kurzwelligen Strahlung, $E_{S}^{\uparrow}$ der reflektierten kurzwelligen Strahlung, $E_{L}^{\downarrow}$ der ankommenden langwelligen Strahlung, $E_{L}^{\uparrow}$ der reflektierten langwelligen Strahlung $E_{G}$ dem Energiefluss unter der Oberfläche, $E_{P}$ dem Energieeintrag durch Niederschlag und $E_{H}$ und $E_{E}$ den spürbaren und latenten Wärmeflüssen durch Zirkulation entsprechen. $E_{\mathrm{R}}$ ist die Summe aller Strahlungen und gibt somit die Nettostrahlung an (positiv für Energieeintrag in den Gletscher).\\
 
-Ausgehend von dieser Grundgleichung beschreibt \citeauthor{ThePhysicsOfGlaciers} weitere Aspekte die zu berücksichtigen sind, wie zum Beispiel 
+Ausgehend von dieser Grundgleichung beschreiben \citeauthor{ThePhysicsOfGlaciers} weitere Aspekte die zu berücksichtigen sind, wie zum Beispiel 
 
 \begin{itemize}
 \item{Schmelzrate, abhängig auch von Dicke }
@@ -239,14 +253,14 @@ für den latenten und
 E_{H}= 0.0129~C^*~P~\mu(z)~(T_a(z)-T_s)
 \end{equation}
 
-für den sensiblen Wärmefluss. $C^*$ ist dabei der Transferkoeffizient und wird mit 
+für den sensiblen Wärmefluss. $C^*$ ist dabei der Transfer-Koeffizient und wird mit 
 
-\begin{equation}\label{eq:Transferkoeffizient}
+\begin{equation}\label{eq:Transfer-Koeffizient}
 C^{*}=\frac{k_{o}^{2}}{\ln ^{2}\left(z / z_{0}\right)}
 \end{equation}
 
 % TODO Pfad
-berechnet, wobei $k_{o}=0.4$ die Karmans Konstante, $z_{0}$ die Messhöhe über dem Eis ist, in welcher die Windgeschwindigkeit gemessen wird und $z=0.003~m$ dem Rauheitsparameter entspricht. Tabelle 5.4 in Cuffey und Paterson 2010 zeigt, dass dieser Parameter bei Eis im Ablationsgebiet zwischen 1 und 5 Millimetern beträgt. Deshalb wird er in den Berechnungen hier mit dem Mittelwert 3 Millimeter angenommen.\\ % evtl footnote bei Karmans Konstante TODO?
+berechnet, wobei $k_{o}=0.4$ die Karmans Konstante ist, $z_{0}$ die Messhöhe über dem Eis ist, in welcher die Windgeschwindigkeit gemessen wird und $z=0.003~m$ dem Rauheitsparameter entspricht. Tabelle 5.4 in \citeauthor{ThePhysicsOfGlaciers} (\citeyear[155]{ThePhysicsOfGlaciers}) zeigt, dass dieser Parameter bei Eis im Ablationsgebiet zwischen 1 und 5 Millimetern beträgt. Deshalb wird er in den Berechnungen hier mit dem Mittelwert 3 Millimeter angenommen.\\ % evtl footnote bei Karmans Konstante TODO?
 
 $T_s$ entspricht der Oberflächentemperatur des Eises und wird mithilfe vom Stefan-Boltzmann-Gesetz 
 
@@ -282,7 +296,7 @@ $\mu(z)$ und $T_a(z)$ stehen für die Windgeschwindigkeit und Lufttemperatur gem
 
 
 \subsection{Periodische Trendelimination}\label{Periodische Trendelimination}
-Im Falle der Pasterze liegen leider nur für 3 Jahre Messdaten für die Berechnung der Energiebilanz zur Verfügung. Deshalb kann durch eine periodische Trendelimination keine aussagekräftige Annahme über eventuellen Trend getroffen werden. Trotzdem wird die Möglichkeit zur periodischen Trendelimination in die Software implementiert, um z.B. bei anderen Gletschern und längeren Datenaufzeichnungen bzw. in Zukunft auch bei der Pasterze Trendanalysen durchzuführen.\\
+Im Falle der Pasterze liegen nur für 3 Jahre Messdaten für die Berechnung der Energiebilanz zur Verfügung. Deshalb kann durch eine periodische Trendelimination keine aussagekräftige Annahme über eventuellen Trend getroffen werden. Trotzdem wird die Möglichkeit zur periodischen Trendelimination in die Software implementiert, um z.B. bei anderen Gletschern und längeren Datenaufzeichnungen bzw. in Zukunft auch bei der Pasterze Trendanalysen durchzuführen.\\
 
 Eine Periode dauert bei der Energiebilanz genau ein Jahr. Die Bereinigung von der Periode erfolgt auf die Weise, dass der erste Wert nach dem vollendeten Jahr vom Wert im ersten Jahr zu dieser Zeit abgezogen wird. Es wird dabei immer jener Wert vom ersten Jahr gesucht, welcher datumsmäßig (abzüglich von der Jahresanzahl) am nächsten zum betrachteten Wert liegt. Dieser Vorgang wird für alle weiteren Werte wiederholt. Soll ein eventueller linearer Trend erhalten bleiben, so müssen die Werte immer bezogen auf das erste Jahr abgezogen werden. Wird nämlich immer nur das Vorjahr dafür verwendet, so fällt dieser lineare Trend auch noch weg. In diesem Fall könnten dann die entstandenen Residuen auf Normalverteilung überprüft werden.\\
 Bei dieser Trendelimination soll aber der lineare Trend eben aufrecht erhalten bleiben. Aus der genannten Methode folgt somit, dass die Wertereihe zumindest größer als ein Jahr sein muss, ansonsten kann kein periodischer Trend eliminiert werden.\\
@@ -290,7 +304,7 @@ Bei dieser Trendelimination soll aber der lineare Trend eben aufrecht erhalten b
 Im Zuge der Durchführung wird nicht nur die errechnete Energiebilanz an sich trendeliminiert, sonder auch Einzelteile, wie z.B. nur die Strahlungsenergie oder nur der sensible und latente Wärmeeintrag.
 
 
-\subsection{Berechnung des resultierenden Schmelzwassers}
+\subsection{Berechnung des resultierenden Schmelzwassers}\label{Section Berechnung Schmelzwasser}
 Formel (vgl. \cite[142]{ThePhysicsOfGlaciers})
 
 \begin{equation}
@@ -376,20 +390,20 @@ unittest		   & Erstellung einer Testumgebung   \\  \hline
 %setstretch is removed automatically after table again
 \vspace{0.3cm}
 
-\subsubsection{Unittesting}
+\subsubsection{``Unittesting''}
 Das Python Modul unittest wird dazu verwendet, Funktionen des Programmes zu überprüfen. Für diese Arbeit wird es dazu verwendet, die Richtigkeit der Formeln für die Berechnung der Energiebilanz zu gewährleisten.\\
 
-Cuffey und Paterson bieten auf Seite 157 Testwerte und das dazugehörige Ergebnis für den Transfer Koeffizienten $C^*$ von Formel \ref{eq:Transferkoeffizient} und für die Berechnungen der sensiblen Wärme \ref{eq:Berechnung sensibler Energiefluss} an.
+\citeauthor{ThePhysicsOfGlaciers} (\citeyear[157]{ThePhysicsOfGlaciers}) bieten Testwerte und das dazugehörige Ergebnis für den Transfer-Koeffizienten $C^*$ von Formel \ref{eq:Transfer-Koeffizient} und für die Berechnungen der sensiblen Wärme Formel \ref{eq:Berechnung sensibler Energiefluss} an.
 
 
-\paragraph{Transfer Koeffizient}
+\paragraph{Transfer-Koeffizient}
 
-Bei gegebener Messhöhe zwischen 1 und 2 Metern und Oberflächenrauheit von  1 - 5 Millimetern (entspricht der Oberflächenrauheit von Eis im Ablationsgebiet, Tabelle 5.4) soll ein Wert für den Transferkoeffizienten (Formel \ref{eq:Transferkoeffizient}) zwischen 0.002 und 0.004 herauskommen.\\
+Bei gegebener Messhöhe zwischen 1 und 2 Metern und Oberflächenrauheit von  1 - 5 Millimetern (entspricht der Oberflächenrauheit von Eis im Ablationsgebiet, Tabelle 5.4) soll ein Wert für den Transfer-Koeffizienten (Formel \ref{eq:Transfer-Koeffizient}) zwischen 0.002 und 0.004 herauskommen.\\
 
 Der Test mit einer Messhöhe von 1.5 Metern und Oberflächenrauheit von 2 Millimetern wird angenommen.
 
 \paragraph{Sensible Wärme}
-Bei gegebenem Luftdruck von $800~hPa$, Windgeschwindigkeit von $5~m/s$, Lufttemperatur von $5^\circ C$ und Transferkoeffizienten von $0.002$ soll das Ergebnis der sensiblen Wärme (Formel \ref{eq:Berechnung sensibler Energiefluss}) zwischen 47 und $53~W/m^2$ liegen. \\
+Bei gegebenem Luftdruck von $800~hPa$, Windgeschwindigkeit von $5~m/s$, Lufttemperatur von $5^\circ C$ und Transfer-Koeffizienten von $0.002$ soll das Ergebnis der sensiblen Wärme (Formel \ref{eq:Berechnung sensibler Energiefluss}) zwischen 47 und $53~W/m^2$ liegen. \\
 Weiters erwähnt ist, dass von einer schmelzenden Eisoberfläche ausgegangen wird und weil die Eisoberflächentemperatur nach Stefan Boltzmann (Formel \ref{eq:Boltzmann-Gesetz}) berechnet wird, wird der Funktion als langwellige Ausstrahlung ein Wert von $1000~W/m^2$ mitgegeben, womit die Eistemperatur in der Berechnung bei 0 liegt.\\
 
 Der Test wird wiederum angenommen.
@@ -403,14 +417,14 @@ Das Grafische Userinterface (GUI) setzt sich aus den Teilen
 \item Plot
 \item Download
 \end{itemize}
-zusammen.
+zusammen.\\
 
 In \textbf{Read} kann eine Messdatei eingelesen werden. 
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Read_Frame.png}
-\caption{GUI Read-Frame}
+\caption[GUI Read-Frame, Version \guiversion]{GUI Read-Frame, Version \guiversion, (Quelle: eigene Darstellung)}
 \label{fig:GUI Read-Frame}
 \end{figure}
 
@@ -419,7 +433,7 @@ Im Fenster \textbf{Scope/Energy balance} kann der momentane Betrachungszeitraum 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Scope_Energy_Balance_Frame.png}
-\caption{GUI Scope/Energy Balance-Frame}
+\caption[GUI Scope/Energy Balance-Frame, Version \guiversion]{GUI Scope/Energy Balance-Frame, Version \guiversion, (Quelle: eigene Darstellung)}
 \label{fig:GUI Scope/Energy Balance-Frame}
 \end{figure}
 
@@ -428,7 +442,7 @@ Bei \textbf{Sum} können einzelne Messungen zusammengefasst werden.
 \begin{figure}[H]
 \centering
 \includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Scope_Energy_Balance_Frame.png}
-\caption{GUI Sum-Frame}
+\caption[GUI Sum-Frame, Version \guiversion]{GUI Sum-Frame, Version \guiversion, (Quelle: eigene Darstellung)}
 \label{fig:GUI Sum-Frame}
 \end{figure}
 
@@ -437,16 +451,16 @@ In \textbf{Plot} können die Ergebnisse als graphische Darstellungen betrachtet 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Plot_Frame.png}
-\caption{GUI Plot-Frame}
+\caption[GUI Plot-Frame, Version \guiversion]{GUI Plot-Frame, Version \guiversion, (Quelle: eigene Darstellung)}
 \label{fig:GUI Plot-Frame}
 \end{figure}
 
-Beim erstellen des Plots erscheint ein neues Fenster in welchem der Plot vergrößert bzw. verkleinert, verschoben, .. und heruntergeladen werden kann.
+Beim erstellen des Plots erscheint ein neues Fenster in welchem der Plot vergrößert bzw. verkleinert, verschoben, etc. und heruntergeladen werden kann.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Sample_Plot.png}
-\caption{GUI Beispiel Plot}
+\caption[GUI Beispiel Plot]{GUI Beispiel Plot (Quelle: eigene Darstellung)}
 \label{fig:GUI Beispiel Plot}
 \end{figure}
 
@@ -455,7 +469,7 @@ Im \textbf{Download}-Bereich können die erzielten Ergebnisse noch in Form von W
 \begin{figure}[H]
 \centering
 \includegraphics[width=\guiplotsize\textwidth]{pictures/GUI/Download_Frame.png}
-\caption{GUI Download-Frame}
+\caption[GUI Download-Frame, Version \guiversion]{GUI Download-Frame, Version \guiversion, (Quelle: eigene Darstellung)}
 \label{fig:GUI Download-Frame}
 \end{figure}
 
@@ -502,16 +516,16 @@ heruntergeladen werden. Zur direkt ausführbaren .exe Version gibt es keine Upda
 \pagebreak
 \section{Ergebnisse und Interpretation}
 \subsection{Energiebilanz}
-Abbildung \ref{fig:Energiebilanz gesamter Messzeitraum, Zeitintervall 10 Minuten} zeigt die errechnete Energiebilanz über den gesamten Messzeitraum von Ende 2016 bis Mitte 2019. 
+Abbildung \ref{fig:Energiebilanz gesamter Messzeitraum, Zeitintervall 10 Minuten} zeigt die errechnete Energiebilanz über den gesamten Zeitraum in welchem Messdaten vorhanden sind, von Ende 2016 bis Mitte 2019. 
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance.png}
-\caption{Energiebilanz gesamter Messzeitraum, Zeitintervall 10 Minuten}
+\caption[Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Zeitintervall 10 Minuten]{Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Zeitintervall 10 Minuten (Quelle: eigene Darstellung)}
 \label{fig:Energiebilanz gesamter Messzeitraum, Zeitintervall 10 Minuten}
 \end{figure}
 
-Es sind leider nur knapp drei Jahre ausreichend Messdaten zur Berechnung der Energiebilanz verfügbar. An den Daten ist deutlich ein periodischer Verlauf erkennbar mit Maximum im Sommer und Minimum im Winter. Die Spitzen der Energiebilanz liegen bei knapp 1500 $W/m^2$, die Minima bei ca. $-250 W/m^2$. Diese ungleiche Verteilung ist erklärbar durch die Messungen im Ablationsgebiet des Gletschers. Hier sollte ja das Jahresmittel deutlich positiv sein. Folgende Tabelle zeigt einen Überblick der Energiebilanz in den Jahren 2017 und 2018. Weiters werden in der darauf folgenden Abbildung \ref{Energiebilanzkomponenten Monatsmittel} die einzelnen Komponenten der Energiebilanz monatlich gemittelt dargestellt.
+Es sind nur knapp drei Jahre ausreichend Messdaten zur Berechnung der Energiebilanz verfügbar. An den Daten ist deutlich ein periodischer Verlauf erkennbar mit Maxima im Sommer und Minima im Winter. Die Spitzen der Energiebilanz liegen bei knapp 1500 $W/m^2$, die Minima bei ca. $-250 W/m^2$. Diese ungleiche Verteilung ist erklärbar durch die Messungen im Ablationsgebiet des Gletschers. Hier sollte ja das Jahresmittel deutlich positiv sein. Folgende Tabelle zeigt einen Überblick der Energiebilanz in den Jahren 2017 und 2018. Weiters werden in der darauf folgenden Abbildung \ref{Energiebilanzkomponenten Monatsmittel} die einzelnen Komponenten der Energiebilanz monatlich gemittelt dargestellt.
 
 \begin{table}[H]
 \centering
@@ -531,7 +545,7 @@ Jahr & Jun-Aug           & Gesamt           & Jun-Aug               & Gesamt    
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Energy_balance_components_monthly_mean.png}
-\caption{Energiebilanzkomponenten Monatsmittel}
+\caption[Energiebilanzkomponenten Monatsmittel, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019]{Energiebilanzkomponenten Monatsmittel, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019 (Quelle: eigene Darstellung)}
 \label{Energiebilanzkomponenten Monatsmittel}
 \end{figure}
 
@@ -540,13 +554,13 @@ Der stärkste periodische Trend ist bei der eintreffenden kurzwelligen Strahlung
 
 
 \pagebreak
-Abbildung \ref{Energiebilanz gesamter Messzeitraum, tagweise gemittelt} zeigt nochmals die Energiebilanz über den gesamten Messzeitraum, jedoch wurde hier jeweils ein Tag gemittelt.
+Abbildung \ref{Energiebilanz gesamter Messzeitraum, Tagesmittel} zeigt nochmals die Energiebilanz über den gesamten Messzeitraum, jedoch wurde hier jeweils ein Tag gemittelt.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed.png}
-\caption{Energiebilanz gesamter Messzeitraum, tagweise gemittelt}
-\label{Energiebilanz gesamter Messzeitraum, tagweise gemittelt}
+\caption[Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel]{Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
+\label{Energiebilanz gesamter Messzeitraum, Tagesmittel}
 \end{figure}
 
 Dies resultiert in einem glatteren Verlauf der Kurve, wobei es im Bereich des Sommers zwischen unterschiedlichen Tages-Werten trotzdem noch Abweichungen von teils 300 $W/m^2$ gibt. Dies lässt sich auf unterschiedliche Wetterlagen zurückführen und könnte gut mit Sonnenscheinzeiten pro Tag usw. verglichen werden.\\
@@ -557,33 +571,33 @@ Abbildung \ref{fig:Nettostrahlung (SW und LW) im gesamten Messzeitraum} zeigt di
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Energy_balance_only_radiation.png}
-\caption{Strahlungskomponente im gesamten Messzeitraum, tagweise gemittelt}
+\caption[Strahlungskomponente, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel]{Strahlungskomponente, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Nettostrahlung (SW und LW) im gesamten Messzeitraum}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Energy_balance_only_sens_and_latent_heat_accum.png}
-\caption{Sensible und latente Wärme im gesamten Messzeitraum, tagweise gemittelt}
+\caption[Sensible und latente Wärme, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel]{Sensible und latente Wärme, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Sensible und latente Wärme im gesamten Messzeitraum}
 \end{figure}
 
 Es stellt sich heraus, dass die genannten hohen Werte der Energiebilanz, bei der sensiblen Wärme auftreten. In der Berechnung der sensiblen Wärme fließen die Messgrößen Luftdruck, Windgeschwindigkeit, Lufttemperatur und Eistemperatur mit ein. Bei genauerer Betrachtung der Messwerte stellt sich heraus, dass alle drei Komponenten zu diesen Zeiten hohe Werte aufweisen. Hohe Temperatur, hoher Luftdruck und gleichzeitig hohe Windgeschwindigkeit resultiert in einem hohen sensiblen Wärmeeintrag. 
 
 
-\subsection{Ablation, Schmelzwasser}
+\subsection{Ablation $\&$ Schmelzwasser}
 In Abbildung \ref{fig:Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung} wird zusätzlich zur errechneten Energiebilanz die bereinigte Ablation visualisiert. Wie zu erwarten, gibt es immer im Sommer bei hoher Energiebilanz Eisschmelze und im Winter keine Änderung der Ablation. Dies bedeutet allerdings nicht, dass die Masse des Gletschers im Winter stagniert, da in diesem Zeitraum durch Schneefall Akkumulation auftritt, diese aber in der Ablationsmessung nicht sichtbar ist. Zu beobachten ist, dass die Energiebilanz schon vor dem eigentlichen Beginn der Schmelze erhöht ist. Grund dafür ist, dass zuerst der liegende Schnee noch weggeschmolzen werden muss und erst dann die positive Energiebilanz Eisschmelze verursacht.
 
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_ablation.png}
-\caption{Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessungn, tagweise gemittelt}
+\caption[Energiebilanz inklusive Ablationsmessung, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel]{Energiebilanz inklusive Ablationsmessung, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Energiebilanz im gesamten Messzeitraum inklusive Ablationsmessung}
 \end{figure}
 
 
-Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusätzlich das durch die Ablationsmessung errechnete und das modellierte Schmelzwasser aus der Energiebilanz dargestellt wird. Wie bereits in der Durchführung erwähnt, wird für die Modellierung nur der Teil zwischen 1. Juni und 1. September pro Jahr verwendet, da zu dieser Zeit der Eislayer als isotherm mit 0 Grad angenommen werden kann, was die Modellierung erleichtert.  
+Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusätzlich das durch die Ablationsmessung errechnete und das modellierte Schmelzwasser aus der Energiebilanz dargestellt wird. Wie bereits in der Methodik (Kapitel \ref{Section Berechnung Schmelzwasser}) erwähnt, wird für die Modellierung nur der Teil zwischen 1. Juni und 1. September pro Jahr verwendet, da zu dieser Zeit der Eislayer als isotherm mit 0 Grad angenommen werden kann, was die Modellierung erleichtert.  
 
 % dass auch im Sommer evtl. Schnellfall auftreten kann und somit die Eisdickenabnahme kurzeitig komplett stoppt. Leider gibt es keine Niederschlagsmessungen, ansonsten könnten diese zusammen mit der Temperatur analysiert werden um so eventuelle    .. sollte nicht der Fall sein
 
@@ -594,7 +608,7 @@ Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusä
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent.png}
-\caption{Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser, tagweise gemittelt}
+\caption[Energiebilanz inklusive gemessenem und modellierten Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel]{Energiebilanz inklusive gemessenem und modellierten Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser}
 \end{figure}
 
@@ -603,7 +617,7 @@ Auffallend ist, dass das gemessene Schmelzwasser abweichend zum modellierten tei
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Scatter_measured_water_equivalent_and_temperature.png}
-\caption{Vergleich gemessenes Schmelzwasser und Temperatur in den Jahren 2017 und 2018}
+\caption[Vergleich gemessenes Schmelzwasser und Temperaturtagesmittel, Ablationsgebiet Pasterze im Zeitraum 2017 und 2018]{Vergleich gemessenes Schmelzwasser und Temperatur, Ablationsgebiet Pasterze im Zeitraum 2017 und 2018 (Quelle: eigene Darstellung)}
 \label{Vergleich gemessenes Schmelzwasser und Temperatur}
 \end{figure}
 
@@ -628,24 +642,24 @@ Ab einer Korrelation von 0.7 wird von einer starken Korrelation gesprochen. Das 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.png}
-\caption{Energiebilanz im Sommer 2017 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwassertagweise gemittelt}
+\caption[Energiebilanz inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum Sommer 2017, Tagesmittel]{Energiebilanz inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum Sommer 2017, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Energiebilanz im Sommer 2017 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.png}
-\caption{Energiebilanz im Sommer 2018 inklusive gemessenem und modellierten Schmelzwasser, tagweise gemittelt}
+\caption[Energiebilanz inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum Sommer 2018, Tagesmittel]{Energiebilanz inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum Sommer 2018, Tagesmittel (Quelle: eigene Darstellung)}
 \label{Energiebilanz im Sommer 2018 inklusive der in Wasseräquivalent umgerechneten Ablation und dem modellierten Schmelzwasser}
 \end{figure}
 
 
-Abbildung \ref{Vergleich modelliertes und gemessenes Schmelzwasser} stellt  anhand eines Scatter-Plots das modellierte und gemessene Schmelzwasser unmittelbar gegenüber. Im Idealfall liegen dabei alle Punkte auf der Regressionsgeraden und diese weist eine Steigung von $45^\circ$ auf und verläuft durch den Ursprung des Koordinatensystems. Der lineare Trend ist im Falle dieser Darstellung deutlich ersichtlich, allerdings beträgt die Steigung der Regressionsgeraden nur ca $28^\circ$ und sie schneidet die y-Achse ca. beim Wert 40 [mm/d]. Dies bedeutet einerseits, dass das Modell bei sehr niedrigen gemessenen Werten für die Wasseräquivalenz bereits deutlich höhere Werte prädiziert und andererseits, dass tendenziell im Vergleich zum Gemessenen eher zu viel Schmelzwasser modelliert wird.
+Abbildung \ref{Vergleich modelliertes und gemessenes Schmelzwasser} stellt  anhand eines Scatter-Plots das modellierte und gemessene Schmelzwasser unmittelbar gegenüber. Im Idealfall liegen dabei alle Punkte auf der ``Line of unity'', deren Steigung $45^\circ$ beträgt. Der lineare Trend ist im Falle dieser Darstellung deutlich ersichtlich, allerdings beträgt die Steigung der Regressionsgeraden nur ca $28^\circ$ und sie schneidet die y-Achse ca. beim Wert 40 [mm/d]. Dies bedeutet einerseits, dass das Modell bei sehr niedrigen gemessenen Werten für die Wasseräquivalenz bereits deutlich höhere Werte prädiziert und andererseits, dass tendenziell im Vergleich zum Gemessenen eher zu viel Schmelzwasser modelliert wird.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.6\textwidth]{../Software/plots/Scatter_measured_and_modelled_water_equivalent.png}
-\caption{Vergleich modelliertes und gemessenes Schmelzwasser in den Jahren 2017 und 2018}
+\caption[Vergleich modelliertes und gemessenes Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum 2017 und 2018]{Vergleich modelliertes und gemessenes Schmelzwasser, Ablationsgebiet Pasterze im Zeitraum 2017 und 2018 (Quelle: eigene Darstellung)}
 \label{Vergleich modelliertes und gemessenes Schmelzwasser}
 \end{figure}
 
@@ -682,9 +696,9 @@ Eine weitere Untersuchung kann in dieser Hinsicht auch beim Thema der ``Greenhou
 \end{figure}
 
 
-Mithilfe der errechneten Differenzen aus Tabelle \ref{tab:Auswirkung von global dimming oder global brightening auf den Eisdickenverlust innerhalb vom 1. Juni bis 1. September im Jahr 2018} kann errechnet werden, um wie viel sich die Eisdicke im Ablationsgebiet insgesamt ca. weniger verringert hätte, wäre die kurzwellige einkommende Strahlung seit 1900 konstant geblieben. Dabei werden allerdings alle anderen Komponenten wie Temperatur usw. nicht berücksichtigt. Dies gilt somit nur als grober Schätzwert. Außerdem wird immer nur der Zeitraum zwischen 1. Juni und 1. September betrachtet. Tendenziell ist somit der errechnete Wert im Absolutbetrag zu klein.\\
+Mithilfe der errechneten Differenzen aus Tabelle \ref{tab:Auswirkung von global dimming oder global brightening auf den Eisdickenverlust innerhalb vom 1. Juni bis 1. September im Jahr 2018} kann errechnet werden, um wie viel sich die Eisdicke im Ablationsgebiet insgesamt ca. weniger verringert hätte, wäre die langwellige einkommende Strahlung seit 1900 konstant geblieben. Dabei werden allerdings alle anderen Komponenten wie Temperatur usw. nicht berücksichtigt. Dies gilt somit nur als grober Schätzwert. Außerdem wird immer nur der Zeitraum zwischen 1. Juni und 1. September betrachtet. Tendenziell ist somit der errechnete Wert im Absolutbetrag zu klein.\\
 
-Zur Berechnung wird weiters eine lineare Veränderung der kurzwelligen eingehenden Strahlung angenommen. Betrachtet wird der Zeitraum vom Jahr 1900 bis zum Jahr 2000. In diesen 100 Jahren nimmt die Strahlung laut der Abbildung um ungefähr $2.5$ $W/m^2$ zu.\\
+Zur Berechnung wird weiters eine lineare Veränderung der langwelligen eingehenden Strahlung angenommen. Betrachtet wird der Zeitraum vom Jahr 1900 bis zum Jahr 2000. In diesen 100 Jahren nimmt die Strahlung laut der Abbildung um ungefähr $2.5$ $W/m^2$ zu.\\
 
 Die Formel zur Berechnung kann durch
 \begin{equation}
@@ -693,41 +707,41 @@ Die Formel zur Berechnung kann durch
 
 angegeben werden, wobei $a=2.5\frac{W}{m^2}$ dem Greenhouse forcing in der betrachteten Zeit entspricht und $b=2 \frac{cm \cdot m^2}{W}$ (abgeleitet aus Tabelle \ref{tab:Auswirkung von global dimming oder global brightening auf den Eisdickenverlust innerhalb vom 1. Juni bis 1. September im Jahr 2018}) die Eisdickenänderung pro $W/m^2$ in den betrachteten Monaten Juli-August darstellt.\\
 
-Als Ergebnis folgt mit $\Delta I = 252.5~cm,$, dass in den betrachteten 100 Jahren die Eisdicke im Ablationsgebiet der Pasterze bei Betrachtng der Sommermonate um ca. $\mathbf{2.5~m}$ \textbf{weniger abgenommen} hätte, wenn die kurzwellige Strahlung seit dem Jahr 1900 konstant geblieben wäre.
+Als Ergebnis folgt mit $\Delta I = 252.5~cm$, dass in den betrachteten 100 Jahren die Eisdicke im Ablationsgebiet der Pasterze bei Betrachtung der Sommermonate um ca. $\mathbf{2.5~m}$ \textbf{weniger abgenommen} hätte, wenn die langwellige Strahlung seit dem Jahr 1900 konstant geblieben wäre.
 
 
 
 \subsection{Periodische Trendelimination der Energiebilanz}
 
-Wie bereits erwähnt, machen Trendeliminationen bei einer so kurzen Zeitreihe wenig Sinn. Trotzdem zeigt Abbildung \ref{fig:Trendelimination der Energiebilanz} das Ergebnis der periodischen Trendelimination der Messreihe. Ein Jahr an darstellbaren Daten fällt durch die verwendete Methode (siehe Kapitel \ref{Periodische Trendelimination}) dabei weg. Interpretation der Darstellung macht wenig Sinn, über die betrachteten Jahre nimmt die Energiebilanz allerdings leicht aber. 
+Wie bereits erwähnt, machen Trendeliminationen bei einer so kurzen Zeitreihe wenig Sinn. Trotzdem zeigt Abbildung \ref{fig:Trendelimination der Energiebilanz} das Ergebnis der periodischen Trendelimination der Messreihe. Ein Jahr an darstellbaren Daten fällt durch die verwendete Methode (siehe Kapitel \ref{Periodische Trendelimination}) dabei weg. Eine Interpretation der Darstellung macht aufgrund der kurzen Datenreihe wenig Sinn, allerdings erkennt man eine leichte Abnahme der Energiebilanz im Untersuchungszeitrum.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.png}
-\caption{Trendelimination der Energiebilanz, tagweise gemittelt}
+\caption[Trendelimination der Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2017 bis Juni 2019, Tagesmittel]{Trendelimination der Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2017 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Trendelimination der Energiebilanz}
 \end{figure}
 
-Werden die Strahlungskomponente, sowie die der sensible und latente Wärmeeintrag der Energiebilanz separat betrachtet, kann erkannt werden, dass  die Abnahme aus der Strahlungskomponente resultiert. Die sensible und latente Wärme bleibt im Mittel über den betrachteten Zeitraum annähernd Konstant.
+Werden die Strahlungskomponente, sowie die der sensible und latente Wärmeeintrag der Energiebilanz separat betrachtet, kann erkannt werden, dass  die Abnahme aus der Strahlungskomponente resultiert. Die sensible und latente Wärme bleibt im Mittel über den betrachteten Zeitraum annähernd konstant.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Radiation_summed_periodic_trend_eliminated.png}
-\caption{Trendelimination der Strahlungskomponente der Energiebilanz, tagweise gemittelt}
+\caption[Trendelimination der Strahlungskomponente der Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel]{Trendelimination der Strahlungskomponente der Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Trendelimination der Strahlungskomponente der Energiebilanz}
 \end{figure}
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\resultplotsize\textwidth]{../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png}
-\caption{Trendelimination der sensiblen und latenten Wärme der Energiebilanz, tagweise gemittelt}
+\caption[Trendelimination der sensiblen und latenten Wärme der Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel]{Trendelimination der sensiblen und latenten Wärme der Energiebilanz, Ablationsgebiet Pasterze im Zeitraum November 2016 bis Juni 2019, Tagesmittel (Quelle: eigene Darstellung)}
 \label{fig:Trendelimination der sensiblen und latenten Wärme der Energiebilanz}
 \end{figure}
 
 
 \pagebreak
 \section{Fazit}
-Die starke Korrelation vom modellierten und von dem aus den Ablationsmessungen errechneten Schmelzwasser bestätigt die Richtigkeit des angenommenen Modelles zur Berechnung der Energiebilanz im Ablationsgebiet eines Gleschters. Warum es aber trotzdem noch teils große Abweichungen, besonders bei kleiner Energiebilanz gibt kann vorerst nicht beantwortet werden. Es könnte einerseits sein, dass das Modell noch weiter verfeinert werden muss aber andererseits besteht auch die Möglichkeit, dass die Ablationsmessung teils fehlerbehaftet ist. Am besten könnte man dies durch Anwendung des gleichen Modelles auf andere Gletscher überprüfen.\\
+Die starke Korrelation vom modellierten und von dem aus den Ablationsmessungen errechneten Schmelzwasser bestätigt die Richtigkeit des angenommenen Modelles zur Berechnung der Energiebilanz im Ablationsgebiet eines Gleschters. Warum es aber trotzdem noch teils große Abweichungen, besonders bei kleiner Energiebilanz gibt kann vorerst nicht beantwortet werden. Es könnte einerseits sein, dass das Modell noch weiter verfeinert werden muss, aber andererseits besteht auch die Möglichkeit, dass die Ablationsmessung teils fehlerbehaftet ist. Am besten könnte man dies durch Anwendung des gleichen Modelles auf andere Gletscher überprüfen.\\
 
 Durch die Simulation von ``global dimming'' bzw. ``global brightening'' kann jetzt abgeschätzt werden, wie stark sich die Abnahme der Eisdicke im Ablationsgebiet tatsächlich verändert, sollte sich die Intensität der kurzwelligen Strahlung im Durchschnitt vergrößern oder verkleinern. Bei Betrachtung von den ``Greenhouse Gas forcings'' kann das Resultat bereits anschaulich angewendet werden.
 

@@ -258,16 +258,22 @@ class Visualize:
                      poly1d_fn(actual_melt_water_per_sqm), linestyle="--", label="Regression line")
 
         if component == "theoretical_mm_we_per_d":
+            max_value = max(actual_melt_water_per_sqm)
+            self.ax.plot([0, max_value], [0, max_value], linestyle="--", label="Line of unity")
+
             self.ax.set_aspect("equal")
-            self.ax.set_ylabel("Modelled water equivalent [mm/d]")
+            self.ax.set_ylabel("Modelled ablation [mm w.e./d]")
         elif component == "temperature":
             self.ax.set_ylabel("Temperature [°C]")
 
-        self.ax.set_xlabel("Measured water equivalent [mm/d]")
+        self.ax.set_xlabel("Measured ablation [mm w.e./d]")
 
         # create legend entries
         for i, year in enumerate(years_to_plot):
             self.ax.scatter(None, None, marker=marker_types[i], c=marker_colors[i], label=str(year))
+
+        self.ax.set_xlim(0, self.ax.get_xlim()[1])
+        self.ax.set_ylim(0, self.ax.set_ylim()[1])
 
         self.ax.legend()
         self.ax.grid(linestyle="--", alpha=0.5)
