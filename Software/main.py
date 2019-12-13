@@ -18,6 +18,9 @@ import sys
 import pickle
 import numpy as np
 
+sys.path.append("GUI")
+
+
 # The gui is constructed as singletons .. this order therefor has to be maintained
 import gui_main_frame as gui_main
 import navigation_bar
@@ -30,7 +33,6 @@ import frame_read
 import frame_energy_balance as frame_scope
 import frame_sum
 import visualizer
-sys.path.append("GUI")
 
 
 class NoGuiManager:
