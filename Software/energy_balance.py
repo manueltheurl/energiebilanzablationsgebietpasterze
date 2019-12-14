@@ -1,5 +1,7 @@
 import math as m
 from manage_config import cfg
+import datetime as dt
+
 
 KARMANS_CONSTANT = 0.4
 STEFAN_BOLTZMANN_CONSTANT = 5.670 * 10**-8
@@ -7,6 +9,8 @@ ABSOLUTE_ZERO_DEGREE_CELSIUS = -273.15
 PURE_ICE_DENSITY_AT_ZERO_DEG = 917  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
 WATER_DENSITY_AT_ZERO_DEG = 1000  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
 PURE_ICE_LATENT_HEAD_OF_FUSION_AT_ZERO_DEG = 3.34 * 10 ** 5  # J/kg  - taken from P. 142 Cuffey and Paterson
+ONE_YEAR = dt.timedelta(days=365)
+ONE_DAY = dt.timedelta(days=1)
 
 
 class EnergyBalance:
@@ -106,6 +110,17 @@ class EnergyBalance:
         if meter_ablation <= 0:  # if melted
             return abs(meter_ablation) * PURE_ICE_DENSITY_AT_ZERO_DEG
         return 0
+
+    @staticmethod
+    def melt_water_per_m2_to_mm_we_per_d(melt_water, time_interval):
+        # 1 liter equals one mm
+        # melt_water_in liters here
+        return melt_water * ONE_DAY/time_interval
+
+    @staticmethod
+    def melt_rate_to_mm_we_per_d(melt_rate):
+        # 1 liter equals one mm
+        return melt_rate * ONE_DAY.total_seconds() * 1000
 
     @staticmethod
     def melt_water_to_meter_ablation(melt_water):

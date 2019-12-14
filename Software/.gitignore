@@ -1,7 +1,7 @@
-venv
-__pycache__
-plots
-downloads
-Report
-Literature_in_Use
 .idea
+__pycache__
+venv
+plots
+PAS_10min.csv
+downloads
+*.pkl

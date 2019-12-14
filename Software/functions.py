@@ -1,4 +1,5 @@
 import datetime as dt
+import numpy as np
 
 
 def set_widget_state(widgets: list, state):
@@ -60,3 +61,23 @@ def value_changed(value, value_name):
         values_to_check_for_change[value_name] = value
         return True
     return False
+
+
+def remove_none_in_lists(lists):
+    none_indexes = []
+    for i, values in enumerate(zip(*lists)):
+        if None in values:
+            none_indexes.append(i)
+
+    return_lists = []
+
+    for list_ in lists:
+        return_lists.append(np.delete(list_, none_indexes))
+
+    return return_lists
+
+
+def save_add(first, second):
+    if None not in [first, second]:
+        return first + second
+    return None
