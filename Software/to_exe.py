@@ -6,7 +6,7 @@ import sys
 PATH_TO_PYTHON_SCRIPTS = sys.executable.split("python")[0] + "Scripts\\"
 PATH_TO_PYTHON_MODULES = "D:\\Data\\energiebilanzablationsgebietpasterze\\Software\\GUI"  # abs path .. bad but whatever
 ONE_FILE_ONLY = False
-EXE_NAME = "EXE_Glacier-Energy-Balance"
+EXE_NAME = "EXE-Glacier-Energy-Balance"
 ASADMIN = 'asadmin'
 
 MAIN_CONTROLPANEL_FILE = os.path.dirname(os.path.realpath(__file__)) + "\\main.py"
