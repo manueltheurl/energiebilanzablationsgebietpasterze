@@ -2,18 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f5b4a162-47c1-4e06-b014-0a4341b0ae84" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/GUI/version_bar.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/pyvenv.cfg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/to_exe.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config.ini" beforeDir="false" afterPath="$PROJECT_DIR$/config.ini" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/energy_balance.py" beforeDir="false" afterPath="$PROJECT_DIR$/energy_balance.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mean_measurement.py" beforeDir="false" afterPath="$PROJECT_DIR$/mean_measurement.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/multiple_measurements.py" beforeDir="false" afterPath="$PROJECT_DIR$/multiple_measurements.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/visualizer.py" beforeDir="false" afterPath="$PROJECT_DIR$/visualizer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/to_exe.py" beforeDir="false" afterPath="$PROJECT_DIR$/to_exe.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -81,6 +71,7 @@
       <option name="presentableId" value="Default" />
       <updated>1576323520752</updated>
       <workItem from="1576323522007" duration="109000" />
+      <workItem from="1576413479129" duration="130000" />
     </task>
     <servers />
   </component>
@@ -92,7 +83,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
