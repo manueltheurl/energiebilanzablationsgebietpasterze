@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.24)  14 DEC 2019 12:43
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.24)  15 DEC 2019 17:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -805,6 +805,79 @@ File: biblatex.cfg
 Package biblatex Warning: 'firstinits' option is deprecated.
 (biblatex)                Please use 'giveninits' instead.
 
+) (/usr/share/texlive/texmf-dist/tex/latex/mathastext/mathastext.sty
+Package: mathastext 2016/11/06 v1.3r Use the text font in math mode (JFB)
+\mst@exists@muskip=\muskip12
+\mst@forall@muskip=\muskip13
+\mst@prime@muskip=\muskip14
+\mst@do@nonletters=\toks28
+\mst@do@easynonletters=\toks29
+\mst@do@az=\toks30
+\mst@do@AZ=\toks31
+\symmtoperatorfont=\mathgroup6
+\symmtletterfont=\mathgroup7
+
+** will use Symbol font; command \MTSymbolScale
+\symmtpsymbol=\mathgroup8
+LaTeX Font Info:    Overwriting math alphabet `\mathnormalbold' in version `nor
+mal'
+(Font)                  T1/phv/bx/n --> T1/phv/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\mathnormalbold' in version `bol
+d'
+(Font)                  T1/phv/bx/n --> T1/phv/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting symbol font `mtletterfont' in version `normal'
+(Font)                  T1/phv/m/n --> T1/phv/m/n on input line 1102.
+LaTeX Font Info:    Overwriting symbol font `mtletterfont' in version `bold'
+(Font)                  T1/phv/m/n --> T1/phv/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting symbol font `mtoperatorfont' in version `normal
+'
+(Font)                  T1/phv/m/n --> T1/phv/m/n on input line 1102.
+LaTeX Font Info:    Overwriting symbol font `mtoperatorfont' in version `bold'
+(Font)                  T1/phv/m/n --> T1/phv/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathbf' in version `normal'
+(Font)                  T1/phv/bx/n --> T1/phv/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathbf' in version `bold'
+(Font)                  T1/phv/bx/n --> T1/phv/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathit' in version `normal'
+(Font)                  T1/phv/m/it --> T1/phv/m/it on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathit' in version `bold'
+(Font)                  T1/phv/m/it --> T1/phv/bx/it on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathsf' in version `normal'
+(Font)                  T1/cmss/m/n --> T1/cmss/m/n on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathsf' in version `bold'
+(Font)                  T1/cmss/m/n --> T1/cmss/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathtt' in version `normal'
+(Font)                  T1/cmtt/m/n --> T1/cmtt/m/n on input line 1102.
+LaTeX Font Info:    Overwriting math alphabet `\Mathtt' in version `bold'
+(Font)                  T1/cmtt/m/n --> T1/cmtt/bx/n on input line 1102.
+LaTeX Font Info:    Overwriting symbol font `mtpsymbol' in version `bold'
+(Font)                  U/psy/m/n --> U/psy/bx/n on input line 1102.
+** Latin letters in the normal (resp. bold) math versions are now
+** set up to use the fonts T1/phv/m(bx)/n
+** Other characters (digits, ...) and \log-like names will be
+** typeset with the n shape.
+** Greek letters will use the PostScript Symbol font. Use
+** \MathastextSymbolScale{<factor>} to scale the font.
+** ! and ?
+** punctuation: , . : ; and \colon
+** minus as endash
+** \hbar
+** + and =
+** adding = ; and + to \nfss@catcodes
+** parentheses ( ) [ ] and slash /
+** alldelims: < > \backslash \setminus | \vert \mid \{ and \}
+LaTeX Font Info:    Redeclaring math delimiter \backslash on input line 1396.
+LaTeX Font Info:    Redeclaring math symbol \setminus on input line 1408.
+LaTeX Info: Redefining \models on input line 1417.
+** \# \mathdollar \% \& 
+LaTeX Font Info:    Redeclaring math symbol \mst@Rho on input line 1607.
+LaTeX Font Info:    Redeclaring math symbol \mst@Chi on input line 1609.
+** \i and \j 
+LaTeX Info: Redefining \i on input line 1988.
+LaTeX Info: Redefining \j on input line 1989.
+** \HUGE has been (re)-defined.
+** mathastext has declared larger sizes for subscripts.
+** To keep LaTeX defaults, use option `defaultmathsizes'.
 ) (/usr/share/texlive/texmf-dist/tex/latex/psnfss/helvet.sty
 Package: helvet 2005/04/12 PSNFSS-v9.2a (WaS) 
 )
@@ -840,24 +913,24 @@ Package biblatex Warning: 'babel/polyglossia' detected but 'csquotes' missing.
 
 Package biblatex Warning: Conflicting options.
 (biblatex)                '<namepart>inits' conflicts with 'uniquename=full'.
-(biblatex)                Setting 'uniquename=init' on input line 44.
+(biblatex)                Setting 'uniquename=init' on input line 54.
 
 (./Bachelorarbeit_Theurl_Manuel.aux)
 \openout1 = `Bachelorarbeit_Theurl_Manuel.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Try loading font information for T1+phv on input line 44.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 54.
+LaTeX Font Info:    ... okay on input line 54.
+LaTeX Font Info:    Try loading font information for T1+phv on input line 54.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1phv.fd
 File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
@@ -903,12 +976,12 @@ File: t1phv.fd 2001/06/04 scalable font definitions for T1/phv.
 \scratchbox=\box32
 \nofMPsegments=\count305
 \nofMParguments=\count306
-\everyMPshowfont=\toks28
+\everyMPshowfont=\toks32
 \MPscratchCnt=\count307
 \MPscratchDim=\dimen135
 \MPnumerator=\count308
 \makeMPintoPDFobject=\count309
-\everyMPtoPDFconversion=\toks29
+\everyMPtoPDFconversion=\toks33
 ) (/usr/share/texlive/texmf-dist/tex/latex/oberdiek/epstopdf-base.sty
 Package: epstopdf-base 2016/05/15 v2.6 Base part for package epstopdf
 
@@ -952,8 +1025,10 @@ Package biblatex Warning: Biber reported the following issues
 Invalid format '10.06.2019' of date field 'urldate' - ignoring.
 
 )
-Package biblatex Info: Reference section=0 on input line 44.
-Package biblatex Info: Reference segment=0 on input line 44.
+Package biblatex Info: Reference section=0 on input line 54.
+Package biblatex Info: Reference segment=0 on input line 54.
+Package mathastext Info: current meaning of amsmath \resetMathstrut@ saved on i
+nput line 54.
 
 
 Package scrpage2 Warning: seems you are using a constant headheight.
@@ -966,59 +1041,71 @@ Package scrpage2 Warning: seems you are using a constant headheight.
 <pictures/logo_uni_graz.jpg, id=1, 119.4864pt x 102.1416pt>
 File: pictures/logo_uni_graz.jpg Graphic file (type jpg)
 <use pictures/logo_uni_graz.jpg>
-Package pdftex.def Info: pictures/logo_uni_graz.jpg  used on input line 57.
+Package pdftex.def Info: pictures/logo_uni_graz.jpg  used on input line 67.
 (pdftex.def)             Requested size: 78.04842pt x 66.71854pt.
 <pictures/logo_geo_raum.jpg, id=2, 302.12875pt x 220.825pt>
 File: pictures/logo_geo_raum.jpg Graphic file (type jpg)
 <use pictures/logo_geo_raum.jpg>
-Package pdftex.def Info: pictures/logo_geo_raum.jpg  used on input line 59.
+Package pdftex.def Info: pictures/logo_geo_raum.jpg  used on input line 69.
 (pdftex.def)             Requested size: 78.04842pt x 57.04585pt.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <10.95> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 67.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 77.
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <14.4> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 67.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 77.
 [1
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map} <./pictures/logo_uni_graz.j
 pg> <./pictures/logo_geo_raum.jpg>]
-Underfull \hbox (badness 10000) in paragraph at lines 100--101
+Underfull \hbox (badness 10000) in paragraph at lines 108--109
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 102--103
+Underfull \hbox (badness 10000) in paragraph at lines 110--111
 
  []
 
-LaTeX Font Info:    Try loading font information for U+msa on input line 107.
+
+Underfull \hbox (badness 10000) in paragraph at lines 112--113
+
+ []
+
+LaTeX Font Info:    Try loading font information for U+msa on input line 117.
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Try loading font information for U+msb on input line 107.
+LaTeX Font Info:    Try loading font information for U+msb on input line 117.
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
+LaTeX Font Info:    Font shape `U/psy/m/n' will be
+(Font)              scaled to size 10.95pt on input line 117.
+LaTeX Font Info:    Font shape `U/psy/m/n' will be
+(Font)              scaled to size 9.0pt on input line 117.
+LaTeX Font Info:    Font shape `U/psy/m/n' will be
+(Font)              scaled to size 7.0pt on input line 117.
+
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [1]
-Underfull \hbox (badness 10000) in paragraph at lines 109--110
+Underfull \hbox (badness 10000) in paragraph at lines 119--120
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 111--112
+Underfull \hbox (badness 10000) in paragraph at lines 121--122
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 113--114
+Underfull \hbox (badness 10000) in paragraph at lines 123--124
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 115--116
+Underfull \hbox (badness 10000) in paragraph at lines 125--126
 
  []
 
@@ -1027,12 +1114,12 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [2]
-Underfull \hbox (badness 10000) in paragraph at lines 120--121
+Underfull \hbox (badness 10000) in paragraph at lines 130--131
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 122--123
+Underfull \hbox (badness 10000) in paragraph at lines 132--133
 
  []
 
@@ -1082,28 +1169,28 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 [7]
 LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <12> not available
-(Font)              Font shape `T1/phv/b/n' tried instead on input line 153.
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 163.
 
-Underfull \hbox (badness 10000) in paragraph at lines 154--156
+Underfull \hbox (badness 10000) in paragraph at lines 164--166
 
  []
 
-<pictures/Pasterze_Beschriftung_bw.jpg, id=35, 2347.77126pt x 1011.78pt>
+<pictures/Pasterze_Beschriftung_bw.jpg, id=32, 2347.77126pt x 1011.78pt>
 File: pictures/Pasterze_Beschriftung_bw.jpg Graphic file (type jpg)
 <use pictures/Pasterze_Beschriftung_bw.jpg>
 Package pdftex.def Info: pictures/Pasterze_Beschriftung_bw.jpg  used on input l
-ine 162.
+ine 172.
 (pdftex.def)             Requested size: 390.25534pt x 168.17157pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [1]
-<pictures/pasterze_laengenaenderung.jpg, id=39, 2248.4pt x 1985.4175pt>
+<pictures/pasterze_laengenaenderung.jpg, id=36, 2248.4pt x 1985.4175pt>
 File: pictures/pasterze_laengenaenderung.jpg Graphic file (type jpg)
 <use pictures/pasterze_laengenaenderung.jpg>
 Package pdftex.def Info: pictures/pasterze_laengenaenderung.jpg  used on input 
-line 173.
+line 183.
 (pdftex.def)             Requested size: 351.23112pt x 310.12984pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
@@ -1111,30 +1198,30 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 [2 <./pictures/Pasterze_Beschriftung_bw.jpg> <./pictures/pasterze_laengenaender
 ung.jpg>]
-<pictures/energy_balance_components.png, id=43, 860.21375pt x 402.50375pt>
+<pictures/energy_balance_components.png, id=40, 860.21375pt x 402.50375pt>
 File: pictures/energy_balance_components.png Graphic file (type png)
 <use pictures/energy_balance_components.png>
 Package pdftex.def Info: pictures/energy_balance_components.png  used on input 
-line 185.
+line 195.
 (pdftex.def)             Requested size: 346.89731pt x 162.3191pt.
 
 
 LaTeX Warning: Citation 'Themicroclimateofvalleyglaciers)' on page 3 undefined 
-on input line 186.
+on input line 196.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 190--191
+Underfull \hbox (badness 10000) in paragraph at lines 200--201
 
  []
 
 
-Overfull \hbox (3.8314pt too wide) in paragraph at lines 192--195
+Overfull \hbox (3.8314pt too wide) in paragraph at lines 202--205
 []\T1/phv/m/n/10.95 Langwellige Strah-lung wird (fast) voll-stän-dig vom Glet-s
 cher ab-sor-biert. Der Glet-scher strahlt
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 192--195
+Underfull \hbox (badness 10000) in paragraph at lines 202--205
 
  []
 
@@ -1143,22 +1230,22 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [3 <./pictures/energy_balance_components.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 196--197
+Underfull \hbox (badness 10000) in paragraph at lines 206--207
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 198--199
+Underfull \hbox (badness 10000) in paragraph at lines 208--209
 
  []
 
-<pictures/spectral_reflectance_curves_for_ice_and_snow.png, id=49, 783.67781pt 
+<pictures/spectral_reflectance_curves_for_ice_and_snow.png, id=46, 783.67781pt 
 x 721.19438pt>
 File: pictures/spectral_reflectance_curves_for_ice_and_snow.png Graphic file (t
 ype png)
 <use pictures/spectral_reflectance_curves_for_ice_and_snow.png>
 Package pdftex.def Info: pictures/spectral_reflectance_curves_for_ice_and_snow.
-png  used on input line 210.
+png  used on input line 220.
 (pdftex.def)             Requested size: 273.18271pt x 251.39839pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
@@ -1173,39 +1260,39 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [6]
-Underfull \hbox (badness 10000) in paragraph at lines 233--234
+Underfull \hbox (badness 10000) in paragraph at lines 243--244
 
  []
 
-LaTeX Font Info:    Try loading font information for OMS+phv on input line 238.
+LaTeX Font Info:    Try loading font information for OMS+phv on input line 248.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/omsphv.fd
 File: omsphv.fd 
 )
 LaTeX Font Info:    Font shape `OMS/phv/m/n' in size <10.95> not available
-(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 238.
-
-Underfull \hbox (badness 10000) in paragraph at lines 263--264
-
- []
-
+(Font)              Font shape `OMS/cmsy/m/n' tried instead on input line 248.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [7]
-Overfull \hbox (4.2216pt too wide) in paragraph at lines 265--266
-[]$\OML/cmm/m/it/10.95 T[]$ \T1/phv/m/n/10.95 ent-spricht der Ober-flä-chen-tem
--pe-ra-tur des Ei-ses und wird mit-hil-fe vom Stefan-Boltzmann-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 292--293
+Underfull \hbox (badness 10000) in paragraph at lines 273--274
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 299--300
+Overfull \hbox (5.08252pt too wide) in paragraph at lines 275--276
+[]$[][]$ \T1/phv/m/n/10.95 ent-spricht der Ober-flä-chen-tem-pe-ra-tur des Ei-s
+es und wird mit-hil-fe vom Stefan-Boltzmann-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 302--303
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 309--310
 
  []
 
@@ -1214,7 +1301,7 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [8]
-Underfull \hbox (badness 10000) in paragraph at lines 301--303
+Underfull \hbox (badness 10000) in paragraph at lines 311--313
 
  []
 
@@ -1223,12 +1310,12 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [9]
-Underfull \hbox (badness 10000) in paragraph at lines 348--349
+Underfull \hbox (badness 10000) in paragraph at lines 358--359
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 366--368
+Underfull \hbox (badness 10000) in paragraph at lines 376--378
 
  []
 
@@ -1237,25 +1324,23 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [10]
-Underfull \hbox (badness 10000) in paragraph at lines 395--396
+Underfull \hbox (badness 10000) in paragraph at lines 405--406
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 402--403
+Underfull \hbox (badness 10000) in paragraph at lines 412--413
 
  []
 
 
-Overfull \hbox (6.23154pt too wide) in paragraph at lines 407--409
+Overfull \hbox (4.93416pt too wide) in paragraph at lines 417--419
  \T1/phv/b/n/10.95 Sen-si-ble Wär-me[] \T1/phv/m/n/10.95 Bei ge-ge-be-nem Luft-
-druck von $\OT1/cmr/m/n/10.95 800 \OML/cmm/m/it/10.95 hPa$\T1/phv/m/n/10.95 , W
-ind-ge-schwin-dig-keit von $\OT1/cmr/m/n/10.95 5 \OML/cmm/m/it/10.95 m=s$\T1/ph
-v/m/n/10.95 ,
+druck von $800 [][][]$, Wind-ge-schwin-dig-keit von $5 []/[]$,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 407--409
+Underfull \hbox (badness 10000) in paragraph at lines 417--419
 
  []
 
@@ -1264,20 +1349,20 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [11]
-Underfull \hbox (badness 10000) in paragraph at lines 421--422
+Underfull \hbox (badness 10000) in paragraph at lines 431--432
 
  []
 
-<pictures/GUI/Read_Frame.png, id=82, 1003.75pt x 702.625pt>
+<pictures/GUI/Read_Frame.png, id=78, 1003.75pt x 702.625pt>
 File: pictures/GUI/Read_Frame.png Graphic file (type png)
 <use pictures/GUI/Read_Frame.png>
-Package pdftex.def Info: pictures/GUI/Read_Frame.png  used on input line 427.
+Package pdftex.def Info: pictures/GUI/Read_Frame.png  used on input line 437.
 (pdftex.def)             Requested size: 325.215pt x 227.65353pt.
-<pictures/GUI/Scope_Energy_Balance_Frame.png, id=83, 1003.75pt x 735.74875pt>
+<pictures/GUI/Scope_Energy_Balance_Frame.png, id=79, 1003.75pt x 735.74875pt>
 File: pictures/GUI/Scope_Energy_Balance_Frame.png Graphic file (type png)
 <use pictures/GUI/Scope_Energy_Balance_Frame.png>
 Package pdftex.def Info: pictures/GUI/Scope_Energy_Balance_Frame.png  used on i
-nput line 436.
+nput line 446.
 (pdftex.def)             Requested size: 325.215pt x 238.38577pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
@@ -1287,27 +1372,27 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 File: pictures/GUI/Scope_Energy_Balance_Frame.png Graphic file (type png)
 <use pictures/GUI/Scope_Energy_Balance_Frame.png>
 Package pdftex.def Info: pictures/GUI/Scope_Energy_Balance_Frame.png  used on i
-nput line 445.
+nput line 455.
 (pdftex.def)             Requested size: 325.215pt x 238.38577pt.
-<pictures/GUI/Plot_Frame.png, id=88, 1003.75pt x 756.8275pt>
+<pictures/GUI/Plot_Frame.png, id=84, 1003.75pt x 756.8275pt>
 File: pictures/GUI/Plot_Frame.png Graphic file (type png)
 <use pictures/GUI/Plot_Frame.png>
-Package pdftex.def Info: pictures/GUI/Plot_Frame.png  used on input line 454.
+Package pdftex.def Info: pictures/GUI/Plot_Frame.png  used on input line 464.
 (pdftex.def)             Requested size: 325.215pt x 245.21538pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [13 <./pictures/GUI/Scope_Energy_Balance_Frame.png>]
-<pictures/GUI/Sample_Plot.png, id=93, 1303.87125pt x 949.5475pt>
+<pictures/GUI/Sample_Plot.png, id=89, 1303.87125pt x 949.5475pt>
 File: pictures/GUI/Sample_Plot.png Graphic file (type png)
 <use pictures/GUI/Sample_Plot.png>
-Package pdftex.def Info: pictures/GUI/Sample_Plot.png  used on input line 463.
+Package pdftex.def Info: pictures/GUI/Sample_Plot.png  used on input line 473.
 (pdftex.def)             Requested size: 325.215pt x 236.83571pt.
-<pictures/GUI/Download_Frame.png, id=94, 1003.75pt x 756.8275pt>
+<pictures/GUI/Download_Frame.png, id=90, 1003.75pt x 756.8275pt>
 File: pictures/GUI/Download_Frame.png Graphic file (type png)
 <use pictures/GUI/Download_Frame.png>
-Package pdftex.def Info: pictures/GUI/Download_Frame.png  used on input line 47
+Package pdftex.def Info: pictures/GUI/Download_Frame.png  used on input line 48
 2.
 (pdftex.def)             Requested size: 325.215pt x 245.21538pt.
 
@@ -1315,22 +1400,22 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [14 <./pictures/GUI/Plot_Frame.png> <./pictures/GUI/Sample_Plot.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 485--486
+Underfull \hbox (badness 10000) in paragraph at lines 495--496
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 489--490
+Underfull \hbox (badness 10000) in paragraph at lines 499--500
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 492--493
+Underfull \hbox (badness 10000) in paragraph at lines 502--503
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 494--495
+Underfull \hbox (badness 10000) in paragraph at lines 504--505
 
  []
 
@@ -1339,29 +1424,14 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [15 <./pictures/GUI/Download_Frame.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 496--498
+Underfull \hbox (badness 10000) in paragraph at lines 506--508
 
  []
 
 
-Overfull \hbox (6.61557pt too wide) in paragraph at lines 501--502
+Overfull \hbox (6.61557pt too wide) in paragraph at lines 511--512
 \T1/phv/m/n/10.95 Py-thon. In der of-fi-zi-el-len Py-thon Do-ku-men-ta-ti-on un
 -ter \T1/phv/m/n/10 htt-ps://docs.python.org/3/library/venv.html
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 503--504
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 505--507
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 511--512
-
  []
 
 
@@ -1370,131 +1440,151 @@ Underfull \hbox (badness 10000) in paragraph at lines 513--514
  []
 
 
+Underfull \hbox (badness 10000) in paragraph at lines 515--517
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 521--522
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 523--524
+
+ []
+
+
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [16]
-<../Software/plots/Total_energy_balance.png, id=107, 869.04675pt x 596.2275pt>
+<../Software/plots/Total_energy_balance.png, id=103, 867.24pt x 578.16pt>
 File: ../Software/plots/Total_energy_balance.png Graphic file (type png)
 <use ../Software/plots/Total_energy_balance.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance.png  used on in
-put line 524.
-(pdftex.def)             Requested size: 390.25534pt x 267.74493pt.
+put line 534.
+(pdftex.def)             Requested size: 390.25534pt x 260.16959pt.
+<../Software/plots/Energy_balance_components_monthly_mean.png, id=104, 867.24pt
+ x 578.16pt>
+File: ../Software/plots/Energy_balance_components_monthly_mean.png Graphic file
+ (type png)
+<use ../Software/plots/Energy_balance_components_monthly_mean.png>
+Package pdftex.def Info: ../Software/plots/Energy_balance_components_monthly_me
+an.png  used on input line 558.
+(pdftex.def)             Requested size: 390.25534pt x 260.16959pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [17 <../Software/plots/Total_energy_balance.png>]
-<../Software/plots/Energy_balance_components_monthly_mean.png, id=113, 869.0467
-5pt x 594.42075pt>
-File: ../Software/plots/Energy_balance_components_monthly_mean.png Graphic file
- (type png)
-<use ../Software/plots/Energy_balance_components_monthly_mean.png>
-Package pdftex.def Info: ../Software/plots/Energy_balance_components_monthly_me
-an.png  used on input line 548.
-(pdftex.def)             Requested size: 390.25534pt x 266.93358pt.
-
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [18 <../Software/plots/Energy_balance_components_monthly_mean.png>]
-<../Software/plots/Total_energy_balance_summed.png, id=118, 855.49612pt x 594.4
-2075pt>
+<../Software/plots/Total_energy_balance_summed.png, id=114, 852.786pt x 578.16p
+t>
 File: ../Software/plots/Total_energy_balance_summed.png Graphic file (type png)
 
 <use ../Software/plots/Total_energy_balance_summed.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed.png  use
-d on input line 562.
-(pdftex.def)             Requested size: 390.25534pt x 271.16025pt.
+d on input line 572.
+(pdftex.def)             Requested size: 390.25534pt x 264.5806pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 567--569
+Underfull \hbox (badness 10000) in paragraph at lines 577--579
 
  []
 
-<../Software/plots/Energy_balance_only_radiation.png, id=119, 859.10962pt x 594
-.42075pt>
+<../Software/plots/Energy_balance_only_radiation.png, id=115, 852.786pt x 578.1
+6pt>
 File: ../Software/plots/Energy_balance_only_radiation.png Graphic file (type pn
 g)
 <use ../Software/plots/Energy_balance_only_radiation.png>
 Package pdftex.def Info: ../Software/plots/Energy_balance_only_radiation.png  u
-sed on input line 574.
-(pdftex.def)             Requested size: 390.25534pt x 270.01741pt.
+sed on input line 584.
+(pdftex.def)             Requested size: 390.25534pt x 264.5806pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [19 <../Software/plots/Total_energy_balance_summed.png>]
-<../Software/plots/Energy_balance_only_sens_and_latent_heat_accum.png, id=124, 
-869.04675pt x 594.42075pt>
+<../Software/plots/Energy_balance_only_sens_and_latent_heat_accum.png, id=120, 
+867.24pt x 578.16pt>
 File: ../Software/plots/Energy_balance_only_sens_and_latent_heat_accum.png Grap
 hic file (type png)
 <use ../Software/plots/Energy_balance_only_sens_and_latent_heat_accum.png>
 Package pdftex.def Info: ../Software/plots/Energy_balance_only_sens_and_latent_
-heat_accum.png  used on input line 581.
-(pdftex.def)             Requested size: 390.25534pt x 266.93358pt.
+heat_accum.png  used on input line 591.
+(pdftex.def)             Requested size: 390.25534pt x 260.16959pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [20 <../Software/plots/Energy_balance_only_radiation.png> <../Software/plots/En
 ergy_balance_only_sens_and_latent_heat_accum.png>]
-<../Software/plots/Total_energy_balance_summed_with_ablation.png, id=130, 916.9
-2563pt x 594.42075pt>
+LaTeX Font Info:    Font shape `U/psy/m/n' will be
+(Font)              scaled to size 12.0pt on input line 599.
+LaTeX Font Info:    Font shape `U/psy/m/n' will be
+(Font)              scaled to size 10.0pt on input line 599.
+LaTeX Font Info:    Font shape `U/psy/m/n' will be
+(Font)              scaled to size 8.0pt on input line 599.
+<../Software/plots/Total_energy_balance_summed_with_ablation.png, id=126, 910.6
+02pt x 578.16pt>
 File: ../Software/plots/Total_energy_balance_summed_with_ablation.png Graphic f
 ile (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_ablation.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_abl
-ation.png  used on input line 595.
-(pdftex.def)             Requested size: 390.25534pt x 252.99281pt.
+ation.png  used on input line 605.
+(pdftex.def)             Requested size: 390.25534pt x 247.77469pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [21 <../Software/plots/Total_energy_balance_summed_with_ablation.png>]
 <../Software/plots/Total_energy_balance_summed_with_water_equivalent.png, id=13
-6, 914.2155pt x 594.42075pt>
+1, 903.375pt x 578.16pt>
 File: ../Software/plots/Total_energy_balance_summed_with_water_equivalent.png G
 raphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_water_equivalent.png>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_wat
-er_equivalent.png  used on input line 611.
-(pdftex.def)             Requested size: 390.25534pt x 253.74562pt.
+er_equivalent.png  used on input line 621.
+(pdftex.def)             Requested size: 390.25534pt x 249.76845pt.
 <../Software/plots/Scatter_measured_water_equivalent_and_temperature.png, id=13
-7, 845.559pt x 558.28575pt>
+2, 838.332pt x 542.025pt>
 File: ../Software/plots/Scatter_measured_water_equivalent_and_temperature.png G
 raphic file (type png)
 <use ../Software/plots/Scatter_measured_water_equivalent_and_temperature.png>
 Package pdftex.def Info: ../Software/plots/Scatter_measured_water_equivalent_an
-d_temperature.png  used on input line 620.
-(pdftex.def)             Requested size: 390.25534pt x 257.67494pt.
+d_temperature.png  used on input line 630.
+(pdftex.def)             Requested size: 390.25534pt x 252.32022pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [22 <../Software/plots/Total_energy_balance_summed_with_water_equivalent.png>]
 <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.png, 
-id=142, 914.2155pt x 558.28575pt>
+id=137, 903.375pt x 542.025pt>
 File: ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.
 png Graphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.p
 ng>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_wat
-er_equivalent_2017.png  used on input line 645.
-(pdftex.def)             Requested size: 390.25534pt x 238.32036pt.
+er_equivalent_2017.png  used on input line 655.
+(pdftex.def)             Requested size: 390.25534pt x 234.15793pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [23 <../Software/plots/Scatter_measured_water_equivalent_and_temperature.png>]
 <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.png, 
-id=148, 914.2155pt x 560.0925pt>
+id=143, 903.375pt x 542.025pt>
 File: ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.
 png Graphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.p
 ng>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_with_wat
-er_equivalent_2018.png  used on input line 652.
-(pdftex.def)             Requested size: 390.25534pt x 239.09163pt.
+er_equivalent_2018.png  used on input line 662.
+(pdftex.def)             Requested size: 390.25534pt x 234.15793pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
@@ -1502,16 +1592,16 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 [24 <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2017.p
 ng> <../Software/plots/Total_energy_balance_summed_with_water_equivalent_2018.p
 ng>]
-<../Software/plots/Scatter_measured_and_modelled_water_equivalent.png, id=154, 
-483.30562pt x 558.28575pt>
+<../Software/plots/Scatter_measured_and_modelled_water_equivalent.png, id=149, 
+476.982pt x 542.025pt>
 File: ../Software/plots/Scatter_measured_and_modelled_water_equivalent.png Grap
 hic file (type png)
 <use ../Software/plots/Scatter_measured_and_modelled_water_equivalent.png>
 Package pdftex.def Info: ../Software/plots/Scatter_measured_and_modelled_water_
-equivalent.png  used on input line 662.
-(pdftex.def)             Requested size: 260.17464pt x 300.54979pt.
+equivalent.png  used on input line 672.
+(pdftex.def)             Requested size: 260.17464pt x 295.6583pt.
 
-Underfull \hbox (badness 10000) in paragraph at lines 671--672
+Underfull \hbox (badness 10000) in paragraph at lines 681--682
 
  []
 
@@ -1520,63 +1610,67 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [25 <../Software/plots/Scatter_measured_and_modelled_water_equivalent.png>]
-Underfull \hbox (badness 10000) in paragraph at lines 687--688
+Underfull \hbox (badness 10000) in paragraph at lines 697--698
 
  []
 
-<pictures/greenhouse_gas_forcing.png, id=159, 1255.69125pt x 952.55875pt>
+<pictures/greenhouse_gas_forcing.png, id=154, 1255.69125pt x 952.55875pt>
 File: pictures/greenhouse_gas_forcing.png Graphic file (type png)
 <use pictures/greenhouse_gas_forcing.png>
 Package pdftex.def Info: pictures/greenhouse_gas_forcing.png  used on input lin
-e 694.
+e 704.
 (pdftex.def)             Requested size: 346.89731pt x 263.1536pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [26]
-Underfull \hbox (badness 10000) in paragraph at lines 700--701
+Underfull \hbox (badness 10000) in paragraph at lines 710--711
 
  []
 
 
-Overfull \hbox (4.71413pt too wide) in paragraph at lines 702--703
+Overfull \hbox (4.71413pt too wide) in paragraph at lines 712--713
 []\T1/phv/m/n/10.95 Zur Be-rech-nung wird wei-ters ei-ne li-nea-re Ver-än-de-ru
 ng der lang-wel-li-gen ein-ge-hen-den Strah-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 702--703
+Underfull \hbox (badness 10000) in paragraph at lines 712--713
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 709--710
+Underfull \hbox (badness 10000) in paragraph at lines 719--720
 
  []
 
+LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <9> not available
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 721.
+LaTeX Font Info:    Font shape `T1/phv/bx/n' in size <7> not available
+(Font)              Font shape `T1/phv/b/n' tried instead on input line 721.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [27 <./pictures/greenhouse_gas_forcing.png>]
 <../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.png, i
-d=167, 869.04675pt x 594.42075pt>
+d=162, 867.24pt x 578.16pt>
 File: ../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.p
 ng Graphic file (type png)
 <use ../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.pn
 g>
 Package pdftex.def Info: ../Software/plots/Total_energy_balance_summed_periodic
-_trend_eliminated.png  used on input line 721.
-(pdftex.def)             Requested size: 390.25534pt x 266.93358pt.
-<../Software/plots/Radiation_summed_periodic_trend_eliminated.png, id=168, 869.
-04675pt x 594.42075pt>
+_trend_eliminated.png  used on input line 731.
+(pdftex.def)             Requested size: 390.25534pt x 260.16959pt.
+<../Software/plots/Radiation_summed_periodic_trend_eliminated.png, id=163, 867.
+24pt x 578.16pt>
 File: ../Software/plots/Radiation_summed_periodic_trend_eliminated.png Graphic 
 file (type png)
 <use ../Software/plots/Radiation_summed_periodic_trend_eliminated.png>
 Package pdftex.def Info: ../Software/plots/Radiation_summed_periodic_trend_elim
-inated.png  used on input line 730.
-(pdftex.def)             Requested size: 390.25534pt x 266.93358pt.
+inated.png  used on input line 740.
+(pdftex.def)             Requested size: 390.25534pt x 260.16959pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
@@ -1584,45 +1678,21 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 [28 <../Software/plots/Total_energy_balance_summed_periodic_trend_eliminated.pn
 g>]
 <../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png, id
-=174, 869.04675pt x 594.42075pt>
+=168, 867.24pt x 578.16pt>
 File: ../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.pn
 g Graphic file (type png)
 <use ../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png
 >
 Package pdftex.def Info: ../Software/plots/Latent_and_Sensible_summed_periodic_
-trend_eliminated.png  used on input line 737.
-(pdftex.def)             Requested size: 390.25534pt x 266.93358pt.
+trend_eliminated.png  used on input line 747.
+(pdftex.def)             Requested size: 390.25534pt x 260.16959pt.
 
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
-[29 <../Software/plots/Radiation_summed_periodic_trend_eliminated.png>]
-Overfull \vbox (5.05856pt too high) has occurred while \output is active []
-
-
-[30 <../Software/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png
->]
-Underfull \hbox (badness 10000) in paragraph at lines 745--746
-
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 749--750
-
- []
-
-
-Overfull \vbox (5.05856pt too high) has occurred while \output is active []
-
-
-[31]
-Overfull \hbox (33.63239pt too wide) in paragraph at lines 757--758
-\T1/phv/m/n/10.95 un-ter https://skepticalscience.com/The-CO2-Temperature-corre
-lation-over-the-20th-Century.html,
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 757--758
+[29 <../Software/plots/Radiation_summed_periodic_trend_eliminated.png> <../Soft
+ware/plots/Latent_and_Sensible_summed_periodic_trend_eliminated.png>]
+Underfull \hbox (badness 10000) in paragraph at lines 755--756
 
  []
 
@@ -1632,30 +1702,13 @@ Underfull \hbox (badness 10000) in paragraph at lines 759--760
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 761--762
-
- []
+Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 763--764
-
- []
-
-
-Overfull \hbox (15.12025pt too wide) in paragraph at lines 765--766
-\T1/phv/m/n/10.95 ster-ze. On-li-ne ver-füg-bar un-ter https://geographie.uni-g
-raz.at/de/forschung/forschungsgruppen
- []
-
-
-Overfull \hbox (19.97824pt too wide) in paragraph at lines 765--766
-\T1/phv/m/n/10.95 /ala-dyn/pro-jek-te/pa-ster-ze/-mes-s-er-geb-nis-se/laen-ge-n
-aen-de-rung/, zu-letzt ge-prüft am 13.12.2019. 
- []
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 765--766
-
+[30]
+Overfull \hbox (33.63239pt too wide) in paragraph at lines 767--768
+\T1/phv/m/n/10.95 un-ter https://skepticalscience.com/The-CO2-Temperature-corre
+lation-over-the-20th-Century.html,
  []
 
 
@@ -1664,10 +1717,47 @@ Underfull \hbox (badness 10000) in paragraph at lines 767--768
  []
 
 
+Underfull \hbox (badness 10000) in paragraph at lines 769--770
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 771--772
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 773--774
+
+ []
+
+
+Overfull \hbox (15.12025pt too wide) in paragraph at lines 775--776
+\T1/phv/m/n/10.95 ster-ze. On-li-ne ver-füg-bar un-ter https://geographie.uni-g
+raz.at/de/forschung/forschungsgruppen
+ []
+
+
+Overfull \hbox (19.97824pt too wide) in paragraph at lines 775--776
+\T1/phv/m/n/10.95 /ala-dyn/pro-jek-te/pa-ster-ze/-mes-s-er-geb-nis-se/laen-ge-n
+aen-de-rung/, zu-letzt ge-prüft am 13.12.2019. 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 775--776
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 777--778
+
+ []
+
+
 Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
-[32] (./Bachelorarbeit_Theurl_Manuel.aux)
+[31] (./Bachelorarbeit_Theurl_Manuel.aux)
 
 LaTeX Warning: There were undefined references.
 
@@ -1682,30 +1772,24 @@ Package logreq Info: Writing requests to 'Bachelorarbeit_Theurl_Manuel.run.xml'
 
  ) 
 Here is how much of TeX's memory you used:
- 12661 strings out of 494830
- 208279 string characters out of 6177366
- 627180 words of memory out of 5000000
- 15761 multiletter control sequences out of 15000+600000
- 41108 words of font info for 59 fonts, out of 8000000 for 9000
+ 13482 strings out of 494830
+ 218811 string characters out of 6177366
+ 635966 words of memory out of 5000000
+ 16576 multiletter control sequences out of 15000+600000
+ 55137 words of font info for 75 fonts, out of 8000000 for 9000
  38 hyphenation exceptions out of 8191
- 45i,11n,54p,1203b,1823s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 45i,11n,54p,1203b,2068s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/share/texlive/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/
-amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmr12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-r6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><
-/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/s
-hare/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/te
-xlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-
-dist/fonts/type1/urw/helvetic/uhvr8a.pfb>
-Output written on Bachelorarbeit_Theurl_Manuel.pdf (40 pages, 3510532 bytes).
+e/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/share/texlive/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/
+type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/u
+rw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/
+uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/symbol/usyr.pfb>
+Output written on Bachelorarbeit_Theurl_Manuel.pdf (39 pages, 2078551 bytes).
 PDF statistics:
- 236 PDF objects out of 1000 (max. 8388607)
- 132 compressed objects within 2 object streams
+ 209 PDF objects out of 1000 (max. 8388607)
+ 112 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  131 words of extra memory for PDF output out of 10000 (max. 10000000)
 

@@ -67,8 +67,8 @@ class ModelFrame(tk.Frame):
 
     @staticmethod
     def download_water_equivalent():
-        multiple_measurements.singleton.download_components(["actual_melt_water_per_sqm",
-                                                             "theoretical_melt_water_per_sqm"],
+        multiple_measurements.singleton.download_components(["actual_mm_we_per_d",
+                                                             "theoretical_mm_we_per_d"],
                                                             use_summed_measurements=True)
 
     def download_selected_components(self):

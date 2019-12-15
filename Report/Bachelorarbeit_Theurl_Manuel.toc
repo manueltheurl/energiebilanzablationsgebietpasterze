@@ -57,6 +57,6 @@
 \defcounter {refsection}{0}\relax 
 \contentsline {subsection}{\numberline {4.4}Periodische Trendelimination der Energiebilanz}{28}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {5}Fazit}{31}
+\contentsline {section}{\numberline {5}Fazit}{30}
 \defcounter {refsection}{0}\relax 
-\contentsline {section}{\numberline {6}Literaturverzeichnis}{32}
+\contentsline {section}{\numberline {6}Literaturverzeichnis}{31}

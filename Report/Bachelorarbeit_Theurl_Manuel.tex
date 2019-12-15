@@ -19,6 +19,16 @@ maxbibnames=9,
 firstinits=true,
 ]{biblatex}
 
+
+\renewcommand{\rmdefault}{phv}
+
+% WORTH GOLD .. MATH in normal font
+\usepackage[
+%   italic,
+    symbolgreek
+    ]{mathastext}
+\newcommand\EUR[1]{\mbox{#1\,\texteuro}}
+
 \usepackage{helvet}
 \renewcommand{\familydefault}{\sfdefault}
 
@@ -95,20 +105,20 @@ Graz, 2019
 \ofoot{{\small \pagemark}}
 \pagenumbering{Roman} 
 \section*{Abstract (English)}
-The aim of this thesis is to create a model for the energy balance in the ablation area of a glacier by using weather data. The observed glacier in this study is the Pasterze in Austria. The developed program should be a useful tool to edit the data, calculate the energy balance and create visualizations to represent the generated data. Because there are also ablation measurements included in case of the Pasterze, it is possible to compare the measured and modeled melting water..
+The aim of this thesis is to create a model for the energy balance in the ablation area of a glacier by using weather data. The observed glacier in this study is the Pasterze in Austria. The developed program should be a useful tool to edit the data, calculate the energy balance and create visualizations to represent the generated data. Because there are also ablation measurements included in case of the Pasterze, it is possible to compare the measured and modeled melting water.\\
 
 By comparing the measured and modeled melting water, the validity of the modeled energy balance can be checked. The research question therefore would be, if the model properly represents the reality. With a functioning model the effect of phenomena like ``global dimming’’ and ``global brightening’’ on the melting of the glacier in the ablation area can be examined.\\
 
 All the necessary logic, the calculations and visualizations are done with the programming language Python. The formulas used are mainly taken from \citeauthor{ThePhysicsOfGlaciers} (\citeyear[153-157]{ThePhysicsOfGlaciers}). While programming, a graphical user interface (GUI) will be developed as well. With the GUI the functionality of the software is easy accessible and applicable. The GUI is public, a download and installation description is included in the thesis.\\
 
-As a result the meltwater calculated out of the ablation measurements is strongly correlating with  the modeled meltwater. The model therefore is representing the reality well. Further, it turns out that phenomena like ``global dimming’’ and ``global brightening’’ have a significant impact on the melting of a glacier in the ablation area.
+As a result follows that the meltwater calculated out of the ablation measurements is strongly correlating with  the modeled meltwater. The model therefore is representing the reality well. Further, it turns out that phenomena like ``global dimming’’ and ``global brightening’’ have a significant impact on the melting of a glacier in the ablation area.
  
 \pagebreak
 \section*{Abstract}
 
 Ziel dieser Arbeit ist es, aus Wetterdaten ein Modell für die Energiebilanz im Ablationsgebiet eines Gletschers zu finden. Als Beispielgletscher dient hier die Pasterze in Österreich. Es soll ein gesamtheitliches Programm entwickelt werden, das die Aufbereitung der Daten, die Berechnung der Energiebilanz und anschauliche Darstellungsmethoden bietet. Im Falle der Pasterze liegen auch Ablationsmessungen vor, wodurch eine Untersuchung des berechneten sowie des aus der Energiebilanz modellierten Schmelzwassers möglich ist.\\
 
-Es soll somit erörtert werden, ob das Modellieren der Energiebilanz aus Wetterdaten sinnvoll ist und ähnliche Werte für die Ablation bzw. das Schmelzwasser folgen, wie aus den Messungen dazu. Als Forschungsfrage ergbit sich somit, ob das Modell ausreichend der Realität entspricht. Mit dem fertigen Modell kann auch der Fragestellung nachgegangen werden, inwieweit sich die Phänomene ``global dimming'' bzw. ``global brightening'' auf das Abschmelzen des Gletschers im Ablationsgebiet auswirken.\\
+Es soll somit erörtert werden, ob das Modellieren der Energiebilanz aus Wetterdaten sinnvoll ist und ähnliche Werte für die Ablation bzw. das Schmelzwasser folgen, wie aus den Messungen dazu. Als Forschungsfrage ergibt sich somit, ob das Modell ausreichend der Realität entspricht. Mit dem fertigen Modell kann auch der Fragestellung nachgegangen werden, inwieweit sich die Phänomene ``global dimming'' bzw. ``global brightening'' auf das Abschmelzen des Gletschers im Ablationsgebiet auswirken.\\
 
 Die Untersuchungen erfolgen in der Programmiersprache Python, wobei die Formeln zur Berechnung der Energiebilanz stark an \citeauthor{ThePhysicsOfGlaciers} (\citeyear[153-157]{ThePhysicsOfGlaciers}) angelehnt sind. Im Zuge der Programmierung wird ein GUI mitentwickelt, welches die Funktionalität der Software anschaulich aufbereitet darstellt. Das GUI ist öffentlich zugänglich, eine Beschreibung zum Download und zur Installation ist in der Arbeit ersichtlich.\\
 
@@ -119,9 +129,9 @@ Als Resultat folgt, dass es eine starke Korrelation zwischen dem aus den Ablatio
 \section*{Vorwort und Danksagung}
 Mein persönlicher Wunsch war es, ein Thema für die Bachelorarbeit zu finden, welches einerseits eine Verbindung zu den Bergen hat und andererseits auch eine herausforderung in Bezug auf Programmierkenntnisse beinhaltet. Als begnadeter Osttiroler Bergläufer und ``Schitouren-Geher'' war die Energiebilanz im Ablationsgebiet der Pasterze somit ein perfektes Thema.\\
 
-Ich danke an dieser Stelle meinem Betreuer Herrn Ass.-Prof. Dr. Abermann Jakob der mir einerseits viel Freiraum zur selbstständigen Gestaltung der Arbeit gelassen hat und mich andererseits tatkräftig mit tollen Ideen, zahlreicher wissenschaftlicher Literatur und nicht zuletzt persönlich bei zahlreichen Treffen unterstützt hat. Ein Dank geht außerdem auch an die Wetterstation bei der Pasterze (TODO Name?), die mir Wetterdaten vom Ablationsgebiet der Pasterze zur Verfügung gestellt hat.\\
+Ich danke an dieser Stelle meinem Betreuer Herrn Ass.-Prof. Dr. Abermann Jakob der mir einerseits viel Freiraum zur selbstständigen Gestaltung der Arbeit gelassen hat und mich andererseits tatkräftig mit tollen Ideen, zahlreicher wissenschaftlicher Literatur und nicht zuletzt persönlich bei zahlreichen Treffen unterstützt hat. Ein Dank geht außerdem auch an die Zentralanstalt für Meteorologie und Geodynamik, die mir Wetterdaten vom Ablationsgebiet der Pasterze zur Verfügung gestellt hat.\\
 
-Ein Dank geht weiters auch an Roberta Theurl und Luca Braun für das Korrekturlesen der Arbeit. 
+Danken möchte ich auch meiner Mutter Roberta Theurl und Luca Braun für das Korrekturlesen der Arbeit. 
 
 
 \pagebreak
@@ -269,7 +279,7 @@ I = e \cdot \sigma \cdot T^4
 \end{equation}
 
 % TODO braucht es Nachweis, dass diese 1 ist ca.?
-berechnet. $e$ entspricht der Emissivität, welche bei Eis im Infrarotbereicht ungefähr 1 ist. $\sigma=5.670 \cdot 10^{-8}$ entspricht der Stefan-Boltzmann-Konstante und $T$ der Oberflächentemperatur des Körpers. $I$ ist die abgestrahlte Energie in $W/m^2$ welche hier in Form der langwelligen Ausstrahlung gegeben ist. Somit folgt durch Umstellungen die Oberflächentemperatur
+berechnet. $e$ entspricht der Emissivität, welche bei Eis im Infrarotbereich ungefähr 1 ist. $\sigma=5.670 \cdot 10^{-8}$ entspricht der Stefan-Boltzmann-Konstante und $T$ der Oberflächentemperatur des Körpers. $I$ ist die abgestrahlte Energie in $W/m^2$ welche hier in Form der langwelligen Ausstrahlung gegeben ist. Somit folgt durch Umstellungen die Oberflächentemperatur
 
 \begin{equation}\label{eq:Oberflächentemperatur}
 T = \sqrt[4]{\frac{I}{\sigma}}
@@ -324,7 +334,7 @@ weg. Um die errechnete Energiebilanz auf Plausibilität zu überprüfen, indem d
 $f_r$ bezeichnet den Anteil vom Schmelzwasser, der im Eislayer wiedergefriert. Es folgt somit die für diese Fragestellung relevante Nettoablationsrate 
 
 \begin{equation}
-\dot{m}_{s}\left[1-f_{r}\right]=E_{N} / \rho_{w} L_{f},
+\dot{m}_{s}\left[1-f_{r}\right]=\frac{E_{N}}{\rho_{w} L_{f}},
 \end{equation}
 
 wobei $\rho_{w}=1000~kg/m^{3}$ der Wasserdichte bei $0^\circ C$ und $L_{f}=3.34 \cdot 10^5 J/kg$ der latenten Schmelzwärme von purem Eis bei $0^\circ C$ entspricht (vgl. \cite[142]{ThePhysicsOfGlaciers}).
@@ -380,7 +390,7 @@ os             & Ordnerverwaltung         \\
 configparser             & Verwaltung der Konfigurationsdatei         \\
 numpy          & Erstellung und Handhabung von Arrays          \\
 matplotlib     & Grafische Darstellung der Daten               \\
-math		   & Berechnungsfunktionen (Logarithmus, Wurzel, e-Funktion, ..)   \\  
+math		   & Berechnungsfunktionen (Logarithmus, Wurzel, e-Funktion, ...)   \\  
 datetime		   & Verwaltung von Zeit und Datum   \\
 unittest		   & Erstellung einer Testumgebung   \\  
 pyinstaller		   & Erstellung der .exe für Windows   \\ \hline
@@ -489,7 +499,7 @@ Beispiel:
 Terminal: \textsf{\small git clone git@bitbucket.org:atraxoo/energiebilanzablationsgebietpasterze.git}\\
 
 
-Es wird nun die gesamte Software, inklusive einer Messdaten Beispieldatei, heruntergeladen. Weiters wird ein Verzeichnis EXE-Glacier-Energy-Balance heruntergeladen, in dem sich eine ausführbare .exe Datei befindet, womit das Programm unter Windows direkt und ohne Installation von Python ausgeführt werden kann.\\
+Es wird nun die gesamte Software, inklusive einer Messdaten Beispieldatei, heruntergeladen. Weiters wird ein Verzeichnis EXE\_Glacier-Energy-Balance heruntergeladen, in dem sich eine ausführbare .exe Datei befindet, womit das Programm unter Windows direkt und ohne Installation von Python ausgeführt werden kann.\\
 
 Empfehlenswerter, vor allem im Bezug auf Updates, ist es allerdings, die Software direkt mit Python auszuführen. Dafür muss Python 3.6 oder Python 3.7 am Rechner installiert sein. Für die richtige Funktion der Software müssen gewisse Python Module installiert werden, welche sich in der requirements.txt Datei befinden. Diese Pakete können automatisiert mit dem Befehl\\
 
@@ -613,7 +623,7 @@ Folgende Abbildung zeigt die Energiebilanz im gesamten Messzeitraum, wobei zusä
 \label{fig:Energiebilanz im gesamten Messzeitraum inklusive gemessenem und modellierten Schmelzwasser}
 \end{figure}
 
-Auffallend ist, dass das gemessene Schmelzwasser, abweichend zum modellierten, teilweise deutlich weniger ist und im Jahr 2017 sogar häufig bei 0 [mm/d] liegt. Kein gemessenes Schmelzwasser bedeutet, dass in der Ablationsmessung kein Rückgang der Eisdicke zu erkennen ist. Wird Abbildung \ref{Vergleich gemessenes Schmelzwasser und Temperatur} betrachet, so kann erkannt werden, dass teils trotz Tagesdurchschnittstemperatur über ca. $4^\circ C$ keine Ablation gemessen wird. Ob nun das Modell in diesen Fällen falsch ist, oder ob die Ablationsmessung mit groben Fehlern behaftet ist, könnte anhand von anderen Gletschern und den dazugehörigen Messwerten überprüft werden.
+Auffallend ist, dass das gemessene Schmelzwasser, abweichend zum modellierten, teilweise deutlich weniger ist und im Jahr 2017 sogar häufig bei 0 [mm/d] liegt. Kein gemessenes Schmelzwasser bedeutet, dass in der Ablationsmessung kein Rückgang der Eisdicke zu erkennen ist. Wird Abbildung \ref{Vergleich gemessenes Schmelzwasser und Temperatur} betrachtet, so kann erkannt werden, dass teils trotz Tagesdurchschnittstemperatur über ca. $4^\circ C$ keine Ablation gemessen wird. Ob nun das Modell in diesen Fällen falsch ist, oder ob die Ablationsmessung mit groben Fehlern behaftet ist, könnte anhand von anderen Gletschern und den dazugehörigen Messwerten überprüft werden.
 
 \begin{figure}[H]
 \centering
@@ -742,13 +752,13 @@ Werden die Strahlungskomponente, sowie die der sensible und latente Wärmeeintra
 
 \pagebreak
 \section{Fazit}
-Die starke Korrelation vom modellierten gegenüber dem aus den Ablationsmessungen errechneten Schmelzwasser bestätigt die Richtigkeit des angenommenen Modelles zur Berechnung der Energiebilanz im Ablationsgebiet eines Gleschters. Warum es aber trotzdem noch teils große Abweichungen, besonders bei kleiner Energiebilanz gibt, kann vorerst nicht beantwortet werden. Es könnte einerseits sein, dass das Modell noch weiter verfeinert werden muss, aber andererseits besteht auch die Möglichkeit, dass die Ablationsmessung teils fehlerbehaftet ist. Am besten könnte man dies durch Anwendung des gleichen Modelles auf andere Gletscher überprüfen.\\
+Die starke Korrelation vom modellierten gegenüber dem aus den Ablationsmessungen errechneten Schmelzwasser bestätigt die Richtigkeit des angenommenen Modells zur Berechnung der Energiebilanz im Ablationsgebiet eines Gletschers. Warum es aber trotzdem noch teils große Abweichungen, besonders bei kleiner Energiebilanz gibt, kann vorerst nicht beantwortet werden. Es könnte einerseits sein, dass das Modell noch weiter verfeinert werden muss, aber andererseits besteht auch die Möglichkeit, dass die Ablationsmessung teils fehlerbehaftet ist. Am besten könnte man dies durch Anwendung des gleichen Modells auf andere Gletscher überprüfen.\\
 
 Durch die Simulation von ``global dimming'' bzw. ``global brightening'' kann jetzt abgeschätzt werden, wie stark sich die Abnahme der Eisdicke im Ablationsgebiet tatsächlich verändert, sollte sich die Intensität der kurzwelligen Strahlung im Durchschnitt vergrößern oder verkleinern. Bei Betrachtung von den ``Greenhouse Gas forcings'' kann das Resultat bereits anschaulich angewendet werden.
 
 Bei anderen Gletschern mit längeren Zeitreihen wäre vor allem auch die Trendelimination sehr spannend. Es könnten dabei die einzelnen Komponenten der Energiebilanz aber auch die Gesamtenergiebilanz im Verlauf der Zeit betrachtet und analysiert werden.\\
 
-Als ``Hauptprodukt'' der Bachelorarbeit ist die erstellte, graphische Benutzeroberfläche zu sehen. Diese bietet eine Basis für unzählige andere Arbeiten, seien es Auswertungen betreffend anderer Gletscher, eine vertiefte Analyse des Energiebilanz-Modelles oder tiefgreifende Trendanalysen.  
+Als ``Hauptprodukt'' der Bachelorarbeit ist die erstellte, graphische Benutzeroberfläche zu sehen. Diese bietet eine Basis für unzählige andere Arbeiten, seien es Auswertungen betreffend anderer Gletscher, eine vertiefte Analyse des Energiebilanz-Modells oder tiefgreifende Trendanalysen.  
 
 
 \pagebreak

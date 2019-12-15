@@ -195,6 +195,7 @@ class Visualize:
                               round(float(np.ma.corrcoef(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)[0][1]), 2))
 
                 second_ax.set_ylabel("Water equivalent [mm/d]")
+                second_ax.set_ylim(0, second_ax.get_ylim()[1])
                 main_title = "Total Energy balance with actual and theoretical Ablation as water equivalent"
 
             else:
