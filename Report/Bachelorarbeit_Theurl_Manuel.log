@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.24)  17 DEC 2019 18:19
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.24)  17 DEC 2019 18:46
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1024,13 +1024,6 @@ Package biblatex Warning: Biber reported the following issues
 (biblatex)                - Entry 'LaengenaenderungPasterze' (literature.bib): 
 Invalid format '10.06.2019' of date field 'urldate' - ignoring.
 
-
-Package biblatex Warning: The following entry could not be found
-(biblatex)                in the database:
-(biblatex)                Themicroclimateofvalleyglaciers)
-(biblatex)                Please verify the spelling and rerun
-(biblatex)                LaTeX afterwards.
-
 )
 Package biblatex Info: Reference section=0 on input line 54.
 Package biblatex Info: Reference segment=0 on input line 54.
@@ -1776,19 +1769,16 @@ Overfull \vbox (5.05856pt too high) has occurred while \output is active []
 
 
 [33] (./Bachelorarbeit_Theurl_Manuel.aux)
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package logreq Info: Writing requests to 'Bachelorarbeit_Theurl_Manuel.run.xml'
 .
 \openout1 = `Bachelorarbeit_Theurl_Manuel.run.xml'.
 
  ) 
 Here is how much of TeX's memory you used:
- 13484 strings out of 494830
- 218851 string characters out of 6177366
+ 13483 strings out of 494830
+ 218841 string characters out of 6177366
  636942 words of memory out of 5000000
- 16578 multiletter control sequences out of 15000+600000
+ 16577 multiletter control sequences out of 15000+600000
  55137 words of font info for 75 fonts, out of 8000000 for 9000
  38 hyphenation exceptions out of 8191
  45i,11n,54p,1203b,2068s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1799,7 +1789,7 @@ fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/
 type1/public/amsfonts/cm/cmsy9.pfb></usr/share/texlive/texmf-dist/fonts/type1/u
 rw/helvetic/uhvb8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/
 uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/symbol/usyr.pfb>
-Output written on Bachelorarbeit_Theurl_Manuel.pdf (41 pages, 9761418 bytes).
+Output written on Bachelorarbeit_Theurl_Manuel.pdf (41 pages, 9761422 bytes).
 PDF statistics:
  215 PDF objects out of 1000 (max. 8388607)
  116 compressed objects within 2 object streams
