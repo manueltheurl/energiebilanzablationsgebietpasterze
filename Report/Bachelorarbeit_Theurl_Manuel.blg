@@ -1,18 +1,19 @@
 [0] Config.pm:302> INFO - This is Biber 2.9
 [0] Config.pm:305> INFO - Logfile is 'Bachelorarbeit_Theurl_Manuel.blg'
-[19] biber:313> INFO - === Fr Dez 13, 2019, 16:29:11
-[36] Biber.pm:371> INFO - Reading 'Bachelorarbeit_Theurl_Manuel.bcf'
-[82] Biber.pm:857> INFO - Found 7 citekeys in bib section 0
-[93] Biber.pm:3981> INFO - Processing section 0
-[103] Biber.pm:4154> INFO - Looking for bibtex format file 'literature.bib' for section 0
-[105] bibtex.pm:1468> INFO - LaTeX decoding ...
-[112] bibtex.pm:1294> INFO - Found BibTeX data source 'literature.bib'
-[149] Utils.pm:169> WARN - Entry 'LaengenaenderungPasterze' (literature.bib): Invalid format '10.06.2019' of date field 'urldate' - ignoring
-[161] Utils.pm:169> WARN - Entry 'GreenhouseGasForcing' (literature.bib): Invalid format '08.12.2019' of date field 'urldate' - ignoring
-[173] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
-[173] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[173] Biber.pm:3809> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'de-DE'
-[173] Biber.pm:3815> INFO - No sort tailoring available for locale 'de-DE'
-[183] bbl.pm:617> INFO - Writing 'Bachelorarbeit_Theurl_Manuel.bbl' with encoding 'UTF-8'
-[187] bbl.pm:720> INFO - Output to Bachelorarbeit_Theurl_Manuel.bbl
-[188] Biber.pm:110> INFO - WARNINGS: 2
+[17] biber:313> INFO - === Di Dez 17, 2019, 08:24:19
+[31] Biber.pm:371> INFO - Reading 'Bachelorarbeit_Theurl_Manuel.bcf'
+[71] Biber.pm:857> INFO - Found 8 citekeys in bib section 0
+[79] Biber.pm:3981> INFO - Processing section 0
+[86] Biber.pm:4154> INFO - Looking for bibtex format file 'literature.bib' for section 0
+[87] bibtex.pm:1468> INFO - LaTeX decoding ...
+[93] bibtex.pm:1294> INFO - Found BibTeX data source 'literature.bib'
+[117] Utils.pm:169> WARN - Entry 'LaengenaenderungPasterze' (literature.bib): Invalid format '10.06.2019' of date field 'urldate' - ignoring
+[125] Utils.pm:169> WARN - Entry 'GreenhouseGasForcing' (literature.bib): Invalid format '08.12.2019' of date field 'urldate' - ignoring
+[126] Utils.pm:169> WARN - I didn't find a database entry for 'Themicroclimateofvalleyglaciers)' (section 0)
+[136] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'variable = shifted' with 'variable = non-ignorable'
+[137] UCollate.pm:68> INFO - Overriding locale 'de-DE' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[137] Biber.pm:3809> INFO - Sorting list 'nyt/global//global/global' of type 'entry' with template 'nyt' and locale 'de-DE'
+[137] Biber.pm:3815> INFO - No sort tailoring available for locale 'de-DE'
+[144] bbl.pm:617> INFO - Writing 'Bachelorarbeit_Theurl_Manuel.bbl' with encoding 'UTF-8'
+[148] bbl.pm:720> INFO - Output to Bachelorarbeit_Theurl_Manuel.bbl
+[148] Biber.pm:110> INFO - WARNINGS: 3

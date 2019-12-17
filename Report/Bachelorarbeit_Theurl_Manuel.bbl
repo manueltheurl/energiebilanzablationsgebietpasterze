@@ -90,11 +90,11 @@
     \endentry
     \entry{Pasterze}{book}{}
       \name{author}{2}{}{%
-        {{uniquename=0,uniquepart=base,hash=4ce40c55e0e980dd63da660ff211c41f}{%
+        {{uniquename=0,uniquepart=base,hash=00378925a8040a875560701f5d74eb39}{%
            family={Lieb},
            familyi={L\bibinitperiod},
-           given={Gerhard\bibnamedelima Karl},
-           giveni={G\bibinitperiod\bibinitdelim K\bibinitperiod},
+           given={Gerhard},
+           giveni={G\bibinitperiod},
            givenun=0}}%
         {{uniquename=0,uniquepart=base,hash=b330be138e5ccf4c3ad906fd3d795351}{%
            family={Slupetzky},
@@ -113,12 +113,12 @@
       \list{publisher}{1}{%
         {A. Pustet}%
       }
-      \strng{namehash}{fe692e6efb03c0b7674abd813e04bc06}
-      \strng{fullhash}{fe692e6efb03c0b7674abd813e04bc06}
-      \strng{bibnamehash}{fe692e6efb03c0b7674abd813e04bc06}
-      \strng{authorbibnamehash}{fe692e6efb03c0b7674abd813e04bc06}
-      \strng{authornamehash}{fe692e6efb03c0b7674abd813e04bc06}
-      \strng{authorfullhash}{fe692e6efb03c0b7674abd813e04bc06}
+      \strng{namehash}{f06b4a2bcb9e4e98ef5e1dfaafe6bbb9}
+      \strng{fullhash}{f06b4a2bcb9e4e98ef5e1dfaafe6bbb9}
+      \strng{bibnamehash}{f06b4a2bcb9e4e98ef5e1dfaafe6bbb9}
+      \strng{authorbibnamehash}{f06b4a2bcb9e4e98ef5e1dfaafe6bbb9}
+      \strng{authornamehash}{f06b4a2bcb9e4e98ef5e1dfaafe6bbb9}
+      \strng{authorfullhash}{f06b4a2bcb9e4e98ef5e1dfaafe6bbb9}
       \field{sortinit}{L}
       \field{sortinithash}{2c7981aaabc885868aba60f0c09ee20f}
       \field{extradatescope}{labelyear}
@@ -176,11 +176,11 @@
            given={Herwig},
            giveni={H\bibinitperiod},
            givenun=1}}%
-        {{uniquename=0,uniquepart=base,hash=4ce40c55e0e980dd63da660ff211c41f}{%
+        {{uniquename=0,uniquepart=base,hash=00378925a8040a875560701f5d74eb39}{%
            family={Lieb},
            familyi={L\bibinitperiod},
-           given={Gerhard\bibnamedelima Karl},
-           giveni={G\bibinitperiod\bibinitdelim K\bibinitperiod},
+           given={Gerhard},
+           giveni={G\bibinitperiod},
            givenun=0}}%
       }
       \name{editor}{1}{}{%
@@ -188,12 +188,12 @@
            family={{Institut f{ü}r Geographie und Raumforschung}},
            familyi={I\bibinitperiod}}}%
       }
-      \strng{namehash}{1096e30de4881285011b12be17e15705}
-      \strng{fullhash}{1096e30de4881285011b12be17e15705}
-      \strng{bibnamehash}{1096e30de4881285011b12be17e15705}
-      \strng{authorbibnamehash}{1096e30de4881285011b12be17e15705}
-      \strng{authornamehash}{1096e30de4881285011b12be17e15705}
-      \strng{authorfullhash}{1096e30de4881285011b12be17e15705}
+      \strng{namehash}{fbca27d856db7ed18f47b0ba0e5607b1}
+      \strng{fullhash}{fbca27d856db7ed18f47b0ba0e5607b1}
+      \strng{bibnamehash}{fbca27d856db7ed18f47b0ba0e5607b1}
+      \strng{authorbibnamehash}{fbca27d856db7ed18f47b0ba0e5607b1}
+      \strng{authornamehash}{fbca27d856db7ed18f47b0ba0e5607b1}
+      \strng{authorfullhash}{fbca27d856db7ed18f47b0ba0e5607b1}
       \strng{editorbibnamehash}{b06943fd6161fab3f20b238a1b4202ae}
       \strng{editornamehash}{b06943fd6161fab3f20b238a1b4202ae}
       \strng{editorfullhash}{b06943fd6161fab3f20b238a1b4202ae}
@@ -287,6 +287,7 @@
       \endverb
     \endentry
   \enddatalist
+  \missing{Themicroclimateofvalleyglaciers)}
 \endrefsection
 \endinput
 
