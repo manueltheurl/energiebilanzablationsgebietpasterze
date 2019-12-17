@@ -60,7 +60,7 @@ class PlotFrame(tk.Frame):
 
         self.radBut_show_water_equivalent = tk.Radiobutton(
             self, variable=self.radBut_show_ablation_or_water_equivalent_value, state="disabled",
-            value="show_water_equivalent", text="Show measured and calculated ablation water equivalent [l]")
+            value="show_water_equivalent", text="Show measured and calculated ablation water equivalent [mm/d]")
         self.radBut_show_water_equivalent.pack()
 
         self.radBut_show_ablation_or_water_equivalent_value.set("show_ablation")
