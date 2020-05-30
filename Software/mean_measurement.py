@@ -206,7 +206,7 @@ class MeanMeasurement:
         self.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
 
     def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
-        if self.is_snow_covered is False:  # dont change, None is False also
+        if self.is_snow_covered is False:  # dontcalculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter change, None is False also
             if self.__relative_ablation_measured is not None:
 
                 self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(

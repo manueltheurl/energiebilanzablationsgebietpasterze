@@ -40,8 +40,8 @@ class NoGuiManager:
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
 
         # read
-        self.startTime = None  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = None  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.startTime = dt.datetime(2018, 6, 28, 13, 40, 0)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.endTime = dt.datetime(2018, 12, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.pickle_file_name = "multiple_measurements_singleton.pkl"
 
     def run(self):
@@ -49,21 +49,37 @@ class NoGuiManager:
 
         reader.singleton.fetch_file_metadata()
 
-        if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"]:
+        if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
+            res = dt.timedelta(days=1)
+
             reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
                                                               endtime=self.endTime,
                                                               resolution_by_percentage=100,
-                                                              resolution_by_time_interval=None)
-            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
-                starttime=dt.datetime(2016, 11, 1))
+                                                              resolution_by_time_interval=res)
+
+            # multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+            #     starttime=dt.datetime(2018, 6, 28, 13, 40, 0), endtime=dt.datetime(2018, 12, 30))
             multiple_measurements.singleton.calculate_energy_balance_for_scope()
             multiple_measurements.singleton.cumulate_ablation_for_scope()
+            multiple_measurements.singleton.fix_missing_snow_measurements()  # by calculating mean of the two neighbors maybe
+
             multiple_measurements.singleton.check_for_snow_covering_for_scope()  # yet TODO
             multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
-
             multiple_measurements.singleton.sum_measurements_by_months(1)
-
             multiple_measurement_singleton = multiple_measurements.singleton
+
+            total_swe = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
+            print(total_swe)
+
+
+            # multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
+            # total_meltwater_for_scope = multiple_measurements.singleton.get_total_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
+
+
+
+            total_natural_water_input_from_snow = multiple_measurements.singleton.get_total_natural_water_input_from_now_for_current_scope()
+            print(total_natural_water_input_from_snow)
+
 
             if cfg["USE_PICKLE_FOR_SAVING_TIME"]:
                 with open(self.pickle_file_name, 'wb') as f:
@@ -71,6 +87,18 @@ class NoGuiManager:
         else:
             with open(self.pickle_file_name, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
+
+            multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
+            total_meltwater_for_scope = multiple_measurements.singleton.get_total_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
+
+            total_natural_water_input_from_snow = multiple_measurements.singleton.get_total_natural_water_input_from_now_for_current_scope()
+
+            print(total_natural_water_input_from_snow)
+
+
+            exit(total_meltwater_for_scope)
+
+
 
         # BEGIN --- NOT NEEDED JUST FOR REFERENCE
         # multiple_measurements.singleton.change_measurement_scope_by_percentage(80)

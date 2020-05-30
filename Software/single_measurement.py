@@ -44,6 +44,8 @@ class SingleMeasurement:
         self.__total_energy_balance = None  # not calculated yet
         self.__simulate_global_brightening = None
 
+        self.__swe_input_from_snow = None  # unit TODO
+
         self.is_snow_covered = None
 
     def calculate_energy_balance(self, simulate_global_dimming_brightening=0):
@@ -161,6 +163,19 @@ class SingleMeasurement:
     @property
     def snow_depth(self):
         return self.__snow_depth
+
+    @snow_depth.setter
+    def snow_depth(self, new_value):
+        if new_value is not None:
+            self.__snow_depth = new_value
+
+    @property
+    def swe_input_from_snow(self):
+        return self.__swe_input_from_snow
+
+    @swe_input_from_snow.setter
+    def swe_input_from_snow(self, value):
+        self.__swe_input_from_snow = value
 
     @property
     def ablation(self):

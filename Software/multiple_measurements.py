@@ -4,6 +4,9 @@ import functions as fc
 import os
 from manage_config import cfg
 import csv
+from single_measurement import SingleMeasurement
+from snow_to_swe_model import SnowToSwe
+
 
 
 class MultipleMeasurements:
@@ -35,6 +38,28 @@ class MultipleMeasurements:
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             obj.calculate_energy_balance(simulate_global_dimming_brightening)
 
+    def calculate_water_input_through_snow_for_scope(self):
+        snow_observations = []  # snow observations have to be in meters
+
+        # TODO double loop here could of course be prevented, but the aim was to modify the snow to swe model as little as possible
+
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            obj: SingleMeasurement
+            snow_observations.append(obj.snow_depth)
+
+        resolution = self.get_time_resolution(of="scope")
+
+        snow_to_swe_model = SnowToSwe()
+        swe_results = snow_to_swe_model.convert(snow_observations, timestep=resolution/60)
+
+        """ Now update the measurements with those calculated values  """
+        # resolution seems to be in minutes
+        for obj, swe in zip([self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)], swe_results):
+            obj: SingleMeasurement
+            obj.swe_input_from_snow = swe
+
+        return sum(swe_results)  # todo delete this
+
     def cumulate_ablation_for_scope(self):
         old_ablation_value = None
         current_subtractive = 0
@@ -51,6 +76,22 @@ class MultipleMeasurements:
 
                     old_ablation_value = obj.ablation
                     obj.cumulated_ablation = obj.ablation - current_subtractive
+
+    def fix_missing_snow_measurements(self):
+        past_snow_depth = None
+        first_snow_depth = True
+
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if obj.snow_depth is None:
+                if first_snow_depth:
+                    # when the first depth looking at is None, just set it to 0
+                    obj.snow_depth = 0
+                    first_snow_depth = False
+                else:
+                    obj.snow_depth = past_snow_depth
+
+            past_snow_depth = obj.snow_depth
+
 
     def check_for_snow_covering_for_scope(self):
         # cumulate_ablation_for_scope has to be called before
@@ -398,6 +439,7 @@ class MultipleMeasurements:
 
     def get_time_resolution(self, of="all", as_beautiful_string=False, as_time_delta=False):
         """
+        Gets time resolution in integer minutes
         Based on the first two measurements!
         """
 
@@ -416,6 +458,37 @@ class MultipleMeasurements:
             return time_delta
 
         return int(time_delta.total_seconds() // 60)
+
+    def get_total_meltwater_per_square_meter_for_current_scope_with_summed_measurements(self):
+        """
+        Gets the total meltwater in liters for the time frame defined in the scope
+        """
+
+        total_meltwater = 0
+
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            obj: MeanMeasurement
+            try:
+                total_meltwater += obj.actual_melt_water_per_sqm
+            except TypeError:  # skip if None
+                pass
+
+        return total_meltwater
+
+    def get_total_natural_water_input_from_now_for_current_scope(self):
+        total_meltwater = 0
+
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            obj: MeanMeasurement
+            try:
+                total_meltwater += obj.actual_melt_water_per_sqm
+            except TypeError:  # skip if None
+                pass
+
+        return total_meltwater
+
+
+
 
     def download_components(self, options: list, use_summed_measurements=False):
         # currently not support for downloading summed measurements

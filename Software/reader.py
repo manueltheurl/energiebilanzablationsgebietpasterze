@@ -76,9 +76,11 @@ class Reader:
         reference_year = None  # used if resolution_by_years is not None
 
         if starttime is not None:
-            starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
+            if type(starttime) is str:
+                starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
         if endtime is not None:
-            endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
+            if type(starttime) is str:
+                endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
         if resolution_by_percentage is not None:
             percentage_threshold = 100  # so that first one is always there
         if resolution_by_time_interval is not None:

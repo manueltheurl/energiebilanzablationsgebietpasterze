@@ -10,20 +10,19 @@ class SnowToSwe:
 
     def convert(self, data, rho_max=401.2588, rho_null=81.19417, c_ov=0.0005104722, k_ov=0.37856737, k=0.02993175,
                        tau=0.02362476, eta_null=8523356, timestep=24, verbose=False):
-        Hobs = data["hs"].tolist()
+        # Hobs = data["hs"].tolist()  # TODO
+        Hobs = data
 
         # TODO several checks if data is nan or negativ or whatever
 
-        # if (any( is.na(Hobs)))
-        # stop("swe.deltasnow: snow depth data must not be NA")
-        # if (!all(Hobs >= 0))
-        # stop("swe.deltasnow: snow depth data must not be negative")
-        # if (! is.numeric(Hobs))
-        # stop("swe.deltasnow: snow depth data must be numeric")
-        # if (Hobs[1] != 0)
-        #     stop("swe.deltasnow: snow depth observations must start with 0")
+        if np.isnan(np.sum(Hobs)):
+            exit("swe.deltasnow: snow depth data must not be NA")
+        if not all(i >= 0 for i in Hobs):
+            exit("swe.deltasnow: snow depth data must not be negative")
+        if Hobs[0] != 0:
+            exit("swe.deltasnow: snow depth observations must start with 0")
 
-        z = data["date"].tolist()  # all times as list
+        # z = data["date"].tolist()  # all times as list
 
         # TODO check if z is strictly regular, evenly spaced whatever ..
 
@@ -100,10 +99,7 @@ class SnowToSwe:
             return snowpack_dd
 
         def assignH(sp_dd, h, swe, age, H, SWE, t, day_tot):
-            if t == 142:
-                print(H[t])
-
-            if t < day_tot:
+            if t < day_tot-1:
                 h[:, t + 1] = sp_dd['h']  # probably only t TODO not t +1
                 swe[:, t + 1] = sp_dd["swe"]
                 age[:, t + 1] = sp_dd["age"]
@@ -320,9 +316,6 @@ class SnowToSwe:
         for t in range(day_tot):
             msg("day", t, ": ")
 
-            if t + 1 == 229:
-                print()
-
             # snowdepth = 0, no snow cover
             if Hobs[t] == 0:
                 if t > 0:
@@ -368,8 +361,6 @@ class SnowToSwe:
 
                 elif Hobs[t - 1] > 0:  # TODO -2?
                     deltaH = Hobs[t] - H[t]
-
-                    print(t + 1, H[t])
                     # if t + 1 >= 173:
                     #     print(Hobs[t])
                     #     print(H[t])
@@ -440,7 +431,8 @@ class SnowToSwe:
         return SWE
 
 
-hsdata = pd.read_csv("hsdata.csv")
-snow_to_swe = SnowToSwe()
-swe = snow_to_swe.convert(hsdata)
-print(max(swe))  # results match
+if __name__ == "main":
+    hsdata = pd.read_csv("hsdata.csv")
+    snow_to_swe = SnowToSwe()
+    swe = snow_to_swe.convert(hsdata)
+    print(max(swe))  # results match
