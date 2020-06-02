@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from numpy import exp
+np.seterr(divide='ignore', invalid='ignore')  # i do not really like that, but division by zero is going to nan silently
 
 
 class SnowToSwe:
@@ -119,8 +120,6 @@ class SnowToSwe:
             runoff = 0
 
             # distribute mass top-down
-            if t == 143:
-                print()
 
             for i in reversed(range(ly)):
                 if sum([element for j, element in enumerate(h_d) if j != i]) + swe_d[i] / rho_max - Hobs_d >= prec:
@@ -153,6 +152,7 @@ class SnowToSwe:
                 # swe_d[1:ly] <- swe_d[1:ly] - (sum(h_d) - Hobs_d) * rho_max
                 scale = Hobs_d / sum(h_d)
                 runoff = (sum(h_d) - Hobs_d) * rho_max  # excess is converted to runoff [kg/m2]
+                # print(t, runoff)
                 h_d = h_d * scale  # all layers are compressed (and have rho_max) [m]
                 swe_d = swe_d * scale
             #
@@ -202,6 +202,7 @@ class SnowToSwe:
             eta_cor = []
             for i in range(ly_tot):
                 rho_d = swe_d[i] / h_d[i]
+
                 x = ts * g * swe_hat_d[i] * exp(-k * rho_d)  # yesterday
                 P = h_d[i] / Hobs_d  # yesterday
                 eta_i = Hobs_dd * x * P / (h_d[i] - Hobs_dd * P)
@@ -377,9 +378,6 @@ class SnowToSwe:
                         age[:ly - 1, t] = age[ly - 1, t - 1] + 1
                         H[t] = sum(h[:, t])
                         SWE[t] = sum(swe[:, t])
-
-                        if t == 142:
-                            print(H[t])
 
                         # RHO[t]    <- SWE[t]/H[t]
 

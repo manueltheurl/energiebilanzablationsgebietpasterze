@@ -42,7 +42,7 @@ class MeanMeasurement:
         self.__actual_melt_water_per_sqm = None
         self.__theoretical_melt_water_per_sqm = None
 
-        self.is_snow_covered = None
+        self.__snow_depth = None
 
         self.contains_sw_in = 0
         self.contains_sw_out = 0
@@ -55,6 +55,7 @@ class MeanMeasurement:
         self.contains_ablation = 0
         self.contains_cumulated_ablation = 0
         self.contains_theoretical_melt_rate = 0
+        self.contains_snow_depth = 0
 
         if cfg["PRO_VERSION"]:
             self.__temperature = None
@@ -144,11 +145,12 @@ class MeanMeasurement:
             else:
                 self.__cumulated_ablation += single_measurement.cumulated_ablation
 
-        if single_measurement.is_snow_covered is not None:
-            if self.is_snow_covered is None and single_measurement.is_snow_covered is True:
-                self.is_snow_covered = True
-            elif single_measurement.is_snow_covered is False:
-                self.is_snow_covered = False
+        if single_measurement.snow_depth is not None:
+            self.contains_snow_depth += 1
+            if self.__snow_depth is None:
+                self.__snow_depth = single_measurement.snow_depth
+            else:
+                self.__snow_depth += single_measurement.snow_depth
 
         if single_measurement.total_energy_balance is not None:
             self.contains_total_energy_balance += 1
@@ -194,6 +196,9 @@ class MeanMeasurement:
         if self.__ablation is not None:
             self.__ablation /= self.contains_ablation
 
+        if self.__snow_depth is not None:
+            self.__snow_depth /= self.contains_snow_depth
+
         if self.__cumulated_ablation is not None:
             self.__cumulated_ablation /= self.contains_cumulated_ablation
 
@@ -206,7 +211,7 @@ class MeanMeasurement:
         self.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
 
     def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
-        if self.is_snow_covered is False:  # dontcalculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter change, None is False also
+        if True:  # TODO AND previously: self.is_snow_covered is False:  # dontcalculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter change, None is False also
             if self.__relative_ablation_measured is not None:
 
                 self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
@@ -293,6 +298,10 @@ class MeanMeasurement:
     @property
     def total_energy_balance(self):
         return self.__total_energy_balance
+
+    @property
+    def snow_depth(self):
+        return self.__snow_depth
 
     @property
     def actual_melt_water_per_sqm(self):

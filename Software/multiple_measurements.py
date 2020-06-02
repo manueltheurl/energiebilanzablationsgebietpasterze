@@ -6,7 +6,7 @@ from manage_config import cfg
 import csv
 from single_measurement import SingleMeasurement
 from snow_to_swe_model import SnowToSwe
-
+import numpy as np
 
 
 class MultipleMeasurements:
@@ -43,11 +43,11 @@ class MultipleMeasurements:
 
         # TODO double loop here could of course be prevented, but the aim was to modify the snow to swe model as little as possible
 
-        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            obj: SingleMeasurement
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            obj: MeanMeasurement
             snow_observations.append(obj.snow_depth)
 
-        resolution = self.get_time_resolution(of="scope")
+        resolution = self.get_time_resolution(of="summed")
 
         snow_to_swe_model = SnowToSwe()
         swe_results = snow_to_swe_model.convert(snow_observations, timestep=resolution/60)
@@ -58,7 +58,11 @@ class MultipleMeasurements:
             obj: SingleMeasurement
             obj.swe_input_from_snow = swe
 
-        return sum(swe_results)  # todo delete this
+        obs = np.array(snow_observations)
+        swe_ = np.array(swe_results)
+
+
+        return swe_results  # todo delete this
 
     def cumulate_ablation_for_scope(self):
         old_ablation_value = None
@@ -77,10 +81,15 @@ class MultipleMeasurements:
                     old_ablation_value = obj.ablation
                     obj.cumulated_ablation = obj.ablation - current_subtractive
 
-    def fix_missing_snow_measurements(self):
+    def correct_snow_measurements_for_scope(self):
+        """
+        If measured snow is NULL, then take last measurement as new value
+        If measured snow height is < 10cm from June till september, then set 0
+        If jump from one measurement to the next is too big, then take previous measurement
+        """
+        minute_resolution = self.get_time_resolution()
         past_snow_depth = None
         first_snow_depth = True
-
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             if obj.snow_depth is None:
                 if first_snow_depth:
@@ -90,23 +99,16 @@ class MultipleMeasurements:
                 else:
                     obj.snow_depth = past_snow_depth
 
+            if 6 <= obj.datetime.month <= 8:
+                if obj.snow_depth <= 0.1:
+                    obj.snow_depth = 0
+
+            if past_snow_depth is not None and abs(past_snow_depth-obj.snow_depth) > 0.05*minute_resolution:
+                obj.snow_depth = past_snow_depth
+
             past_snow_depth = obj.snow_depth
 
-
-    def check_for_snow_covering_for_scope(self):
-        # cumulate_ablation_for_scope has to be called before
-        # TODO think of something good here
-
-        # for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-        #     if obj.cumulated_ablation is not None:
-        #         pass
-        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            if 6 <= obj.datetime.month <= 8:
-                obj.is_snow_covered = False
-            else:
-                obj.is_snow_covered = True
-
-    def convert_energy_balance_to_water_equivalent_for_scope(self):
+    def convert_energy_balance_to_water_rate_equivalent_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             obj.calculate_theoretical_melt_rate()
 
@@ -177,6 +179,9 @@ class MultipleMeasurements:
 
         resolution_reference_time = None
         summed_measurement = MeanMeasurement()
+
+        if time_interval.total_seconds()/60 <= self.get_time_resolution(of="scope"):
+            print("Warning: Summing with resolution smaller or equal to measurement resolution")
 
         for single_measurement in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             if resolution_reference_time is None:  # first time .. no reference time there
@@ -459,7 +464,7 @@ class MultipleMeasurements:
 
         return int(time_delta.total_seconds() // 60)
 
-    def get_total_meltwater_per_square_meter_for_current_scope_with_summed_measurements(self):
+    def get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements(self):
         """
         Gets the total meltwater in liters for the time frame defined in the scope
         """
@@ -469,26 +474,11 @@ class MultipleMeasurements:
         for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
             obj: MeanMeasurement
             try:
-                total_meltwater += obj.actual_melt_water_per_sqm
+                total_meltwater += obj.theoretical_melt_water_per_sqm
             except TypeError:  # skip if None
                 pass
 
         return total_meltwater
-
-    def get_total_natural_water_input_from_now_for_current_scope(self):
-        total_meltwater = 0
-
-        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
-            obj: MeanMeasurement
-            try:
-                total_meltwater += obj.actual_melt_water_per_sqm
-            except TypeError:  # skip if None
-                pass
-
-        return total_meltwater
-
-
-
 
     def download_components(self, options: list, use_summed_measurements=False):
         # currently not support for downloading summed measurements

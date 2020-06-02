@@ -231,7 +231,7 @@ class ScopeFrame(tk.Frame):
         )
         multiple_measurements.singleton.cumulate_ablation_for_scope()
         multiple_measurements.singleton.check_for_snow_covering_for_scope()  # yet TODO
-        multiple_measurements.singleton.convert_energy_balance_to_water_equivalent_for_scope()
+        multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for_scope()
 
         navigation_bar.singleton.btn_downloadframe["state"] = "normal"
         navigation_bar.singleton.show_sum_frame()
