@@ -38,6 +38,7 @@ class SingleMeasurement:
         self.__tiltx = tiltx
         self.__tilty = tilty
         self.__snow_depth = snow_depth  # WARNING, some crazy data here
+        self.__snow_depth_delta = None  # increasing of snow height from last measurement to this measurement
         self.__ablation = ablation  # this represents the ice thickness at the point of measurement
         self.__cumulated_ablation = None
         self.__theoretical_melt_rate = None
@@ -166,6 +167,15 @@ class SingleMeasurement:
     def snow_depth(self, new_value):
         if new_value is not None:
             self.__snow_depth = new_value
+
+    @property
+    def snow_depth_delta(self):
+        return self.__snow_depth_delta
+
+    @snow_depth_delta.setter
+    def snow_depth_delta(self, new_value):
+        if new_value is not None:
+            self.__snow_depth_delta = new_value
 
     @property
     def swe_input_from_snow(self):

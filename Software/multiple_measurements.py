@@ -106,7 +106,105 @@ class MultipleMeasurements:
             if past_snow_depth is not None and abs(past_snow_depth-obj.snow_depth) > 0.05*minute_resolution:
                 obj.snow_depth = past_snow_depth
 
+            if past_snow_depth is not None:
+                obj.snow_depth_delta = obj.snow_depth - past_snow_depth
+
             past_snow_depth = obj.snow_depth
+
+    def simulate_artificial_snowing(self):
+        """
+        TODO
+        """
+        minute_resolution = self.get_time_resolution()
+
+        snowing_in_m_height_per_day = 0.3
+        snowing_in_m_per_time_step = snowing_in_m_height_per_day / (24*60) * minute_resolution
+
+        last_snow_depth = None
+
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if (10 <= obj.datetime.month <= 12 or 1 <= obj.datetime.month <= 5) and obj.temperature > 0:
+                if obj.snow_depth_delta is not None:
+                    if last_snow_depth is None:
+                        obj.snow_depth += snowing_in_m_per_time_step
+                    else:
+                        obj.snow_depth_delta += snowing_in_m_per_time_step
+                        obj.snow_depth = last_snow_depth + obj.snow_depth_delta
+
+                    last_snow_depth = obj.snow_depth
+            else:
+                last_snow_depth = None  # important
+
+    def change_albedo_for_snowy_times(self):
+        """
+        TODO
+        """
+        minute_resolution = self.get_time_resolution()
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if obj.snow_depth > 0:
+                pass
+                # TODO GO ON HERE
+
+
+    def calculate_snow_height_deltas_for_scope(self):
+        past_snow_depth = None
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if past_snow_depth is not None:
+                obj.snow_depth_delta = obj.snow_depth - past_snow_depth
+            past_snow_depth = obj.snow_depth
+
+    def set_initial_snow_height_to_zero(self, of="summed"):
+        """
+        This is done for the snow height to swe model, cause the time series has to start with no snow
+        """
+        if of == "summed":
+            first_measurement = self.__all_mean_measurements[sorted(self.__current_mean_index_scope)[0]]
+            second_measurement = self.__all_mean_measurements[sorted(self.__current_mean_index_scope)[1]]
+        elif of == "scope":
+            first_measurement = self.__all_single_measurement_objects[sorted(self.__current_single_index_scope)[0]]
+            second_measurement = self.__all_single_measurement_objects[sorted(self.__current_single_index_scope)[1]]
+        else:
+            return False
+
+        second_measurement.snow_depth_delta = first_measurement.snow_depth
+        first_measurement.snow_depth = 0
+        first_measurement.snow_depth_delta = 0
+
+    def simulate(self):
+        """
+        Lets do magic
+        """
+
+        resolution = self.get_time_resolution(of="summed")
+        snow_to_swe_generator = SnowToSwe(resolution).convert_generator(len(self.__current_mean_index_scope))
+        actual_snow_height = 0
+
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            obj: MeanMeasurement
+
+            if obj.snow_depth_delta > 0:  # only on snow accumulation add the snow height
+                print("Snow event: ", obj.snow_depth_delta)
+                actual_snow_height += obj.snow_depth_delta
+
+            if False:
+                next(snow_to_swe_generator)
+                snow_swe = snow_to_swe_generator.send(actual_snow_height)
+            else:
+                # conversion from m snow to liters water equivalent
+                snow_swe = actual_snow_height * 1000 * 0.15  # TODO what is a legimit factor here?
+
+            # energy balance TODO
+            if snow_swe:
+                if obj.theoretical_melt_water_per_sqm > 0:
+                    snow_depth_scale_factor = (snow_swe-obj.theoretical_melt_water_per_sqm)/snow_swe
+                    snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
+                    print("Reducing snow height by factor", snow_depth_scale_factor)
+                    actual_snow_height = actual_snow_height * snow_depth_scale_factor
+            else:
+                pass
+                # actual_snow_height = 0
+
+            print(obj.datetime, "Snow Swe:", snow_swe, "Meltwater:", obj.theoretical_melt_water_per_sqm, "Current snow height:", actual_snow_height)
 
     def convert_energy_balance_to_water_rate_equivalent_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
@@ -190,7 +288,6 @@ class MultipleMeasurements:
             # all the following times
             if single_measurement.datetime - resolution_reference_time >= time_interval:
                 resolution_reference_time = single_measurement.datetime
-
                 summed_measurement.calculate_mean(endtime=single_measurement.datetime,
                                                   end_ablation=single_measurement.cumulated_ablation)
                 self.add_summed_measurement(summed_measurement)

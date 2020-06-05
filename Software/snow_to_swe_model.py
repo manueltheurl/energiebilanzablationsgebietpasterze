@@ -5,14 +5,14 @@ np.seterr(divide='ignore', invalid='ignore')  # i do not really like that, but d
 
 
 class SnowToSwe:
-    def __init__(self):
+    def __init__(self, timestep=24):
         # TODO really bad programming style, has to be adapted when there is time for that
-        pass
+        self.timestep = timestep
 
-    def convert(self, data, rho_max=401.2588, rho_null=81.19417, c_ov=0.0005104722, k_ov=0.37856737, k=0.02993175,
-                       tau=0.02362476, eta_null=8523356, timestep=24, verbose=False):
+    def convert_generator(self, total_amount_of_days, rho_max=401.2588, rho_null=81.19417, c_ov=0.0005104722, k_ov=0.37856737, k=0.02993175,
+                       tau=0.02362476, eta_null=8523356, verbose=False):
         # Hobs = data["hs"].tolist()  # TODO
-        Hobs = data
+        Hobs = [0]*total_amount_of_days
 
         # TODO several checks if data is nan or negativ or whatever
 
@@ -32,12 +32,13 @@ class SnowToSwe:
         H = []  # modeled total height of snow at any day [m]
         SWE = []  # modeled total SWE at any day [kg/m2]
         ly = 1  # layer number [-]
-        ts = timestep * 3600  # timestep between observations [s]
+        ts = self.timestep * 3600  # timestep between observations [s]
         g = 9.81  # gravity [ms-2]
 
         # preallocate matrix as days X layers
-        ly_tot = np.count_nonzero(Hobs)  # maximum number of layers [-]
-        day_tot = len(Hobs)  # total days from first to last snowfall [-]
+        # ly_tot = np.count_nonzero(Hobs)  # maximum number of layers [-]
+        ly_tot = total_amount_of_days  # maximum number of layers [-]  # TODO this is getting pretty huge this way, but we do not know the layer count before
+        day_tot = total_amount_of_days  # total days from first to last snowfall [-]
 
         h = np.zeros((ly_tot, day_tot))  # modeled height of snow in all layers [m]
         swe = np.zeros((ly_tot, day_tot))  # modeled swe in all layers [kg/m2]
@@ -317,6 +318,10 @@ class SnowToSwe:
         for t in range(day_tot):
             msg("day", t, ": ")
 
+            snow_height_overwrite = yield
+            if snow_height_overwrite is not None:
+                Hobs[t] = snow_height_overwrite
+
             # snowdepth = 0, no snow cover
             if Hobs[t] == 0:
                 if t > 0:
@@ -426,7 +431,7 @@ class SnowToSwe:
 
                     else:
                         msg(m, t - 1, "??")
-        return SWE
+            yield SWE[t]
 
 
 if __name__ == "main":

@@ -43,6 +43,7 @@ class MeanMeasurement:
         self.__theoretical_melt_water_per_sqm = None
 
         self.__snow_depth = None
+        self.__snow_depth_delta = None
 
         self.contains_sw_in = 0
         self.contains_sw_out = 0
@@ -151,6 +152,13 @@ class MeanMeasurement:
                 self.__snow_depth = single_measurement.snow_depth
             else:
                 self.__snow_depth += single_measurement.snow_depth
+
+        if single_measurement.snow_depth_delta is not None:
+            self.contains_snow_depth += 1
+            if self.__snow_depth_delta is None:
+                self.__snow_depth_delta = single_measurement.snow_depth_delta
+            else:
+                self.__snow_depth_delta += single_measurement.snow_depth_delta
 
         if single_measurement.total_energy_balance is not None:
             self.contains_total_energy_balance += 1
@@ -302,6 +310,20 @@ class MeanMeasurement:
     @property
     def snow_depth(self):
         return self.__snow_depth
+
+    @snow_depth.setter
+    def snow_depth(self, new_value):
+        if new_value is not None:
+            self.__snow_depth = new_value
+
+    @property
+    def snow_depth_delta(self):
+        return self.__snow_depth_delta
+
+    @snow_depth_delta.setter
+    def snow_depth_delta(self, new_value):
+        if new_value is not None:
+            self.__snow_depth_delta = new_value
 
     @property
     def actual_melt_water_per_sqm(self):
