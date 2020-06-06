@@ -40,8 +40,8 @@ class NoGuiManager:
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
 
         # read
-        self.startTime = dt.datetime(2018, 8, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = dt.datetime(2019, 7, 31)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.startTime = dt.datetime(2017, 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.endTime = dt.datetime(2019, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.pickle_file_name = "multiple_measurements_singleton.pkl"
 
     def run(self):
@@ -53,14 +53,14 @@ class NoGuiManager:
 
         if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
             res = dt.timedelta(days=1)
-
-            # reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
-            #                                                   endtime=self.endTime,
-            #                                                   resolution_by_percentage=100,
-            #                                                   resolution_by_time_interval=None)
             #
-            # with open(self.pickle_file_name, 'wb') as f:
-            #     pickle.dump(multiple_measurements.singleton, f)
+            reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
+                                                              endtime=self.endTime,
+                                                              resolution_by_percentage=100,
+                                                              resolution_by_time_interval=None)
+
+            with open(self.pickle_file_name, 'wb') as f:
+                pickle.dump(multiple_measurements.singleton, f)
 
             with open(self.pickle_file_name, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)

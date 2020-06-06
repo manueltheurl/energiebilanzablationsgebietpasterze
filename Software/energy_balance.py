@@ -21,17 +21,16 @@ class EnergyBalance:
             raise Exception("EnergyBalance is a singleton")
         EnergyBalance.singleton_created = True
 
-        # z_0 - surface roughness parameter (Table 5.4 in Cuffey and Paterson 2010 state: Ice in ablation zone 1-5 mm
-        z_0 = 0.003  # m
-
         # see AWS-Pasterze-Metadata.xlsx
         # sensor_height_temperature = 1.55  # m  .. not in use
-        sensor_height_wind = 5  # m
+        self.sensor_height_wind = 5  # m
 
-        self.c_star = self.calculate_c_star(z_0, sensor_height_wind)
+        self.c_star = {
+            "ice": self.calculate_c_star(float(cfg["Z_0_ROUGHNESS_ICE"])),
+            "snow": self.calculate_c_star(float(cfg["Z_0_ROUGHNESS_SNOW"])),
+        }
 
-    @staticmethod
-    def calculate_c_star(sensor_height_wind, z_0):
+    def calculate_c_star(self, z_0):
         """
         C* is called the transfer coefficient
         The value of c star depends on measurement height and a bit on surface roughness
@@ -41,7 +40,7 @@ class EnergyBalance:
 
         # c - transfer coefficient
         # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
-        return KARMANS_CONSTANT**2/m.log(sensor_height_wind / z_0)**2
+        return KARMANS_CONSTANT**2/m.log(self.sensor_height_wind / z_0)**2
 
     @staticmethod
     def calculate_ice_temperature(outgoing_energy):
@@ -58,14 +57,18 @@ class EnergyBalance:
 
         return temperature
 
-    def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out):  # E_E
+    def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out, snow_depth):  # E_E
         # air_pressure in Pa
         # wind_speed in m/s
+
         temperature_ice = self.calculate_ice_temperature(longwave_out)  # degree celcius
 
-        return 0.0129 * self.c_star * air_pressure * wind_speed * (temperature - temperature_ice)
+        surface_type = "ice" if snow_depth <= 0 else "snow"
 
-    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, use_standard_fomula=True):
+        return 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice)
+
+    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, snow_depth,
+                              use_standard_fomula=True):
         # E_H
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
@@ -98,7 +101,9 @@ class EnergyBalance:
 
         # TODO e_air and e_surface is Pa .. yes it is .. proof in 05_VO_Mountainhydrology Page 22
 
-        return 22.2 * self.c_star * u * (e_air - e_surface_saturated)
+        surface_type = "ice" if snow_depth <= 0 else "snow"
+
+        return 22.2 * self.c_star[surface_type] * u * (e_air - e_surface_saturated)
 
     @staticmethod
     def calculate_precipitation_heat():

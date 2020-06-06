@@ -117,7 +117,7 @@ class MultipleMeasurements:
         """
         minute_resolution = self.get_time_resolution()
 
-        snowing_in_m_height_per_day = 0.3
+        snowing_in_m_height_per_day = float(cfg["ARTIFICIAL_SNOW_PER_DAY"])
         snowing_in_m_per_time_step = snowing_in_m_height_per_day / (24*60) * minute_resolution
 
         last_snow_depth = None
@@ -139,12 +139,13 @@ class MultipleMeasurements:
         """
         TODO
         """
-        minute_resolution = self.get_time_resolution()
+
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             if obj.snow_depth > 0:
-                pass
-                # TODO GO ON HERE
-
+                try:
+                    obj.sw_radiation_out = -obj.sw_radiation_in * float(cfg["SNOW_ALBEDO"])
+                except TypeError:
+                    pass
 
     def calculate_snow_height_deltas_for_scope(self):
         past_snow_depth = None
@@ -175,6 +176,8 @@ class MultipleMeasurements:
         Lets do magic
         """
 
+        total_snowings_in_period = 0
+
         resolution = self.get_time_resolution(of="summed")
         snow_to_swe_generator = SnowToSwe(resolution).convert_generator(len(self.__current_mean_index_scope))
         actual_snow_height = 0
@@ -185,13 +188,14 @@ class MultipleMeasurements:
             if obj.snow_depth_delta > 0:  # only on snow accumulation add the snow height
                 print("Snow event: ", obj.snow_depth_delta)
                 actual_snow_height += obj.snow_depth_delta
+                total_snowings_in_period += obj.snow_depth_delta
 
             if False:
                 next(snow_to_swe_generator)
                 snow_swe = snow_to_swe_generator.send(actual_snow_height)
             else:
                 # conversion from m snow to liters water equivalent
-                snow_swe = actual_snow_height * 1000 * 0.15  # TODO what is a legimit factor here?
+                snow_swe = actual_snow_height * 1000 * float(cfg["SNOW_SWE_FACTOR"])  # TODO what is a legimit factor here?
 
             # energy balance TODO
             if snow_swe:
@@ -205,6 +209,8 @@ class MultipleMeasurements:
                 # actual_snow_height = 0
 
             print(obj.datetime, "Snow Swe:", snow_swe, "Meltwater:", obj.theoretical_melt_water_per_sqm, "Current snow height:", actual_snow_height)
+
+        print("Total snowings:", total_snowings_in_period)
 
     def convert_energy_balance_to_water_rate_equivalent_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:

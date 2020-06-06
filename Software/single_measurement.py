@@ -61,7 +61,8 @@ class SingleMeasurement:
                 self.__air_pressure,
                 self.__wind_speed,
                 self.__temperature,
-                self.__energy_balance_components["lw_radiation_out"]
+                self.__energy_balance_components["lw_radiation_out"],
+                self.__snow_depth
             )
 
         if None not in [self.__temperature, self.__rel_moisture, self.__wind_speed, self.__energy_balance_components["lw_radiation_out"]]:
@@ -69,7 +70,8 @@ class SingleMeasurement:
                 self.__temperature,
                 self.__rel_moisture,
                 self.__wind_speed,
-                self.__energy_balance_components["lw_radiation_out"]
+                self.__energy_balance_components["lw_radiation_out"],
+                self.__snow_depth
             )
 
         if None not in [None]:
@@ -126,6 +128,10 @@ class SingleMeasurement:
     @property
     def sw_radiation_out(self):
         return self.__energy_balance_components["sw_radiation_out"]
+
+    @sw_radiation_out.setter
+    def sw_radiation_out(self, value):
+        self.__energy_balance_components["sw_radiation_out"] = value
 
     @property
     def lw_radiation_in(self):

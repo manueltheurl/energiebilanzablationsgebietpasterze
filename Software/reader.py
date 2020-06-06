@@ -143,28 +143,52 @@ class Reader:
                         else:
                             reference_year = datetime.year
 
-                    air_pressure_hpa = self.convert_to_float_or_none(parts[6])
-                    air_pressure_pa = None if air_pressure_hpa is None else air_pressure_hpa * 100
-
-                    multiple_measurements.singleton.add_single_measurement(
-                        SingleMeasurement(
-                            datetime=datetime,
-                            temperature=self.convert_to_float_or_none(parts[2]),
-                            rel_moisture=self.convert_to_float_or_none(parts[3]),
-                            wind_speed=self.convert_to_float_or_none(parts[4]),
-                            wind_direction=self.convert_to_float_or_none(parts[5]),
-                            air_pressure=air_pressure_pa,
-                            sw_radiation_in=self.convert_to_float_or_none(parts[7]),
-                            sw_radiation_out=self.convert_to_float_or_none(parts[8], negative=True),
-                            lw_radiation_in=self.convert_to_float_or_none(parts[9]),
-                            lw_radiation_out=self.convert_to_float_or_none(parts[10], negative=True),
-                            zenith_angle=self.convert_to_float_or_none(parts[11]),
-                            tiltx=self.convert_to_float_or_none(parts[12]),
-                            tilty=self.convert_to_float_or_none(parts[13]),
-                            snow_depth=self.convert_to_float_or_none(parts[14]),
-                            ablation=self.convert_to_float_or_none(parts[15])
+                    if False:
+                        air_pressure_hpa = self.convert_to_float_or_none(parts[6])
+                        air_pressure_pa = None if air_pressure_hpa is None else air_pressure_hpa * 100
+                        multiple_measurements.singleton.add_single_measurement(
+                            SingleMeasurement(
+                                datetime=datetime,
+                                temperature=self.convert_to_float_or_none(parts[2]),
+                                rel_moisture=self.convert_to_float_or_none(parts[3]),
+                                wind_speed=self.convert_to_float_or_none(parts[4]),
+                                wind_direction=self.convert_to_float_or_none(parts[5]),
+                                air_pressure=air_pressure_pa,
+                                sw_radiation_in=self.convert_to_float_or_none(parts[7]),
+                                sw_radiation_out=self.convert_to_float_or_none(parts[8], negative=True),
+                                lw_radiation_in=self.convert_to_float_or_none(parts[9]),
+                                lw_radiation_out=self.convert_to_float_or_none(parts[10], negative=True),
+                                zenith_angle=self.convert_to_float_or_none(parts[11]),
+                                tiltx=self.convert_to_float_or_none(parts[12]),
+                                tilty=self.convert_to_float_or_none(parts[13]),
+                                snow_depth=self.convert_to_float_or_none(parts[14]),
+                                ablation=self.convert_to_float_or_none(parts[15])
+                            )
                         )
-                    )
+                    else:
+                        air_pressure_hpa = self.convert_to_float_or_none(parts[14])
+                        air_pressure_pa = None if air_pressure_hpa is None else air_pressure_hpa * 100
 
+                        # The Flags could be taken into account as well TODO
+
+                        multiple_measurements.singleton.add_single_measurement(
+                            SingleMeasurement(
+                                datetime=datetime,
+                                temperature=self.convert_to_float_or_none(parts[2]),
+                                rel_moisture=self.convert_to_float_or_none(parts[6]),
+                                wind_speed=self.convert_to_float_or_none(parts[10]),
+                                wind_direction=self.convert_to_float_or_none(parts[12]),
+                                air_pressure=air_pressure_pa,
+                                sw_radiation_in=self.convert_to_float_or_none(parts[18]),
+                                sw_radiation_out=self.convert_to_float_or_none(parts[20], negative=True),
+                                lw_radiation_in=self.convert_to_float_or_none(parts[22]),
+                                lw_radiation_out=self.convert_to_float_or_none(parts[24], negative=True),
+                                zenith_angle=self.convert_to_float_or_none(parts[26]),
+                                tiltx=self.convert_to_float_or_none(parts[16]),
+                                tilty=self.convert_to_float_or_none(parts[17]),
+                                snow_depth=self.convert_to_float_or_none(parts[27]),
+                                ablation=self.convert_to_float_or_none(parts[29])
+                            )
+                        )
 
 singleton = Reader()
