@@ -1,10 +1,9 @@
 import datetime as dt
-from mean_measurement import MeanMeasurement
 import functions as fc
 import os
 from manage_config import cfg
 import csv
-from single_measurement import SingleMeasurement
+from single_measurement import SingleMeasurement, MeanMeasurement
 from snow_to_swe_model import SnowToSwe
 import numpy as np
 
@@ -117,34 +116,15 @@ class MultipleMeasurements:
         """
         minute_resolution = self.get_time_resolution()
 
-        artificial_snowing_in_m_height_per_day = float(cfg["ARTIFICIAL_SNOW_PER_DAY"])
+        artificial_snowing_in_m_height_per_day = float(cfg["MAX_ARTIFICIAL_SNOW_PER_DAY"])
         artificial_snowing_in_m_per_time_step = artificial_snowing_in_m_height_per_day / (24*60) * minute_resolution
 
-        last_artificial_snow_depth = None
-
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            if (10 <= obj.datetime.month <= 12 or 1 <= obj.datetime.month <= 5) and obj.temperature > 0:
-                if last_artificial_snow_depth is None:
-                    obj.snow_depth = artificial_snowing_in_m_per_time_step
-                else:
+            try:
+                if obj.datetime.month in [int(month) for month in cfg["MONTHS_TO_SNOW_ARTIFICIALLY"]] and obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
                     obj.snow_depth_delta_artificial = artificial_snowing_in_m_per_time_step
-                    obj.snow_depth_artificial = last_artificial_snow_depth + obj.snow_depth_delta_artificial
-
-                last_artificial_snow_depth = obj.snow_depth_artificial
-            else:
-                last_artificial_snow_depth = None  # important
-
-    def change_albedo_for_snowy_times(self):
-        """
-        TODO
-        """
-
-        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            if obj.total_snow_depth > 0:
-                try:
-                    obj.sw_radiation_out = -obj.sw_radiation_in * float(cfg["SNOW_ALBEDO"])
-                except TypeError:
-                    pass
+            except TypeError:
+                pass
 
     def calculate_snow_height_deltas_for_scope(self):
         past_snow_depth = None
@@ -173,6 +153,18 @@ class MultipleMeasurements:
         first_measurement.snow_depth_delta_natural = 0
         first_measurement.snow_depth_delta_artificial = 0
 
+    def change_albedo_for_snowy_times(self):
+        """
+        TODO DEPRECATED
+        """
+
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if obj.total_snow_depth > 0:
+                try:
+                    obj.sw_radiation_out = -obj.sw_radiation_in * float(cfg["SNOW_ALBEDO"])
+                except TypeError:
+                    pass
+
     def simulate(self):
         """
         Lets do magic
@@ -190,14 +182,17 @@ class MultipleMeasurements:
             obj: MeanMeasurement
 
             if obj.snow_depth_delta_natural > 0:  # only on snow accumulation add the snow height
-                print("Natural snow event: ", obj.snow_depth_delta_natural)
+                # print("Natural snow event: ", obj.snow_depth_delta_natural)
                 actual_natural_snow_height += obj.snow_depth_delta_natural
                 total_natural_snowings_in_period += obj.snow_depth_delta_natural
 
-            if obj.snow_depth_delta_artificial > 0:  # only on snow accumulation add the snow height
-                print("Artificial snow event: ", obj.snow_depth_delta_artificial)
+            if obj.snow_depth_delta_artificial is not None and obj.snow_depth_delta_artificial > 0:  # only on snow accumulation add the snow height
+                # print("Artificial snow event: ", obj.snow_depth_delta_artificial)
                 actual_artificial_snow_height += obj.snow_depth_delta_artificial
                 total_artificial_snowings_in_period += obj.snow_depth_delta_artificial
+
+            if actual_natural_snow_height+actual_artificial_snow_height > 0:
+                obj.change_albedo(float(cfg["SNOW_ALBEDO"]))
 
             if False:
                 next(snow_to_swe_generator)
@@ -206,12 +201,15 @@ class MultipleMeasurements:
                 # conversion from m snow to liters water equivalent
                 snow_swe = (actual_natural_snow_height+actual_artificial_snow_height) * 1000 * float(cfg["SNOW_SWE_FACTOR"])  # TODO what is a legimit factor here?
 
-            # energy balance TODO
+            obj.calculate_energy_balance()
+            obj.calculate_theoretical_melt_rate()
+            obj.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
+
             if snow_swe:
                 if obj.theoretical_melt_water_per_sqm > 0:
                     snow_depth_scale_factor = (snow_swe-obj.theoretical_melt_water_per_sqm)/snow_swe
                     snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
-                    print("Reducing snow height by factor", snow_depth_scale_factor)
+                    # print("Reducing snow height by factor", snow_depth_scale_factor)
                     actual_natural_snow_height = actual_natural_snow_height * snow_depth_scale_factor
                     actual_artificial_snow_height = actual_artificial_snow_height * snow_depth_scale_factor
             else:
@@ -221,12 +219,14 @@ class MultipleMeasurements:
             obj.snow_depth_natural = actual_natural_snow_height  # overwrite values for plot as well
             obj.snow_depth_artificial = actual_artificial_snow_height  # overwrite values for plot as well
 
-            print(obj.datetime, "Snow Swe:", snow_swe, "Meltwater:", obj.theoretical_melt_water_per_sqm,
-                  "Current natural snow height:", actual_natural_snow_height,
-                  "Current artificial snow height:", actual_artificial_snow_height)
+            # print(obj.datetime, "Snow Swe:", snow_swe, "Meltwater:", obj.theoretical_melt_water_per_sqm,
+            #       "Current natural snow height:", actual_natural_snow_height,
+            #       "Current artificial snow height:", actual_artificial_snow_height)
 
-        print("Total natural snowings:", total_natural_snowings_in_period)
-        print("Total artificial snowings:", total_artificial_snowings_in_period)
+        years_of_measurement = (self.get_date_of_last_measurement(of="summed") - self.get_date_of_first_measurement(of="summed")).total_seconds()/60/60/24/365.244
+
+        print("Total natural snowings per year:", total_natural_snowings_in_period/years_of_measurement)
+        print("Total artificial snowings per year:", total_artificial_snowings_in_period/years_of_measurement)
 
     def convert_energy_balance_to_water_rate_equivalent_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:

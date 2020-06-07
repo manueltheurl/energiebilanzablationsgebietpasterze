@@ -40,7 +40,7 @@ class NoGuiManager:
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
 
         # read
-        self.startTime = dt.datetime(2017, 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.startTime = dt.datetime(2016, 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
         self.endTime = dt.datetime(2019, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.pickle_file_name = "multiple_measurements_singleton.pkl"
 
@@ -59,11 +59,11 @@ class NoGuiManager:
                                                               resolution_by_percentage=100,
                                                               resolution_by_time_interval=None)
 
-            with open(self.pickle_file_name, 'wb') as f:
-                pickle.dump(multiple_measurements.singleton, f)
-
-            with open(self.pickle_file_name, 'rb') as f:
-                multiple_measurements.singleton = pickle.load(f)
+            # with open(self.pickle_file_name, 'wb') as f:
+            #     pickle.dump(multiple_measurements.singleton, f)
+            #
+            # with open(self.pickle_file_name, 'rb') as f:
+            #     multiple_measurements.singleton = pickle.load(f)
 
 
             # multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
@@ -78,17 +78,14 @@ class NoGuiManager:
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
             multiple_measurements.singleton.simulate_artificial_snowing()
 
-            multiple_measurements.singleton.change_albedo_for_snowy_times()
-
-
-
+            # multiple_measurements.singleton.change_albedo_for_snowy_times()
 
             # Now do the artificial part
             # snow events, albedo change, bulk coefficient change
 
-            multiple_measurements.singleton.calculate_energy_balance_for_scope()
+            # multiple_measurements.singleton.calculate_energy_balance_for_scope()
 
-            multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for_scope()
+            # multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for_scope()
 
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
             # multiple_measurements.singleton.set_initial_snow_height_to_zero()  # not needed if not using model
@@ -99,9 +96,17 @@ class NoGuiManager:
             # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
             visualizer.singleton.show_plots = True
-            visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"), "m", ("theoretical_melt_water_per_sqm",), "l",  use_summed_measurements=True)
-            # visualizer.singleton.plot_single_component("theoretical_melt_water_per_sqm", "m", use_summed_measurements=True)
+            visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"),
+                                                 r"$m$", ("theoretical_melt_water_per_sqm",), r"$l/m^2$",
+                                                 use_summed_measurements=True, save_name="pasterze_0_with_albedo")
 
+            # visualizer.singleton.plot_components(("total_snow_depth",),
+            #                                      r"$m$", ("albedo",), "",
+            #                                      use_summed_measurements=True)
+
+
+
+            # visualizer.singleton.plot_single_component("theoretical_melt_water_per_sqm", "m", use_summed_measurements=True)
 
             exit()
 

@@ -45,6 +45,10 @@ class Visualize:
             "latent_heat": "Latent heat",
             "precipitation_heat": "Precipitation heat",
             "total_energy_balance": "Total energy balance",
+            "total_snow_depth": "Total Snow Height",
+            "snow_depth_natural": "Natural Snow Height",
+            "snow_depth_artificial": "Artificial Snow Height",
+            "theoretical_melt_water_per_sqm": "Theoretical Melt Water",
         }
 
         self.accumulate_plots = False
@@ -57,6 +61,12 @@ class Visualize:
         "trend": False,
         "temperature": False
     }
+
+    def _pretty_label(self, key):
+        try:
+            return self.title_dict[key]
+        except KeyError:
+            return key
 
     def initialize_plot(self, type_):
         """
@@ -219,7 +229,7 @@ class Visualize:
         colors = ["blue", "red", "green"]
         i = 0
         while True:
-            if i == len(colors)-1:
+            if i == len(colors):
                 i = 0
             yield colors[i]
             i += 1
@@ -320,7 +330,7 @@ class Visualize:
         for component in components1:
             x_vals = multiple_measurements.singleton.get_all_of(component,
                                                                  use_summed_measurements=use_summed_measurements)
-            self.ax.plot(y_dates, x_vals, label=component, color=next(color_generator))
+            self.ax.plot(y_dates, x_vals, label=self._pretty_label(component), color=next(color_generator))
 
         self.ax.legend(loc="upper left")
         self.ax.set_ylabel(components1_unit)
@@ -330,7 +340,7 @@ class Visualize:
             for component in components2:
                 x_vals = multiple_measurements.singleton.get_all_of(component,
                                                                     use_summed_measurements=use_summed_measurements)
-                ax2.plot(y_dates, x_vals, label=component, color="orange")
+                ax2.plot(y_dates, x_vals, label=self._pretty_label(component), color="orange")
                 ax2.legend(loc="upper right")
                 ax2.set_ylabel(components2_unit)
 
