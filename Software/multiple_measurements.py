@@ -189,6 +189,7 @@ class MultipleMeasurements:
                 print("Snow event: ", obj.snow_depth_delta)
                 actual_snow_height += obj.snow_depth_delta
                 total_snowings_in_period += obj.snow_depth_delta
+            obj.snow_depth = actual_snow_height  # overwrite values for plot as well
 
             if False:
                 next(snow_to_swe_generator)

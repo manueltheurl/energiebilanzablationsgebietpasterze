@@ -98,7 +98,9 @@ class NoGuiManager:
             # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
             # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
-
+            visualizer.singleton.show_plots = True
+            visualizer.singleton.plot_components(("snow_depth",), "m", ("theoretical_melt_water_per_sqm",), "l",  use_summed_measurements=True)
+            # visualizer.singleton.plot_single_component("theoretical_melt_water_per_sqm", "m", use_summed_measurements=True)
 
 
             exit()

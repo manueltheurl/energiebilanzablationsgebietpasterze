@@ -299,6 +299,32 @@ class Visualize:
 
         self.show_save_and_close_plot(None, save_name=save_name)
 
+    def plot_components(self, components1: tuple, components1_unit, components2: tuple = None, components2_unit = None, use_summed_measurements=False, save_name=None):
+        self.initialize_plot(None)
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
+
+        for component in components1:
+            x_vals = multiple_measurements.singleton.get_all_of(component,
+                                                                 use_summed_measurements=use_summed_measurements)
+            self.ax.plot(y_dates, x_vals, label=component, color="blue")
+
+        self.ax.legend(loc="upper left")
+        self.ax.set_ylabel(components1_unit)
+
+        if components2 is not None:
+            ax2 = self.ax.twinx()
+            for component in components2:
+                x_vals = multiple_measurements.singleton.get_all_of(component,
+                                                                    use_summed_measurements=use_summed_measurements)
+                ax2.plot(y_dates, x_vals, label=component, color="orange")
+                ax2.legend(loc="upper right")
+                ax2.set_ylabel(components2_unit)
+
+        self.modify_axes()
+        self.show_save_and_close_plot(None, save_name=save_name)
+
     def plot_temperature_and_water_equivalent(self, use_summed_measurements=False, save_name=None):
 
         self.initialize_plot("temperature")

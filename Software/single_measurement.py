@@ -94,6 +94,8 @@ class SingleMeasurement:
             self.__theoretical_melt_rate = energy_balance.singleton.energy_balance_to_melt_rate(
                 self.__total_energy_balance
             )
+            # TODO NO NEGATIVE MELT RATE, DOES IT AFFECT SOMETHING ELSE?
+            self.__theoretical_melt_rate = 0 if self.__theoretical_melt_rate < 0 else self.__theoretical_melt_rate
 
     @property
     def datetime(self):
