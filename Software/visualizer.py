@@ -214,6 +214,16 @@ class Visualize:
         
         self.show_save_and_close_plot("energy_balance", save_name=save_name)
 
+    @staticmethod
+    def _color_generator():
+        colors = ["blue", "red", "green"]
+        i = 0
+        while True:
+            if i == len(colors)-1:
+                i = 0
+            yield colors[i]
+            i += 1
+
     def plot_scatter_measured_and_component(self, years_to_plot, component, save_name=None):
         # could be further generalized of course .. but this ist just needed for the thesis here
 
@@ -302,13 +312,15 @@ class Visualize:
     def plot_components(self, components1: tuple, components1_unit, components2: tuple = None, components2_unit = None, use_summed_measurements=False, save_name=None):
         self.initialize_plot(None)
 
+        color_generator = self._color_generator()
+
         y_dates = multiple_measurements.singleton.get_all_of("datetime",
                                                              use_summed_measurements=use_summed_measurements)
 
         for component in components1:
             x_vals = multiple_measurements.singleton.get_all_of(component,
                                                                  use_summed_measurements=use_summed_measurements)
-            self.ax.plot(y_dates, x_vals, label=component, color="blue")
+            self.ax.plot(y_dates, x_vals, label=component, color=next(color_generator))
 
         self.ax.legend(loc="upper left")
         self.ax.set_ylabel(components1_unit)

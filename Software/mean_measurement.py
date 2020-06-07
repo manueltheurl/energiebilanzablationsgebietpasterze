@@ -42,8 +42,10 @@ class MeanMeasurement:
         self.__actual_melt_water_per_sqm = None
         self.__theoretical_melt_water_per_sqm = None
 
-        self.__snow_depth = None
-        self.__snow_depth_delta = None
+        self.__snow_depth_natural = None
+        self.__snow_depth_artificial = 0
+        self.__snow_depth_delta_natural = None
+        self.__snow_depth_delta_artificial = 0
 
         self.contains_sw_in = 0
         self.contains_sw_out = 0
@@ -56,7 +58,8 @@ class MeanMeasurement:
         self.contains_ablation = 0
         self.contains_cumulated_ablation = 0
         self.contains_theoretical_melt_rate = 0
-        self.contains_snow_depth = 0
+        self.contains_snow_depth_natural = 0
+        self.contains_snow_depth_artificial = 0
 
         if cfg["PRO_VERSION"]:
             self.__temperature = None
@@ -146,19 +149,33 @@ class MeanMeasurement:
             else:
                 self.__cumulated_ablation += single_measurement.cumulated_ablation
 
-        if single_measurement.snow_depth is not None:
-            self.contains_snow_depth += 1
-            if self.__snow_depth is None:
-                self.__snow_depth = single_measurement.snow_depth
+        if single_measurement.snow_depth_natural is not None:
+            self.contains_snow_depth_natural += 1
+            if self.__snow_depth_natural is None:
+                self.__snow_depth_natural = single_measurement.snow_depth_natural
             else:
-                self.__snow_depth += single_measurement.snow_depth
+                self.__snow_depth_natural += single_measurement.snow_depth_natural
 
-        if single_measurement.snow_depth_delta is not None:
-            self.contains_snow_depth += 1
-            if self.__snow_depth_delta is None:
-                self.__snow_depth_delta = single_measurement.snow_depth_delta
+        if single_measurement.snow_depth_delta_natural is not None:
+            self.contains_snow_depth_natural += 1
+            if self.__snow_depth_delta_natural is None:
+                self.__snow_depth_delta_natural = single_measurement.snow_depth_delta_natural
             else:
-                self.__snow_depth_delta += single_measurement.snow_depth_delta
+                self.__snow_depth_delta_natural += single_measurement.snow_depth_delta_natural
+
+        if single_measurement.snow_depth_artificial is not None:
+            self.contains_snow_depth_artificial += 1
+            if self.__snow_depth_artificial is None:
+                self.__snow_depth_artificial = single_measurement.snow_depth_artificial
+            else:
+                self.__snow_depth_artificial += single_measurement.snow_depth_artificial
+
+        if single_measurement.snow_depth_delta_artificial is not None:
+            self.contains_snow_depth_artificial += 1
+            if self.__snow_depth_delta_artificial is None:
+                self.__snow_depth_delta_artificial = single_measurement.snow_depth_delta_artificial
+            else:
+                self.__snow_depth_delta_artificial += single_measurement.snow_depth_delta_artificial
 
         if single_measurement.total_energy_balance is not None:
             self.contains_total_energy_balance += 1
@@ -204,8 +221,11 @@ class MeanMeasurement:
         if self.__ablation is not None:
             self.__ablation /= self.contains_ablation
 
-        if self.__snow_depth is not None:
-            self.__snow_depth /= self.contains_snow_depth
+        if self.__snow_depth_natural is not None:
+            self.__snow_depth_natural /= self.contains_snow_depth_natural
+
+        if self.__snow_depth_artificial is not None:
+            self.__snow_depth_artificial /= self.contains_snow_depth_artificial
 
         if self.__cumulated_ablation is not None:
             self.__cumulated_ablation /= self.contains_cumulated_ablation
@@ -308,22 +328,43 @@ class MeanMeasurement:
         return self.__total_energy_balance
 
     @property
-    def snow_depth(self):
-        return self.__snow_depth
-
-    @snow_depth.setter
-    def snow_depth(self, new_value):
-        if new_value is not None:
-            self.__snow_depth = new_value
+    def total_snow_depth(self):
+        return self.__snow_depth_natural + self.__snow_depth_artificial
 
     @property
-    def snow_depth_delta(self):
-        return self.__snow_depth_delta
+    def snow_depth_natural(self):
+        return self.__snow_depth_natural
 
-    @snow_depth_delta.setter
-    def snow_depth_delta(self, new_value):
+    @snow_depth_natural.setter
+    def snow_depth_natural(self, new_value):
         if new_value is not None:
-            self.__snow_depth_delta = new_value
+            self.__snow_depth_natural = new_value
+
+    @property
+    def snow_depth_artificial(self):
+        return self.__snow_depth_artificial
+
+    @snow_depth_artificial.setter
+    def snow_depth_artificial(self, new_value):
+        if new_value is not None:
+            self.__snow_depth_artificial = new_value
+
+    @property
+    def snow_depth_delta_natural(self):
+        return self.__snow_depth_delta_natural
+
+    @property
+    def snow_depth_delta_artificial(self):
+        return self.__snow_depth_delta_artificial
+
+    # @property
+    # def total_snow_depth_delta(self):
+    #     return self.__snow_depth_delta_natural + self.__snow_depth_delta_artificial
+
+    # @snow_depth_delta.setter
+    # def snow_depth_delta(self, new_value):
+    #     if new_value is not None:
+    #         self.__snow_depth_delta = new_value
 
     @property
     def actual_melt_water_per_sqm(self):

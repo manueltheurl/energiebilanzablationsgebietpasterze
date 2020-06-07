@@ -37,8 +37,10 @@ class SingleMeasurement:
         self.__zenith_angle = zenith_angle
         self.__tiltx = tiltx
         self.__tilty = tilty
-        self.__snow_depth = snow_depth  # WARNING, some crazy data here
-        self.__snow_depth_delta = None  # increasing of snow height from last measurement to this measurement
+        self.__snow_depth_natural = snow_depth  # WARNING, some crazy data here unedited
+        self.__snow_depth_delta_natural = None  # increasing of snow y data here
+        self.__snow_depth_artificial = 0
+        self.__snow_depth_delta_artificial = 0
         self.__ablation = ablation  # this represents the ice thickness at the point of measurement
         self.__cumulated_ablation = None
         self.__theoretical_melt_rate = None
@@ -62,7 +64,7 @@ class SingleMeasurement:
                 self.__wind_speed,
                 self.__temperature,
                 self.__energy_balance_components["lw_radiation_out"],
-                self.__snow_depth
+                self.total_snow_depth
             )
 
         if None not in [self.__temperature, self.__rel_moisture, self.__wind_speed, self.__energy_balance_components["lw_radiation_out"]]:
@@ -71,7 +73,7 @@ class SingleMeasurement:
                 self.__rel_moisture,
                 self.__wind_speed,
                 self.__energy_balance_components["lw_radiation_out"],
-                self.__snow_depth
+                self.total_snow_depth
             )
 
         if None not in [None]:
@@ -168,22 +170,44 @@ class SingleMeasurement:
         return self.__tilty
 
     @property
-    def snow_depth(self):
-        return self.__snow_depth
-
-    @snow_depth.setter
-    def snow_depth(self, new_value):
-        if new_value is not None:
-            self.__snow_depth = new_value
+    def total_snow_depth(self):
+        return self.__snow_depth_natural + self.__snow_depth_artificial
 
     @property
-    def snow_depth_delta(self):
-        return self.__snow_depth_delta
+    def snow_depth_natural(self):
+        return self.__snow_depth_natural
 
-    @snow_depth_delta.setter
-    def snow_depth_delta(self, new_value):
+    @snow_depth_natural.setter
+    def snow_depth_natural(self, new_value):
         if new_value is not None:
-            self.__snow_depth_delta = new_value
+            self.__snow_depth_natural = new_value
+
+    @property
+    def snow_depth_artificial(self):
+        return self.__snow_depth_natural
+
+    @snow_depth_artificial.setter
+    def snow_depth_artificial(self, new_value):
+        if new_value is not None:
+            self.__snow_depth_artificial = new_value
+
+    @property
+    def snow_depth_delta_natural(self):
+        return self.__snow_depth_delta_natural
+
+    @snow_depth_delta_natural.setter
+    def snow_depth_delta_natural(self, new_value):
+        if new_value is not None:
+            self.__snow_depth_delta_natural = new_value
+
+    @property
+    def snow_depth_delta_artificial(self):
+        return self.__snow_depth_delta_artificial
+
+    @snow_depth_delta_artificial.setter
+    def snow_depth_delta_artificial(self, new_value):
+        if new_value is not None:
+            self.__snow_depth_delta_artificial = new_value
 
     @property
     def swe_input_from_snow(self):

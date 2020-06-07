@@ -91,7 +91,7 @@ class NoGuiManager:
             multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for_scope()
 
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
-            multiple_measurements.singleton.set_initial_snow_height_to_zero()
+            # multiple_measurements.singleton.set_initial_snow_height_to_zero()  # not needed if not using model
 
             multiple_measurements.singleton.simulate()
 
@@ -99,7 +99,7 @@ class NoGuiManager:
             # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
             visualizer.singleton.show_plots = True
-            visualizer.singleton.plot_components(("snow_depth",), "m", ("theoretical_melt_water_per_sqm",), "l",  use_summed_measurements=True)
+            visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"), "m", ("theoretical_melt_water_per_sqm",), "l",  use_summed_measurements=True)
             # visualizer.singleton.plot_single_component("theoretical_melt_water_per_sqm", "m", use_summed_measurements=True)
 
 
