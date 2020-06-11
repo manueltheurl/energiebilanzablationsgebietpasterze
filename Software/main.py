@@ -54,16 +54,16 @@ class NoGuiManager:
         if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
             res = dt.timedelta(days=1)
             #
-            reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
-                                                              endtime=self.endTime,
-                                                              resolution_by_percentage=100,
-                                                              resolution_by_time_interval=None)
-
+            # reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
+            #                                                   endtime=self.endTime,
+            #                                                   resolution_by_percentage=100,
+            #                                                   resolution_by_time_interval=None)
+            #
             # with open(self.pickle_file_name, 'wb') as f:
             #     pickle.dump(multiple_measurements.singleton, f)
             #
-            # with open(self.pickle_file_name, 'rb') as f:
-            #     multiple_measurements.singleton = pickle.load(f)
+            with open(self.pickle_file_name, 'rb') as f:
+                multiple_measurements.singleton = pickle.load(f)
 
 
             # multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
@@ -90,15 +90,22 @@ class NoGuiManager:
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
             # multiple_measurements.singleton.set_initial_snow_height_to_zero()  # not needed if not using model
 
-            multiple_measurements.singleton.simulate()
+            radiations_at_station = pickle.load(open("pickle_radiations_at_station", "rb"))
+            height_level_objects = pickle.load(open("pickle_height_level_objects", "rb"))
+
+            multiple_measurements.singleton.simulate(height_level_objects, radiations_at_station)
 
             # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
             # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
             visualizer.singleton.show_plots = True
-            visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"),
-                                                 r"$m$", ("theoretical_melt_water_per_sqm",), r"$l/m^2$",
-                                                 use_summed_measurements=True, save_name="pasterze_0_with_albedo")
+
+            visualizer.singleton.plot_components_lvls(height_level_objects, use_summed_measurements=True,
+                                                      save_name="height_lvls")
+
+            # visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"),
+            #                                      r"$m$", ("theoretical_melt_water_per_sqm",), r"$l/m^2$",
+            #                                      use_summed_measurements=True, save_name="pasterze_0_with_albedo")
 
             # visualizer.singleton.plot_components(("total_snow_depth",),
             #                                      r"$m$", ("albedo",), "",

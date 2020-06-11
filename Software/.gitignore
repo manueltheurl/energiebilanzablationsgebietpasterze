@@ -5,3 +5,5 @@ plots
 PAS_10min.csv
 downloads
 *.pkl
+tmp
+outputData

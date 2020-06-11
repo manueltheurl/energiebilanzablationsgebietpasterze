@@ -132,6 +132,10 @@ class Measurement:
             return self._energy_balance_components["sw_radiation_in"] + self._simulate_global_brightening
         return self._energy_balance_components["sw_radiation_in"]
 
+    @sw_radiation_in.setter
+    def sw_radiation_in(self, value):
+        self._energy_balance_components["sw_radiation_in"] = value
+
     @property
     def sw_radiation_out(self):
         return self._energy_balance_components["sw_radiation_out"]

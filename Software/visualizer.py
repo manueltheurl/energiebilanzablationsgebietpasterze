@@ -19,6 +19,7 @@ import numpy as np
 from scipy import optimize
 import functions as fc
 import calendar
+from height_level import HeightLevel
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
 
@@ -226,7 +227,9 @@ class Visualize:
 
     @staticmethod
     def _color_generator():
-        colors = ["blue", "red", "green"]
+        colors = ["blue", "red", "green", "dimgray", "lightgray", "rosybrown", "lightcoral", "darkorange",
+                  "darkgoldenrod", "darkkhaki", "olive", "darkseagreen", "mediumaquamarine", "rebeccapurple", "pink",
+                  "darkblue", "black"]
         i = 0
         while True:
             if i == len(colors):
@@ -343,6 +346,29 @@ class Visualize:
                 ax2.plot(y_dates, x_vals, label=self._pretty_label(component), color="orange")
                 ax2.legend(loc="upper right")
                 ax2.set_ylabel(components2_unit)
+
+        self.modify_axes()
+        self.show_save_and_close_plot(None, save_name=save_name)
+
+    def plot_components_lvls(self, height_lvls, use_summed_measurements=True, save_name=None):
+        self.initialize_plot(None)
+
+        color_generator = self._color_generator()
+
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
+
+        for height_lvl in height_lvls:
+            height_lvl: HeightLevel
+            snow_heights = []
+            for measure in height_lvl.simulated_measurements:
+                snow_heights.append(measure.total_snow_depth)
+
+            self.ax.plot(y_dates, snow_heights, label=self._pretty_label(str(height_lvl.lower_border)),
+                         color=next(color_generator))
+
+        self.ax.legend(loc="upper left")
+        self.ax.set_ylabel("Total snow height [m]")
 
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)

@@ -6,7 +6,9 @@ import csv
 from single_measurement import SingleMeasurement, MeanMeasurement
 from snow_to_swe_model import SnowToSwe
 import numpy as np
-
+import pickle
+from height_level import HeightLevel
+import copy
 
 class MultipleMeasurements:
     singleton_created = False
@@ -165,68 +167,78 @@ class MultipleMeasurements:
                 except TypeError:
                     pass
 
-    def simulate(self):
+    def simulate(self, height_level_objects, radiations_at_station):
         """
         Lets do magic
         """
 
-        total_natural_snowings_in_period = 0
-        total_artificial_snowings_in_period = 0
+        # TODO DEL
+        for x in height_level_objects:
+            x.simulated_measurements = []
 
         resolution = self.get_time_resolution(of="summed")
         # snow_to_swe_generator = SnowToSwe(resolution).convert_generator(len(self.__current_mean_index_scope))
-        actual_natural_snow_height = 0
-        actual_artificial_snow_height = 0
+
+        # temporary data, not worth and good to save in height level object
+        current_height_lvl_natural_snow_height = [0]*len(height_level_objects)
+        current_height_lvl_artificial_snow_height = [0]*len(height_level_objects)
 
         for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
             obj: MeanMeasurement
 
-            if obj.snow_depth_delta_natural > 0:  # only on snow accumulation add the snow height
-                # print("Natural snow event: ", obj.snow_depth_delta_natural)
-                actual_natural_snow_height += obj.snow_depth_delta_natural
-                total_natural_snowings_in_period += obj.snow_depth_delta_natural
+            """ Adapt radiation """
+            day_of_year = obj.datetime.timetuple().tm_yday if obj.datetime.timetuple().tm_yday < 366 else 365
+            radiation_scale_factor = obj.sw_radiation_in/radiations_at_station[day_of_year]
 
-            if obj.snow_depth_delta_artificial is not None and obj.snow_depth_delta_artificial > 0:  # only on snow accumulation add the snow height
-                # print("Artificial snow event: ", obj.snow_depth_delta_artificial)
-                actual_artificial_snow_height += obj.snow_depth_delta_artificial
-                total_artificial_snowings_in_period += obj.snow_depth_delta_artificial
+            for lvl_nr, height_level in enumerate(height_level_objects):
+                measure_obj = copy.deepcopy(obj)
 
-            if actual_natural_snow_height+actual_artificial_snow_height > 0:
-                obj.change_albedo(float(cfg["SNOW_ALBEDO"]))
+                if measure_obj.snow_depth_delta_natural > 0:  # only on snow accumulation add the snow height
+                    current_height_lvl_natural_snow_height[lvl_nr] += measure_obj.snow_depth_delta_natural
 
-            if False:
-                next(snow_to_swe_generator)
-                snow_swe = snow_to_swe_generator.send(actual_snow_height)
-            else:
-                # conversion from m snow to liters water equivalent
-                snow_swe = (actual_natural_snow_height+actual_artificial_snow_height) * 1000 * float(cfg["SNOW_SWE_FACTOR"])  # TODO what is a legimit factor here?
+                """ Different arificial snowing per height level """
+                if measure_obj.snow_depth_delta_artificial is not None and measure_obj.snow_depth_delta_artificial > 0:  # only on snow accumulation add the snow height
+                    current_height_lvl_artificial_snow_height[lvl_nr] += measure_obj.snow_depth_delta_artificial
 
-            obj.calculate_energy_balance()
-            obj.calculate_theoretical_melt_rate()
-            obj.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
+                height_level: HeightLevel
+                measure_obj.sw_radiation_in = height_level.mean_radiation[day_of_year] * radiation_scale_factor
 
-            if snow_swe:
-                if obj.theoretical_melt_water_per_sqm > 0:
-                    snow_depth_scale_factor = (snow_swe-obj.theoretical_melt_water_per_sqm)/snow_swe
-                    snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
-                    # print("Reducing snow height by factor", snow_depth_scale_factor)
-                    actual_natural_snow_height = actual_natural_snow_height * snow_depth_scale_factor
-                    actual_artificial_snow_height = actual_artificial_snow_height * snow_depth_scale_factor
-            else:
-                pass
-                # actual_snow_height = 0
+                if current_height_lvl_natural_snow_height[lvl_nr]+current_height_lvl_artificial_snow_height[lvl_nr] > 0:
+                    measure_obj.change_albedo(float(cfg["SNOW_ALBEDO"]))
 
-            obj.snow_depth_natural = actual_natural_snow_height  # overwrite values for plot as well
-            obj.snow_depth_artificial = actual_artificial_snow_height  # overwrite values for plot as well
+                if False:
+                    next(snow_to_swe_generator)
+                    snow_swe = snow_to_swe_generator.send(actual_snow_height)
+                else:
+                    # conversion from m snow to liters water equivalent
+                    # TODO ratio natural artificial
+                    snow_swe = (current_height_lvl_natural_snow_height[lvl_nr]+current_height_lvl_artificial_snow_height[lvl_nr]) * 1000 * float(cfg["SNOW_SWE_FACTOR"])  # TODO what is a legimit factor here?
 
-            # print(obj.datetime, "Snow Swe:", snow_swe, "Meltwater:", obj.theoretical_melt_water_per_sqm,
-            #       "Current natural snow height:", actual_natural_snow_height,
-            #       "Current artificial snow height:", actual_artificial_snow_height)
+                measure_obj.calculate_energy_balance()
+                measure_obj.calculate_theoretical_melt_rate()
+                measure_obj.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
+
+                if snow_swe:
+                    if measure_obj.theoretical_melt_water_per_sqm > 0:
+                        snow_depth_scale_factor = (snow_swe-measure_obj.theoretical_melt_water_per_sqm)/snow_swe
+                        snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
+                        # print("Reducing snow height by factor", snow_depth_scale_factor)
+                        current_height_lvl_natural_snow_height[lvl_nr] *= snow_depth_scale_factor
+                        current_height_lvl_artificial_snow_height[lvl_nr] *= snow_depth_scale_factor
+                else:
+                    pass
+                    # actual_snow_height = 0
+
+                measure_obj.snow_depth_natural = current_height_lvl_natural_snow_height[lvl_nr]  # overwrite values for plot as well
+                measure_obj.snow_depth_artificial = current_height_lvl_artificial_snow_height[lvl_nr]  # overwrite values for plot as well
+
+                height_level.simulated_measurements.append(measure_obj)
 
         years_of_measurement = (self.get_date_of_last_measurement(of="summed") - self.get_date_of_first_measurement(of="summed")).total_seconds()/60/60/24/365.244
 
-        print("Total natural snowings per year:", total_natural_snowings_in_period/years_of_measurement)
-        print("Total artificial snowings per year:", total_artificial_snowings_in_period/years_of_measurement)
+        # for height_level in height_level_objects:
+        #     print(int(height_level.lower_border), height_level.get_total_natural_snowings()/years_of_measurement)
+        #     print(int(height_level.lower_border), height_level.get_total_artificial_snowings()/years_of_measurement)
 
     def convert_energy_balance_to_water_rate_equivalent_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
