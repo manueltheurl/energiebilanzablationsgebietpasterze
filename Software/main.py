@@ -65,20 +65,16 @@ class NoGuiManager:
             with open(self.pickle_file_name, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
 
-
             # multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
             #     starttime=dt.datetime(2016, 11, 1))
 
-            # TODO if this is really going to be a bigger project, maybe summarize single and mean measurement (inheritance) for making it possible to calc the energy balance for a mean measurement as well
-            # Maybe just treat them exactly alike .. single measurement would then have a start and ending time but that would not even be bad and would make it a bit easier probably
-
             # multiple_measurements.singleton.cumulate_ablation_for_scope()
             multiple_measurements.singleton.correct_snow_measurements_for_scope()
-
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-            multiple_measurements.singleton.simulate_artificial_snowing()
 
-            # multiple_measurements.singleton.change_albedo_for_snowy_times()
+            # TODO maybe this artificial snowing simulation has to be done later, cause when temperature is simulated
+            #  according to the height levels, snowing will be possible differently in the separate height levels
+            # multiple_measurements.singleton.simulate_artificial_snowing()  # for single measurements
 
             # Now do the artificial part
             # snow events, albedo change, bulk coefficient change

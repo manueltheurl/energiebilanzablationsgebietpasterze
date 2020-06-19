@@ -364,7 +364,8 @@ class Visualize:
             for measure in height_lvl.simulated_measurements:
                 snow_heights.append(measure.total_snow_depth)
 
-            self.ax.plot(y_dates, snow_heights, label=self._pretty_label(str(height_lvl.lower_border)),
+            self.ax.plot(y_dates, snow_heights, label=self._pretty_label(
+                "Lvl mid height: " + str(int(height_lvl.height)) + "m"),
                          color=next(color_generator))
 
         self.ax.legend(loc="upper left")

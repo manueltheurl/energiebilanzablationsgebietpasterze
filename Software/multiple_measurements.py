@@ -114,7 +114,7 @@ class MultipleMeasurements:
 
     def simulate_artificial_snowing(self):
         """
-        TODO
+        TODO deprecated?
         """
         minute_resolution = self.get_time_resolution()
 
@@ -123,7 +123,7 @@ class MultipleMeasurements:
 
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             try:
-                if obj.datetime.month in [int(month) for month in cfg["MONTHS_TO_SNOW_ARTIFICIALLY"]] and obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
+                if obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
                     obj.snow_depth_delta_artificial = artificial_snowing_in_m_per_time_step
             except TypeError:
                 pass
@@ -155,56 +155,56 @@ class MultipleMeasurements:
         first_measurement.snow_depth_delta_natural = 0
         first_measurement.snow_depth_delta_artificial = 0
 
-    def change_albedo_for_snowy_times(self):
-        """
-        TODO DEPRECATED
-        """
-
-        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            if obj.total_snow_depth > 0:
-                try:
-                    obj.sw_radiation_out = -obj.sw_radiation_in * float(cfg["SNOW_ALBEDO"])
-                except TypeError:
-                    pass
-
     def simulate(self, height_level_objects, radiations_at_station):
         """
         Lets do magic
         """
 
-        # TODO DEL
+        # TODO DEL later when pickle file new
         for x in height_level_objects:
             x.simulated_measurements = []
 
-        resolution = self.get_time_resolution(of="summed")
+        minute_resolution = self.get_time_resolution(of="summed")
+
         # snow_to_swe_generator = SnowToSwe(resolution).convert_generator(len(self.__current_mean_index_scope))
 
         # temporary data, not worth and good to save in height level object
         current_height_lvl_natural_snow_height = [0]*len(height_level_objects)
         current_height_lvl_artificial_snow_height = [0]*len(height_level_objects)
+        current_height_lvl_time_of_last_snow_fall = [None]*len(height_level_objects)
 
-        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
-            obj: MeanMeasurement
+        for __obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            __obj: MeanMeasurement
 
             """ Adapt radiation """
-            day_of_year = obj.datetime.timetuple().tm_yday if obj.datetime.timetuple().tm_yday < 366 else 365
-            radiation_scale_factor = obj.sw_radiation_in/radiations_at_station[day_of_year]
+            day_of_year = __obj.datetime.timetuple().tm_yday if __obj.datetime.timetuple().tm_yday < 366 else 365
+            radiation_scale_factor = __obj.sw_radiation_in/radiations_at_station[day_of_year]
 
             for lvl_nr, height_level in enumerate(height_level_objects):
-                measure_obj = copy.deepcopy(obj)
+                height_level: HeightLevel
+
+                measure_obj = copy.deepcopy(__obj)
+
+                """ Adapt meteorologic values to the height """
+                measure_obj.adapt_meteorological_values_in_respect_to_height_difference(height_level.height-float(cfg["AWS_STATION_HEIGHT"]))
+
+                """ Now that temperature is adapted, lets snow artificially """
+                if measure_obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
+                    measure_obj.snow_depth_delta_artificial = float(cfg["MAX_ARTIFICIAL_SNOW_PER_DAY"])*minute_resolution/60/24
 
                 if measure_obj.snow_depth_delta_natural > 0:  # only on snow accumulation add the snow height
                     current_height_lvl_natural_snow_height[lvl_nr] += measure_obj.snow_depth_delta_natural
+                    current_height_lvl_time_of_last_snow_fall[lvl_nr] = measure_obj.datetime  # TODO xxthis combine somehow
 
-                """ Different arificial snowing per height level """
+                """ Different artificial snowing per height level """
                 if measure_obj.snow_depth_delta_artificial is not None and measure_obj.snow_depth_delta_artificial > 0:  # only on snow accumulation add the snow height
                     current_height_lvl_artificial_snow_height[lvl_nr] += measure_obj.snow_depth_delta_artificial
+                    current_height_lvl_time_of_last_snow_fall[lvl_nr] = measure_obj.datetime  # TODO xxthis combine somehow
 
-                height_level: HeightLevel
                 measure_obj.sw_radiation_in = height_level.mean_radiation[day_of_year] * radiation_scale_factor
 
                 if current_height_lvl_natural_snow_height[lvl_nr]+current_height_lvl_artificial_snow_height[lvl_nr] > 0:
-                    measure_obj.change_albedo(float(cfg["SNOW_ALBEDO"]))
+                    measure_obj.simulate_albedo((measure_obj.datetime-current_height_lvl_time_of_last_snow_fall[lvl_nr]).total_seconds()/60/60/24)
 
                 if False:
                     next(snow_to_swe_generator)

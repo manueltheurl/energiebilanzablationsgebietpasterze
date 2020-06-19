@@ -1,6 +1,9 @@
 from datetime import datetime as dt
 import energy_balance
 from manage_config import cfg
+import math as m
+
+# TODO maybe make another subclass "ArtificialMeasurement"  or better not?  with just the artificial methods
 
 
 class Measurement:
@@ -42,8 +45,25 @@ class Measurement:
         self._tiltx = tiltx
         self._tilty = tilty
 
-    def change_albedo(self, new_albedo):
-        self._energy_balance_components["sw_radiation_out"] = -self._energy_balance_components["sw_radiation_in"] * new_albedo
+    def simulate_albedo(self, days_since_last_snowfall):
+        """
+        Based on J. Oerlemans, W. H . KNAP: A 1 year record of global radiation and albedo in the ablation zone of
+        Morteratschgletscher, Switzerland -> equation 4.
+        """
+
+        alpha_firn = 0.53
+        alpha_frsnow = 0.75
+        t_star = 21.9  # host fast the snow albedo approaches the firn albedo
+        albedo = alpha_firn + (alpha_frsnow-alpha_firn) * m.exp(-days_since_last_snowfall/t_star)
+        self._energy_balance_components["sw_radiation_out"] = -self._energy_balance_components["sw_radiation_in"] * albedo
+
+    def adapt_meteorological_values_in_respect_to_height_difference(self, height_difference_in_m):
+        """
+        height_difference is positive if measurement should be higher up
+        """
+        # TODO which formulas, more values? air pressure as well?
+        deg_per_km = 2
+        self._temperature -= deg_per_km * height_difference_in_m / 1000
 
     def calculate_energy_balance(self, simulate_global_dimming_brightening=0):
         # if self._total_energy_balance is not None:  # so that we wont recalculate for nothing

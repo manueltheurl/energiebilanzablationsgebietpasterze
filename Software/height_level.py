@@ -30,3 +30,7 @@ class HeightLevel:
             if measure_obj.snow_depth_delta_artificial is not None and measure_obj.snow_depth_delta_artificial > 0:  # only on snow accumulation add the snow height
                 total_artificial_snowings_in_period += measure_obj.snow_depth_delta_artificial
         return total_artificial_snowings_in_period
+
+    @property
+    def height(self):
+        return (self.upper_border+self.lower_border)/2
