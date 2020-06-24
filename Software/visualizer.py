@@ -20,6 +20,8 @@ from scipy import optimize
 import functions as fc
 import calendar
 from height_level import HeightLevel
+import shapefile as shp
+from descartes import PolygonPatch
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
 
@@ -350,7 +352,7 @@ class Visualize:
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_components_lvls(self, height_lvls, use_summed_measurements=True, save_name=None):
+    def plot_components_lvls(self, height_lvls, components1: tuple, components1_unit, components2: tuple = None, components2_unit = None, use_summed_measurements=True, save_name=None):
         self.initialize_plot(None)
 
         color_generator = self._color_generator()
@@ -358,20 +360,42 @@ class Visualize:
         y_dates = multiple_measurements.singleton.get_all_of("datetime",
                                                              use_summed_measurements=use_summed_measurements)
 
-        for height_lvl in height_lvls:
-            height_lvl: HeightLevel
-            snow_heights = []
-            for measure in height_lvl.simulated_measurements:
-                snow_heights.append(measure.total_snow_depth)
+        for component in components1:
+            for height_lvl in height_lvls:
+                height_lvl: HeightLevel
+                snow_heights = []
+                for measure in height_lvl.simulated_measurements:
+                    snow_heights.append(getattr(measure, component))
 
-            self.ax.plot(y_dates, snow_heights, label=self._pretty_label(
-                "Lvl mid height: " + str(int(height_lvl.height)) + "m"),
-                         color=next(color_generator))
+                self.ax.plot(y_dates, snow_heights, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m: " + component),
+                             color=next(color_generator))
 
-        self.ax.legend(loc="upper left")
-        self.ax.set_ylabel("Total snow height [m]")
+        self.ax.legend(loc="upper left", fontsize=7)
+        self.ax.set_ylabel(components1_unit)
 
         self.modify_axes()
+        self.show_save_and_close_plot(None, save_name=save_name)
+
+    def plot_shape(self, height_lvls, save_name=None):
+        self.initialize_plot(None)
+
+        self.ax.set_xlim([398000, 405500])
+        self.ax.set_ylim([212500, 225000])
+        self.ax.set_aspect("equal")
+
+        color_generator = self._color_generator()
+
+        # TODO make colorbar and choose color according to artificial snowing necessary
+
+        for height_lvl in height_lvls:
+            height_lvl: HeightLevel
+
+            shp_file = shp.Reader(height_lvl.shape_layer)
+
+            color = next(color_generator)
+            for shape in shp_file.shapes():
+                self.ax.add_patch(PolygonPatch(shape.__geo_interface__, fc=color, ec="black"))
+
         self.show_save_and_close_plot(None, save_name=save_name)
 
     def plot_temperature_and_water_equivalent(self, use_summed_measurements=False, save_name=None):

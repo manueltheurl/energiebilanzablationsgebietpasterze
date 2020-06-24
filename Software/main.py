@@ -86,18 +86,34 @@ class NoGuiManager:
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
             # multiple_measurements.singleton.set_initial_snow_height_to_zero()  # not needed if not using model
 
-            radiations_at_station = pickle.load(open("pickle_radiations_at_station", "rb"))
-            height_level_objects = pickle.load(open("pickle_height_level_objects", "rb"))
+            height_level_res = 500
 
+            radiations_at_station = pickle.load(open(f"pickle_radiations_at_station_res_{height_level_res}", "rb"))
+            height_level_objects = pickle.load(open(f"pickle_height_level_objects_res_{height_level_res}", "rb"))
+
+            visualizer.singleton.show_plots = True
+
+            # visualizer.singleton.plot_shape(height_level_objects)
             multiple_measurements.singleton.simulate(height_level_objects, radiations_at_station)
 
             # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
             # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
-            visualizer.singleton.show_plots = True
+            # visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_depth", ), "m",
+            #                                           use_summed_measurements=True,
+            #                                           save_name="height_lvls")
 
-            visualizer.singleton.plot_components_lvls(height_level_objects, use_summed_measurements=True,
-                                                      save_name="height_lvls")
+            # visualizer.singleton.plot_components_lvls(height_level_objects, ("air_pressure",), "m",
+            #                                           use_summed_measurements=True,
+            #                                           save_name="air_pressure")
+
+            # visualizer.singleton.plot_components_lvls(height_level_objects, ("temperature",), "m",
+            #                                           use_summed_measurements=True,
+            #                                           save_name="temperature")
+
+            # visualizer.singleton.plot_components_lvls(height_level_objects, ("temperature",), "m",
+            #                                           use_summed_measurements=True,
+            #                                           save_name="temperature")
 
             # visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"),
             #                                      r"$m$", ("theoretical_melt_water_per_sqm",), r"$l/m^2$",
@@ -106,6 +122,11 @@ class NoGuiManager:
             # visualizer.singleton.plot_components(("total_snow_depth",),
             #                                      r"$m$", ("albedo",), "",
             #                                      use_summed_measurements=True)
+
+            # visualizer.singleton.plot_components_lvls(height_level_objects, ("snow_depth_delta_artificial",), "m",
+            #                                           use_summed_measurements=True,
+            #                                           save_name="snow_depth_delta_artificial")
+
 
 
 

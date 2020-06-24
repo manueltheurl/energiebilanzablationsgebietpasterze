@@ -40,7 +40,7 @@ class Measurement:
         self._rel_moisture = rel_moisture  # in percent*100 .. e.g. 67
         self._wind_speed = wind_speed
         self._wind_direction = wind_direction
-        self._air_pressure = air_pressure
+        self._air_pressure = air_pressure  # pa
         self._zenith_angle = zenith_angle
         self._tiltx = tiltx
         self._tilty = tilty
@@ -64,6 +64,9 @@ class Measurement:
         # TODO which formulas, more values? air pressure as well?
         deg_per_km = 2
         self._temperature -= deg_per_km * height_difference_in_m / 1000
+
+        hpa_for_100_meters = 12
+        self._air_pressure -= height_difference_in_m * hpa_for_100_meters  # 100 meter and hecto cancel each other out
 
     def calculate_energy_balance(self, simulate_global_dimming_brightening=0):
         # if self._total_energy_balance is not None:  # so that we wont recalculate for nothing

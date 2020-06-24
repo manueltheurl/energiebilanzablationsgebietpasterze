@@ -160,10 +160,6 @@ class MultipleMeasurements:
         Lets do magic
         """
 
-        # TODO DEL later when pickle file new
-        for x in height_level_objects:
-            x.simulated_measurements = []
-
         minute_resolution = self.get_time_resolution(of="summed")
 
         # snow_to_swe_generator = SnowToSwe(resolution).convert_generator(len(self.__current_mean_index_scope))
