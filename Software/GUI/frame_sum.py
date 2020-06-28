@@ -13,7 +13,7 @@ import datetime
 import multiple_measurements
 import frame_plot
 import datetime as dt
-import mean_measurement
+import single_measurement
 from manage_config import cfg
 
 

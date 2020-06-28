@@ -22,6 +22,8 @@ import calendar
 from height_level import HeightLevel
 import shapefile as shp
 from descartes import PolygonPatch
+import matplotlib.colors
+import matplotlib.colorbar
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
 
@@ -57,6 +59,7 @@ class Visualize:
         self.accumulate_plots = False
         self.show_plots = False
 
+        self.fig = None
         self.ax = None
 
     plot_type_initialized = {
@@ -96,8 +99,8 @@ class Visualize:
                 plt.close()  # should one be open
 
         if yet_to_initialize or not bool(cfg["PRO_VERSION"]):
-            fig = plt.figure(figsize=(14, 9))
-            self.ax = fig.add_subplot(111)
+            self.fig = plt.figure(figsize=(14, 9))
+            self.ax = self.fig.add_subplot(111)
 
     def modify_axes(self):
         years = mdates.YearLocator()
@@ -383,18 +386,29 @@ class Visualize:
         self.ax.set_ylim([212500, 225000])
         self.ax.set_aspect("equal")
 
-        color_generator = self._color_generator()
+        ax_colorbar = self.fig.add_axes([0.81, 0.11, 0.02, 0.76])  # left, bottom, width, height
+        snr_cmap = matplotlib.cm.get_cmap('winter_r')
 
-        # TODO make colorbar and choose color according to artificial snowing necessary
+        vals_to_plot = [x.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters() for x in
+                        height_lvls]
 
-        for height_lvl in height_lvls:
+        # normalize value between 0 and max speed to 0 and 1 for cmap
+        norm = matplotlib.colors.Normalize(vmin=0, vmax=max(vals_to_plot))
+        cb1 = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
+                                               norm=norm,
+                                               orientation='vertical', extend="max")
+        cb1.set_label(r'Mean yearly water consumption of snow canons per $m^2$')
+
+        for i, height_lvl in enumerate(height_lvls):
             height_lvl: HeightLevel
 
-            shp_file = shp.Reader(height_lvl.shape_layer)
+            shp_file = shp.Reader(height_lvl.shape_layer_path)
 
-            color = next(color_generator)
             for shape in shp_file.shapes():
-                self.ax.add_patch(PolygonPatch(shape.__geo_interface__, fc=color, ec="black"))
+                color = snr_cmap(norm(vals_to_plot[i])) if vals_to_plot[i] else "white"
+                self.ax.add_patch(PolygonPatch(shape.__geo_interface__,
+                                               fc=color,
+                                               ec="gray"))
 
         self.show_save_and_close_plot(None, save_name=save_name)
 

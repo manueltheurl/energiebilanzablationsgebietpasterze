@@ -1,4 +1,13 @@
 import numpy as np
+from single_measurement import MeanMeasurement
+from manage_config import cfg
+from energy_balance import ONE_YEAR
+
+
+class AutoFindEqualityObjectForHeightLevel:
+    def __init__(self, height_level):
+        self.height_level_obj = height_level
+        self._last_snowing_tweak = None
 
 
 class HeightLevel:
@@ -6,9 +15,10 @@ class HeightLevel:
         self.lower_border = lower_border
         self.upper_border = upper_border
 
-        self.area = None
+        self.area = None  # in m^2
         self.mean_radiation = dict()
-        self.shape_layer = None  # TODO change to shape path
+        self.mean_winter_balance = None
+        self.shape_layer_path = None  # TODO change to shape path
         self.simulated_measurements = []
 
     @classmethod
@@ -36,8 +46,24 @@ class HeightLevel:
     def get_mean_radiation_for(self, date):  # or maybe make property
         pass
 
+    def get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters(self):
+        overall_time_spawn = self.simulated_measurements[-1].datetime-self.simulated_measurements[0].datetime
+        overall_water_consumption_of_canon = 0
+        for simulated_measure in self.simulated_measurements:
+            simulated_measure: MeanMeasurement
+            # conversion from m snow to liters water equivalent
+            try:
+                overall_water_consumption_of_canon += simulated_measure.snow_depth_delta_artificial * 1000 * float(cfg["ARTIFICIAL_SNOW_SWE_FACTOR"])
+            except TypeError:
+                pass
+
+        return overall_water_consumption_of_canon * (ONE_YEAR.total_seconds()/overall_time_spawn.total_seconds())
+
+    def get_mean_yearly_water_consumption_of_snow_canons_for_height_level_in_liters(self):
+        return self.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters() * self.area
+
     def __str__(self):
-        pass  # TODO
+        return f"Height Level {int(self.lower_border)}-{int(self.upper_border)}"
 
     def get_total_natural_snowings(self):
         total_natural_snowings_in_period = 0
@@ -56,3 +82,17 @@ class HeightLevel:
     @property
     def height(self):
         return (self.upper_border+self.lower_border)/2
+
+    def is_continuously_snow_laying(self):
+        first_snow_event_happened = False
+        for measure in self.simulated_measurements:
+            measure: MeanMeasurement
+            if not measure.total_snow_depth and first_snow_event_happened:
+                return False
+            else:
+                if measure.total_snow_depth > 0.1:  # 10 cm have to be reached once for it to count
+                    first_snow_event_happened = True
+        return True
+
+    def clear_simulated_measurements(self):
+        self.simulated_measurements = []

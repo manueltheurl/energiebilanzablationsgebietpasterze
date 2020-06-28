@@ -17,6 +17,7 @@ import reader
 import sys
 import pickle
 import numpy as np
+from height_level import HeightLevel
 
 sys.path.append("GUI")
 
@@ -58,7 +59,7 @@ class NoGuiManager:
             #                                                   endtime=self.endTime,
             #                                                   resolution_by_percentage=100,
             #                                                   resolution_by_time_interval=None)
-            #
+            # #
             # with open(self.pickle_file_name, 'wb') as f:
             #     pickle.dump(multiple_measurements.singleton, f)
             #
@@ -86,23 +87,77 @@ class NoGuiManager:
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
             # multiple_measurements.singleton.set_initial_snow_height_to_zero()  # not needed if not using model
 
-            height_level_res = 500
+            height_level_step_width = 25
+            subfolder_name = f"height_level_step_width_{height_level_step_width}"
 
-            radiations_at_station = pickle.load(open(f"pickle_radiations_at_station_res_{height_level_res}", "rb"))
-            height_level_objects = pickle.load(open(f"pickle_height_level_objects_res_{height_level_res}", "rb"))
+            radiations_at_station = pickle.load(open(f"outputData/{subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
+            height_level_objects = pickle.load(open(f"outputData/{subfolder_name}/pickle_height_level_objects.pkl", "rb"))
 
             visualizer.singleton.show_plots = True
 
-            # visualizer.singleton.plot_shape(height_level_objects)
-            multiple_measurements.singleton.simulate(height_level_objects, radiations_at_station)
+            snowings_per_day_for_height_levels_starting_value = list(
+                reversed(np.linspace(0.01, 0.04, len(height_level_objects) // 2)))
+            snowings_per_day_for_height_levels_starting_value += [0] * (
+                        len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
+
+            for i, height_level in enumerate(height_level_objects):
+                """ Lets try to find the optimum amount of snowing for not loosing mass """
+                print("Doing calculations for height level", height_level)
+                current_snowing_per_day = snowings_per_day_for_height_levels_starting_value[i]
+                current_delta = None
+
+                while True:
+                    print("Snowing per day", round(current_snowing_per_day*1000, 1), "mm", current_delta)
+                    height_level.clear_simulated_measurements()
+                    multiple_measurements.singleton.simulate(height_level, radiations_at_station, current_snowing_per_day)
+
+                    if height_level.is_continuously_snow_laying():
+                        if current_delta is None:  # this will be true for the second iteration
+                            current_delta = -0.01
+                        else:
+                            if current_delta > 0:
+                                current_delta /= -2
+                            else:
+                                # reduced snowing and it is still too much -> stick with the bigger delta value
+                                pass
+                        if abs(current_delta) < 0.0005:
+                            print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
+                            break  # found good enough estimation
+                    else:
+                        if current_delta is None:  # this will be true for the second iteration
+                            current_delta = 0.01
+                        else:
+                            if current_delta < 0:
+                                current_delta /= -2
+                            else:
+                                # increased snowing and it is still too little -> stick with the bigger delta value
+                                pass
+
+                    current_snowing_per_day += current_delta
+
+                    if current_snowing_per_day < 0:
+                        # TODO this is not correct either, the break is not good here
+                        print("No snowing needed at all")
+                        break
+
+            total_overall_amount_of_water_in_liters = 0
+            for height_level in height_level_objects:
+                height_level: HeightLevel
+                total_amount_water_for_height_level = height_level.get_mean_yearly_water_consumption_of_snow_canons_for_height_level_in_liters()
+                print(height_level, total_amount_water_for_height_level)
+                total_overall_amount_of_water_in_liters += total_amount_water_for_height_level
+
+            print("Overall water needed:", total_overall_amount_of_water_in_liters)
+
+            visualizer.singleton.plot_shape(height_level_objects)
 
             # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
             # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
-            # visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_depth", ), "m",
-            #                                           use_summed_measurements=True,
-            #                                           save_name="height_lvls")
-
+            visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_depth", ), "m",
+                                                      use_summed_measurements=True,
+                                                      save_name="height_lvls")
+            exit()
             # visualizer.singleton.plot_components_lvls(height_level_objects, ("air_pressure",), "m",
             #                                           use_summed_measurements=True,
             #                                           save_name="air_pressure")

@@ -62,8 +62,8 @@ class Measurement:
         height_difference is positive if measurement should be higher up
         """
         # TODO which formulas, more values? air pressure as well?
-        deg_per_km = 2
-        self._temperature -= deg_per_km * height_difference_in_m / 1000
+        deg_per_100_meters = 0.65
+        self._temperature -= deg_per_100_meters * height_difference_in_m / 100
 
         hpa_for_100_meters = 12
         self._air_pressure -= height_difference_in_m * hpa_for_100_meters  # 100 meter and hecto cancel each other out
