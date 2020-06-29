@@ -123,6 +123,9 @@ class NoGuiManager:
                         if abs(current_delta) < 0.0005:
                             print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
                             break  # found good enough estimation
+                        elif current_snowing_per_day <= 0:
+                            print("No snowing needed at all")
+                            break
                     else:
                         if current_delta is None:  # this will be true for the second iteration
                             current_delta = 0.01
@@ -136,9 +139,7 @@ class NoGuiManager:
                     current_snowing_per_day += current_delta
 
                     if current_snowing_per_day < 0:
-                        # TODO this is not correct either, the break is not good here
-                        print("No snowing needed at all")
-                        break
+                        current_snowing_per_day = 0
 
             total_overall_amount_of_water_in_liters = 0
             for height_level in height_level_objects:

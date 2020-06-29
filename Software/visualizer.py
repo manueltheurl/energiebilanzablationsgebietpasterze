@@ -363,15 +363,19 @@ class Visualize:
         y_dates = multiple_measurements.singleton.get_all_of("datetime",
                                                              use_summed_measurements=use_summed_measurements)
 
+        i = 0
         for component in components1:
             for height_lvl in height_lvls:
-                height_lvl: HeightLevel
-                snow_heights = []
-                for measure in height_lvl.simulated_measurements:
-                    snow_heights.append(getattr(measure, component))
+                if i%6==0:
 
-                self.ax.plot(y_dates, snow_heights, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m: " + component),
-                             color=next(color_generator))
+                    height_lvl: HeightLevel
+                    snow_heights = []
+                    for measure in height_lvl.simulated_measurements:
+                        snow_heights.append(getattr(measure, component))
+
+                    self.ax.plot(y_dates, snow_heights, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m: " + component),
+                                 color=next(color_generator))
+                i += 1
 
         self.ax.legend(loc="upper left", fontsize=7)
         self.ax.set_ylabel(components1_unit)

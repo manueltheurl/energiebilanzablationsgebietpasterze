@@ -45,7 +45,7 @@ class Measurement:
         self._tiltx = tiltx
         self._tilty = tilty
 
-    def simulate_albedo(self, days_since_last_snowfall):
+    def simulate_albedo_oerlemans(self, days_since_last_snowfall):
         """
         Based on J. Oerlemans, W. H . KNAP: A 1 year record of global radiation and albedo in the ablation zone of
         Morteratschgletscher, Switzerland -> equation 4.
@@ -532,24 +532,23 @@ class MeanMeasurement(Measurement):
             self._total_energy_balance /= self.contains_total_energy_balance
 
     def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
-        if True:  # TODO AND previously: self.is_snow_covered is False:  # dontcalculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter change, None is False also
-            if self.__relative_ablation_measured is not None:
+        if self.__relative_ablation_measured is not None:
 
-                self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
-                    self.__relative_ablation_measured)
+            self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
+                self.__relative_ablation_measured)
 
-                self.__actual_mm_we_per_d = energy_balance.singleton.melt_water_per_m2_to_mm_we_per_d(
-                    self.__actual_melt_water_per_sqm, self.__datetime_end - self.__datetime_begin)
+            self.__actual_mm_we_per_d = energy_balance.singleton.melt_water_per_m2_to_mm_we_per_d(
+                self.__actual_melt_water_per_sqm, self.__datetime_end - self.__datetime_begin)
 
-            if self._theoretical_melt_rate is not None:
-                self.__theoretical_melt_water_per_sqm = energy_balance.singleton.meltrate_to_melt_water(
-                    self._theoretical_melt_rate, self.__datetime_end - self.__datetime_begin)
+        if self._theoretical_melt_rate is not None:
+            self.__theoretical_melt_water_per_sqm = energy_balance.singleton.meltrate_to_melt_water(
+                self._theoretical_melt_rate, self.__datetime_end - self.__datetime_begin)
 
-                self.__theoretical_mm_we_per_d = energy_balance.singleton.melt_rate_to_mm_we_per_d(
-                    self._theoretical_melt_rate)
+            self.__theoretical_mm_we_per_d = energy_balance.singleton.melt_rate_to_mm_we_per_d(
+                self._theoretical_melt_rate)
 
-                self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
-                    self.__theoretical_melt_water_per_sqm)
+            self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
+                self.__theoretical_melt_water_per_sqm)
 
     @property
     def datetime_begin(self):

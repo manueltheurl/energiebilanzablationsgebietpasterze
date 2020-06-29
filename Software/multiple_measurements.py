@@ -160,6 +160,9 @@ class MultipleMeasurements:
         Lets do magic
         """
 
+        height_level: HeightLevel
+        height_level.artificial_snowing_per_day = snowing_per_day
+
         minute_resolution = self.get_time_resolution(of="summed")
 
         # temporary data, not worth and good to save in height level object
@@ -174,10 +177,6 @@ class MultipleMeasurements:
             day_of_year = __obj.datetime.timetuple().tm_yday if __obj.datetime.timetuple().tm_yday < 366 else 365
             radiation_scale_factor = __obj.sw_radiation_in/radiations_at_station[day_of_year]
 
-            height_level: HeightLevel
-
-            height_level.artificial_snowing_per_day = snowing_per_day
-
             measure_obj = copy.deepcopy(__obj)
 
             """ Adapt meteorologic values to the height """
@@ -191,7 +190,6 @@ class MultipleMeasurements:
                 current_height_lvl_natural_snow_height += measure_obj.snow_depth_delta_natural
                 current_height_lvl_time_of_last_snow_fall = measure_obj.datetime
 
-            """ Different artificial snowing per height level """
             if measure_obj.snow_depth_delta_artificial is not None and measure_obj.snow_depth_delta_artificial > 0:  # only on snow accumulation add the snow height
                 current_height_lvl_artificial_snow_height += measure_obj.snow_depth_delta_artificial
                 current_height_lvl_time_of_last_snow_fall = measure_obj.datetime
@@ -199,7 +197,7 @@ class MultipleMeasurements:
             measure_obj.sw_radiation_in = height_level.mean_radiation[day_of_year] * radiation_scale_factor
 
             if current_height_lvl_natural_snow_height+current_height_lvl_artificial_snow_height > 0:
-                measure_obj.simulate_albedo((measure_obj.datetime-current_height_lvl_time_of_last_snow_fall).total_seconds()/60/60/24)
+                measure_obj.simulate_albedo_oerlemans((measure_obj.datetime - current_height_lvl_time_of_last_snow_fall).total_seconds() / 60 / 60 / 24)
 
             # conversion from m snow to liters water equivalent
             total_snow_swe = (current_height_lvl_natural_snow_height * float(cfg["NATURAL_SNOW_SWE_FACTOR"]) +
@@ -210,12 +208,11 @@ class MultipleMeasurements:
             measure_obj.calculate_theoretical_melt_rate()
             measure_obj.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
 
-            if total_snow_swe:
-                if measure_obj.theoretical_melt_water_per_sqm > 0:
-                    snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
-                    snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
-                    current_height_lvl_natural_snow_height *= snow_depth_scale_factor
-                    current_height_lvl_artificial_snow_height *= snow_depth_scale_factor
+            if total_snow_swe and measure_obj.theoretical_melt_water_per_sqm > 0:
+                snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
+                snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
+                current_height_lvl_natural_snow_height *= snow_depth_scale_factor
+                current_height_lvl_artificial_snow_height *= snow_depth_scale_factor
 
             measure_obj.snow_depth_natural = current_height_lvl_natural_snow_height  # overwrite values for plot as well
             measure_obj.snow_depth_artificial = current_height_lvl_artificial_snow_height  # overwrite values for plot as well

@@ -8,7 +8,7 @@ STEFAN_BOLTZMANN_CONSTANT = 5.670 * 10**-8
 ABSOLUTE_ZERO_DEGREE_CELSIUS = -273.15
 PURE_ICE_DENSITY_AT_ZERO_DEG = 917  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
 WATER_DENSITY_AT_ZERO_DEG = 1000  # kg/cubic meter  - taken from P. 142 Cuffey and Paterson
-PURE_ICE_LATENT_HEAD_OF_FUSION_AT_ZERO_DEG = 3.34 * 10 ** 5  # J/kg  - taken from P. 142 Cuffey and Paterson
+LATENT_HEAD_OF_FUSION_AT_ZERO_DEG = 3.34 * 10 ** 5  # J/kg  - taken from P. 142 Cuffey and Paterson
 ONE_YEAR = dt.timedelta(days=365)
 ONE_DAY = dt.timedelta(days=1)
 
@@ -139,7 +139,7 @@ class EnergyBalance:
 
     @staticmethod
     def energy_balance_to_melt_rate(energy_balance):
-        return energy_balance/(WATER_DENSITY_AT_ZERO_DEG * PURE_ICE_LATENT_HEAD_OF_FUSION_AT_ZERO_DEG)
+        return energy_balance/(WATER_DENSITY_AT_ZERO_DEG * LATENT_HEAD_OF_FUSION_AT_ZERO_DEG)
 
 
 singleton = EnergyBalance()
