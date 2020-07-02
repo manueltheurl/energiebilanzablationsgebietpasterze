@@ -165,7 +165,7 @@ class MultipleMeasurements:
 
         minute_resolution = self.get_time_resolution(of="summed")
 
-        # temporary data, not worth and good to save in height level object
+        # temporary data
         current_height_lvl_natural_snow_height = 0
         current_height_lvl_artificial_snow_height = 0
         current_height_lvl_time_of_last_snow_fall = None
@@ -181,6 +181,7 @@ class MultipleMeasurements:
 
             """ Adapt meteorologic values to the height """
             measure_obj.adapt_meteorological_values_in_respect_to_height_difference(height_level.height-float(cfg["AWS_STATION_HEIGHT"]))
+            measure_obj.adapt_natural_snowings_in_respect_to_height_difference(height_level.height, float(cfg["AWS_STATION_HEIGHT"]), method="linear")
 
             """ Now that temperature is adapted, lets snow artificially """
             if measure_obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):

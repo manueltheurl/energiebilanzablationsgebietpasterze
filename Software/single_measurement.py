@@ -2,6 +2,7 @@ from datetime import datetime as dt
 import energy_balance
 from manage_config import cfg
 import math as m
+from natural_snow_scaler import NaturalSnowScaler
 
 # TODO maybe make another subclass "ArtificialMeasurement"  or better not?  with just the artificial methods
 
@@ -68,6 +69,23 @@ class Measurement:
         hpa_for_100_meters = 12
         self._air_pressure -= height_difference_in_m * hpa_for_100_meters  # 100 meter and hecto cancel each other out
 
+    def adapt_natural_snowings_in_respect_to_height_difference(self, current_height, reference_height, method):
+        if method == "linear":
+            """ Leidinger D. 2013 (winter, linear table 7.2)"""
+            self.snow_depth_delta_natural *= NaturalSnowScaler.linear_scale_factor(current_height, reference_height)
+
+        elif method == "quadratic":
+            """ Leidinger D. 2013 (winter, quadratic table 7.2)"""
+            self.snow_depth_delta_natural *= NaturalSnowScaler.quadratic_scale_factor(current_height, reference_height)
+
+        elif method == "fixed_percentage_7":
+            self.snow_depth_delta_natural *= NaturalSnowScaler.fixed_percentage_per_100_meter_scale_factor(
+                current_height, reference_height, 0.07)
+
+        elif method == "fixed_percentage_10":
+            self.snow_depth_delta_natural *= NaturalSnowScaler.fixed_percentage_per_100_meter_scale_factor(
+                current_height, reference_height, 0.1)
+
     def calculate_energy_balance(self, simulate_global_dimming_brightening=0):
         # if self._total_energy_balance is not None:  # so that we wont recalculate for nothing
         # .. since simulate dimming, not anymore cause same measurement can have different actual values
@@ -121,13 +139,31 @@ class Measurement:
             # TODO NO NEGATIVE MELT RATE, DOES IT AFFECT SOMETHING ELSE?
             self._theoretical_melt_rate = 0 if self._theoretical_melt_rate < 0 else self._theoretical_melt_rate
 
-
+    # TODO rewrite this whole stuff to only save water equivalents .. else this makes absolutely no sense
     @property
     def total_snow_depth(self):
         try:
             return self._snow_depth_natural + self._snow_depth_artificial
         except TypeError:
             return self._snow_depth_natural
+
+    @property
+    def total_snow_water_equivalent(self):
+        # in liters
+        return self.natural_snow_water_equivalent + self.artificial_snow_water_equivalent
+
+    @property
+    def natural_snow_water_equivalent(self):
+        # in liters
+        return self._snow_depth_natural * cfg["NATURAL_SNOW_SWE_FACTOR"] * 1000
+
+    @property
+    def artificial_snow_water_equivalent(self):
+        # in liters
+        try:
+            return self._snow_depth_artificial * cfg["NATURAL_SNOW_SWE_FACTOR"] * 1000
+        except TypeError:
+            return 0
 
     @property
     def temperature(self):

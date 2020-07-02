@@ -66,29 +66,22 @@ class NoGuiManager:
             with open(self.pickle_file_name, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
 
-            # multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
-            #     starttime=dt.datetime(2016, 11, 1))
-
-            # multiple_measurements.singleton.cumulate_ablation_for_scope()
             multiple_measurements.singleton.correct_snow_measurements_for_scope()
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-
-            # TODO maybe this artificial snowing simulation has to be done later, cause when temperature is simulated
-            #  according to the height levels, snowing will be possible differently in the separate height levels
-            # multiple_measurements.singleton.simulate_artificial_snowing()  # for single measurements
-
-            # Now do the artificial part
-            # snow events, albedo change, bulk coefficient change
-
-            # multiple_measurements.singleton.calculate_energy_balance_for_scope()
-
-            # multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for_scope()
-
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
             # multiple_measurements.singleton.set_initial_snow_height_to_zero()  # not needed if not using model
 
             height_level_step_width = 25
+            use_tongue_only = True
+            high_res_rad_grid = True
+
             subfolder_name = f"height_level_step_width_{height_level_step_width}"
+
+            if use_tongue_only:
+                subfolder_name += "_tongue"
+            if high_res_rad_grid:
+                if use_tongue_only:
+                    subfolder_name += "_radGridHighRes"
 
             radiations_at_station = pickle.load(open(f"outputData/{subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
             height_level_objects = pickle.load(open(f"outputData/{subfolder_name}/pickle_height_level_objects.pkl", "rb"))
@@ -99,6 +92,11 @@ class NoGuiManager:
                 reversed(np.linspace(0.01, 0.04, len(height_level_objects) // 2)))
             snowings_per_day_for_height_levels_starting_value += [0] * (
                         len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
+
+            # for i, height_level in enumerate(height_level_objects):
+            #     print(height_level, height_level.mean_radiation)
+            #
+            # exit()
 
             for i, height_level in enumerate(height_level_objects):
                 """ Lets try to find the optimum amount of snowing for not loosing mass """
@@ -120,7 +118,7 @@ class NoGuiManager:
                             else:
                                 # reduced snowing and it is still too much -> stick with the bigger delta value
                                 pass
-                        if abs(current_delta) < 0.0005:
+                        if abs(current_delta) < 0.0001:
                             print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
                             break  # found good enough estimation
                         elif current_snowing_per_day <= 0:
@@ -145,10 +143,12 @@ class NoGuiManager:
             for height_level in height_level_objects:
                 height_level: HeightLevel
                 total_amount_water_for_height_level = height_level.get_mean_yearly_water_consumption_of_snow_canons_for_height_level_in_liters()
-                print(height_level, total_amount_water_for_height_level)
+                print(height_level)
+                print(f" - Total water needed: {round(total_amount_water_for_height_level/1000, 1)} m^3")
+                print(f" - Water per square meter: {round(total_amount_water_for_height_level/height_level.area, 1)} liters")
                 total_overall_amount_of_water_in_liters += total_amount_water_for_height_level
 
-            print("Overall water needed:", total_overall_amount_of_water_in_liters)
+            print("Overall water needed:", round(total_overall_amount_of_water_in_liters/1000, 1), "m^3")
 
             visualizer.singleton.plot_shape(height_level_objects)
 
@@ -158,6 +158,15 @@ class NoGuiManager:
             visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_depth", ), "m",
                                                       use_summed_measurements=True,
                                                       save_name="height_lvls")
+
+            visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_water_equivalent",), "l",
+                                                      use_summed_measurements=True,
+                                                      save_name="height_lvls")
+
+            visualizer.singleton.plot_components_lvls(height_level_objects, ("artificial_snow_water_equivalent",), "l",
+                                                      use_summed_measurements=True,
+                                                      save_name="height_lvls")
+
             exit()
             # visualizer.singleton.plot_components_lvls(height_level_objects, ("air_pressure",), "m",
             #                                           use_summed_measurements=True,

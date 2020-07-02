@@ -1,82 +1,57 @@
+import pickle
 import matplotlib.pyplot as plt
+from natural_snow_scaler import NaturalSnowScaler
 
-# 1.
+height_level_step_width = 25
+subfolder_name = f"height_level_step_width_{height_level_step_width}"
 
-# def f1(x):
-#     return 49 + 0.3*x
-#
-# def f2(x):
-#     return 75 + 0.2*x
-#
-# x_values = range(0, 500)
-#
-# plt.figure()
-#
-# for x in x_values:
-#     plt.scatter(x, f1(x), color="blue")
-#     plt.scatter(x, f2(x), color="green")
-#
-# plt.grid()
-# plt.show()
+radiations_at_station = pickle.load(open(f"outputData/{subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
+height_level_objects = pickle.load(open(f"outputData/{subfolder_name}/pickle_height_level_objects.pkl", "rb"))
 
 
-# 2.
-# def y(x):
-#     return 1.5*x + 1
-#
-#
-# x_values = range(-3, 4)
-#
-# plt.figure()
-#
-# print(list(x_values))
-# print(list([y(x) for x in x_values]))
-#
-#
-# for x in x_values:
-#     plt.scatter(x, y(x), color="blue")
-#
-#
-# plt.grid()
-# plt.show()
+from_ = 3100
+to = 3000
 
-# 3.
-
-k = 0.5
+station = 2366
+measured_snow = 20
 
 
-
-def y(x, k, d):
-    return k*x + d
-
-
-def d(y,x,k):
-    return y - x*k
-
-d_ = 2
-
-x_values = list(range(-3, 4))
-y_values = [y(x, k, d_) for x in x_values]
-
-
-
-k = 0.5  # <- abgelesen
-# x und y auch ablesen
-
-for x,y in zip(x_values, y_values):
-    print(x, y, d(y, x, k))
-
-x_values = range(-3, 4)
-
+last_scale_linear = 0
+last_scale_quadratic = 0
+last_scale_fixed_7 = 0
+last_scale_fixed_10 = 0
 plt.figure()
 
-print(list(x_values))
-print(list([y(x) for x in x_values]))
+plt.scatter(station, measured_snow, color="red")
+
+for level in range(1800, 3300, 100):
+    scale_linear = NaturalSnowScaler.linear_scale_factor(level, station)
+    scale_quadratic = NaturalSnowScaler.quadratic_scale_factor(level, station)
+    scale_fixed_7 = NaturalSnowScaler.fixed_percentage_per_100_meter_scale_factor(level, station, 0.07)
+    scale_fixed_10 = NaturalSnowScaler.fixed_percentage_per_100_meter_scale_factor(level, station, 0.1)
+
+    print("Percentage increase per 100m for linear: ", round((scale_linear-last_scale_linear)*100, 2))
+    print("Percentage increase per 100m for quadratic: ", round((scale_quadratic-last_scale_quadratic)*100, 2))
+    print("Percentage increase per 100m for fixed 7 percent: ", round((scale_fixed_7-last_scale_fixed_7)*100, 2))
+    print("Percentage increase per 100m for fixed 10 percent: ", round((scale_fixed_10-last_scale_fixed_10)*100, 2))
+
+    last_scale_linear = scale_linear
+    last_scale_quadratic = scale_quadratic
+    last_scale_fixed_7 = scale_fixed_7
+    last_scale_fixed_10 = scale_fixed_10
+    plt.scatter(level, measured_snow * scale_linear, color="orange")
+    plt.scatter(level, measured_snow * scale_quadratic, color="blue")
+    plt.scatter(level, measured_snow * scale_fixed_7, color="green")
+    plt.scatter(level, measured_snow * scale_fixed_10, color="purple")
+
+plt.scatter(None, None, color="orange", label="Linear")
+plt.scatter(None, None, color="blue", label="Quadratic")
+plt.scatter(None, None, color="green", label="Fixed 7 percent/100m")
+plt.scatter(None, None, color="purple", label="Fixed 10 percent/100m")
 
 
-for x in x_values:
-    plt.scatter(x, y(x), color="blue")
-
-
+plt.legend()
+plt.xlabel("Height [m]")
+plt.ylabel("Snow height [cm]")
 plt.grid()
 plt.show()

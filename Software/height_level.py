@@ -4,12 +4,6 @@ from manage_config import cfg
 from energy_balance import ONE_YEAR
 
 
-class AutoFindEqualityObjectForHeightLevel:
-    def __init__(self, height_level):
-        self.height_level_obj = height_level
-        self._last_snowing_tweak = None
-
-
 class HeightLevel:
     def __init__(self, lower_border, upper_border):
         self.lower_border = lower_border
@@ -17,6 +11,7 @@ class HeightLevel:
 
         self.area = None  # in m^2
         self.mean_radiation = dict()
+        self.mean_height = None
         self.mean_winter_balance = None
         self.shape_layer_path = None  # TODO change to shape path
         self.simulated_measurements = []
@@ -81,7 +76,8 @@ class HeightLevel:
 
     @property
     def height(self):
-        return (self.upper_border+self.lower_border)/2
+        return self.mean_height
+        # return (self.upper_border+self.lower_border)/2
 
     def is_continuously_snow_laying(self):
         first_snow_event_happened = False
