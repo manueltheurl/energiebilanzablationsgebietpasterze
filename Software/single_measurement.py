@@ -29,13 +29,14 @@ class Measurement:
         self._simulate_global_brightening = None
 
         self._temperature = temperature
-        self._snow_depth_natural = snow_depth  # WARNING, some crazy data here unedited
-        self._snow_depth_delta_natural = None  # increasing of snow y data here
+        self._snow_depth_natural = snow_depth
+        self._snow_depth_delta_natural = None
         self._snow_depth_artificial = None
         self._snow_depth_delta_artificial = None
 
         self._total_energy_balance = None
 
+        # DEPRECATED
         self._swe_input_from_snow = None  # unit TODO
 
         self._rel_moisture = rel_moisture  # in percent*100 .. e.g. 67
@@ -126,10 +127,12 @@ class Measurement:
                                                self._energy_balance_components["sensible_heat"],
                                                self._energy_balance_components["latent_heat"],
                                                ])
-            if not cfg["IGNORE_PRECIPITATION_HEAT"]:
-                self._total_energy_balance += self._energy_balance_components["precipitation_heat"]
         except TypeError:
-            pass
+            pass  # Something is None
+
+        if not cfg["IGNORE_PRECIPITATION_HEAT"]:
+            self._total_energy_balance += self._energy_balance_components["precipitation_heat"]
+
 
     def calculate_theoretical_melt_rate(self):
         if None not in [self._total_energy_balance]:
@@ -273,10 +276,12 @@ class Measurement:
 
     @property
     def swe_input_from_snow(self):
+        # DEPRECATED
         return self._swe_input_from_snow
 
     @swe_input_from_snow.setter
     def swe_input_from_snow(self, value):
+        # DEPRECATED
         self._swe_input_from_snow = value
 
     @property

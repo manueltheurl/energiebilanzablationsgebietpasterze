@@ -54,6 +54,8 @@ class Visualize:
             "snow_depth_natural": "Natural Snow Height",
             "snow_depth_artificial": "Artificial Snow Height",
             "theoretical_melt_water_per_sqm": "Theoretical Melt Water",
+            "total_snow_water_equivalent": "Total snow water equivalent",
+            "artificial_snow_water_equivalent": "Artificial snow water equivalent",
         }
 
         self.accumulate_plots = False
@@ -365,32 +367,46 @@ class Visualize:
 
         i = 0
         for component in components1:
+            # bad if more components
+            self.ax.set_ylabel(f"{self._pretty_label(component)} [{components1_unit}]")
             for height_lvl in height_lvls:
-                if i%6==0:
+                if i % 6 == 0:
 
                     height_lvl: HeightLevel
                     snow_heights = []
                     for measure in height_lvl.simulated_measurements:
                         snow_heights.append(getattr(measure, component))
 
-                    self.ax.plot(y_dates, snow_heights, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m: " + component),
+                    self.ax.plot(y_dates, snow_heights, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m"),
                                  color=next(color_generator))
                 i += 1
 
         self.ax.legend(loc="upper left", fontsize=7)
-        self.ax.set_ylabel(components1_unit)
+
 
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_shape(self, height_lvls, save_name=None):
+    def plot_shape(self, height_lvls, aws_station=None, equality_line=None, only_tongue=False, save_name=None):
         self.initialize_plot(None)
 
-        self.ax.set_xlim([398000, 405500])
-        self.ax.set_ylim([212500, 225000])
+        if only_tongue:
+            self.ax.set_xlim([401000, 405500])
+            self.ax.set_ylim([214500, 218700])
+            ax_colorbar = self.fig.add_axes([0.84, 0.11, 0.02, 0.76])  # left, bottom, width, height
+        else:
+            self.ax.set_xlim([398000, 405500])
+            self.ax.set_ylim([212500, 225000])
+            ax_colorbar = self.fig.add_axes([0.7, 0.11, 0.02, 0.76])  # left, bottom, width, height
+
+        self.ax.set_ylabel("x [m]")
+        self.ax.set_xlabel("y [m]")
+
         self.ax.set_aspect("equal")
 
-        ax_colorbar = self.fig.add_axes([0.81, 0.11, 0.02, 0.76])  # left, bottom, width, height
+        self.ax.grid(zorder=-2, ls="--", lw="0.5")
+
+
         snr_cmap = matplotlib.cm.get_cmap('winter_r')
 
         vals_to_plot = [x.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters() for x in
@@ -401,7 +417,22 @@ class Visualize:
         cb1 = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
                                                norm=norm,
                                                orientation='vertical', extend="max")
-        cb1.set_label(r'Mean yearly water consumption of snow canons per $m^2$')
+        cb1.set_label(r'Mean yearly water consumption of snow canons in liters per $m^2$')
+
+        if aws_station is not None:
+            self.ax.scatter(*shp.Reader(aws_station).shapes()[0].points[0], zorder=10, s=40, color="red",
+                            label="Weather Station")
+
+        if equality_line is not None:
+            line_of_equality = shp.Reader(equality_line).shapes()[0].points
+
+            if not only_tongue:
+                xs = []
+                ys = []
+                for x, y in line_of_equality:
+                    xs.append(x)
+                    ys.append(y)
+                self.ax.plot(xs, ys, lw=3, zorder=50, label="Common line of equality")
 
         for i, height_lvl in enumerate(height_lvls):
             height_lvl: HeightLevel
@@ -413,6 +444,8 @@ class Visualize:
                 self.ax.add_patch(PolygonPatch(shape.__geo_interface__,
                                                fc=color,
                                                ec="gray"))
+
+        self.ax.legend()
 
         self.show_save_and_close_plot(None, save_name=save_name)
 

@@ -40,6 +40,7 @@ class MultipleMeasurements:
             obj.calculate_energy_balance(simulate_global_dimming_brightening)
 
     def calculate_water_input_through_snow_for_scope(self):
+        # DEPRECATED
         snow_observations = []  # snow observations have to be in meters
 
         # TODO double loop here could of course be prevented, but the aim was to modify the snow to swe model as little as possible
@@ -136,6 +137,7 @@ class MultipleMeasurements:
             past_snow_depth = obj.snow_depth_natural
 
     def set_initial_snow_height_to_zero(self, of="summed"):
+        # DEPRECATED
         """
         This is done for the snow height to swe model, cause the time series has to start with no snow
         """
@@ -175,8 +177,10 @@ class MultipleMeasurements:
 
             """ Adapt radiation """
             day_of_year = __obj.datetime.timetuple().tm_yday if __obj.datetime.timetuple().tm_yday < 366 else 365
-            radiation_scale_factor = __obj.sw_radiation_in/radiations_at_station[day_of_year]
-
+            try:
+                radiation_scale_factor = __obj.sw_radiation_in/radiations_at_station[day_of_year]
+            except TypeError:
+                print(__obj.datetime)
             measure_obj = copy.deepcopy(__obj)
 
             """ Adapt meteorologic values to the height """
@@ -208,12 +212,14 @@ class MultipleMeasurements:
             measure_obj.calculate_energy_balance()
             measure_obj.calculate_theoretical_melt_rate()
             measure_obj.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
-
-            if total_snow_swe and measure_obj.theoretical_melt_water_per_sqm > 0:
-                snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
-                snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
-                current_height_lvl_natural_snow_height *= snow_depth_scale_factor
-                current_height_lvl_artificial_snow_height *= snow_depth_scale_factor
+            try:
+                if total_snow_swe and measure_obj.theoretical_melt_water_per_sqm > 0:
+                    snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
+                    snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
+                    current_height_lvl_natural_snow_height *= snow_depth_scale_factor
+                    current_height_lvl_artificial_snow_height *= snow_depth_scale_factor
+            except TypeError:
+                print("Cannot scale snow height for ", measure_obj.datetime, ".. skipping")
 
             measure_obj.snow_depth_natural = current_height_lvl_natural_snow_height  # overwrite values for plot as well
             measure_obj.snow_depth_artificial = current_height_lvl_artificial_snow_height  # overwrite values for plot as well
