@@ -24,6 +24,9 @@ import shapefile as shp
 from descartes import PolygonPatch
 import matplotlib.colors
 import matplotlib.colorbar
+from height_level import MeteorologicalYear
+from matplotlib.ticker import MaxNLocator
+
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
 
@@ -357,8 +360,9 @@ class Visualize:
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_components_lvls(self, height_lvls, components1: tuple, components1_unit, components2: tuple = None, components2_unit = None, use_summed_measurements=True, save_name=None):
+    def plot_components_lvls(self, meteorological_year, components1: tuple, components1_unit, components2: tuple = None, components2_unit = None, use_summed_measurements=True, save_name=None):
         self.initialize_plot(None)
+        meteorological_year: MeteorologicalYear
 
         color_generator = self._color_generator()
 
@@ -369,7 +373,7 @@ class Visualize:
         for component in components1:
             # bad if more components
             self.ax.set_ylabel(f"{self._pretty_label(component)} [{components1_unit}]")
-            for height_lvl in height_lvls:
+            for height_lvl in meteorological_year.height_level_objects:
                 if i % 6 == 0:
 
                     height_lvl: HeightLevel
@@ -383,12 +387,28 @@ class Visualize:
 
         self.ax.legend(loc="upper left", fontsize=7)
 
-
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_shape(self, height_lvls, aws_station=None, equality_line=None, only_tongue=False, save_name=None):
+    def plot_comparison_of_years(self, meteorological_years, save_name=None):
         self.initialize_plot(None)
+
+        for year, meteorological_year in meteorological_years.items():
+            meteorological_year: MeteorologicalYear
+
+            self.ax.scatter(year, meteorological_year.overall_amount_of_water_needed_in_liters/1000000)
+
+        self.ax.set_xlabel("Year")
+        self.ax.set_ylabel("Overall Water needed [1.000.000 liters]")
+        self.ax.grid(zorder=-2, ls="--", lw="0.5")
+
+        self.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+
+        self.show_save_and_close_plot(None, save_name=save_name)
+
+    def plot_shape(self, meteorological_year, aws_station=None, equality_line=None, only_tongue=False, save_name=None):
+        self.initialize_plot(None)
+        meteorological_year: MeteorologicalYear
 
         if only_tongue:
             self.ax.set_xlim([401000, 405500])
@@ -406,11 +426,10 @@ class Visualize:
 
         self.ax.grid(zorder=-2, ls="--", lw="0.5")
 
-
         snr_cmap = matplotlib.cm.get_cmap('winter_r')
 
         vals_to_plot = [x.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters() for x in
-                        height_lvls]
+                        meteorological_year.height_level_objects]
 
         # normalize value between 0 and max speed to 0 and 1 for cmap
         norm = matplotlib.colors.Normalize(vmin=0, vmax=max(vals_to_plot))
@@ -434,7 +453,7 @@ class Visualize:
                     ys.append(y)
                 self.ax.plot(xs, ys, lw=3, zorder=50, label="Common line of equality")
 
-        for i, height_lvl in enumerate(height_lvls):
+        for i, height_lvl in enumerate(meteorological_year.height_level_objects):
             height_lvl: HeightLevel
 
             shp_file = shp.Reader(height_lvl.shape_layer_path)
@@ -445,7 +464,8 @@ class Visualize:
                                                fc=color,
                                                ec="gray"))
 
-        self.ax.legend()
+        if not not any([aws_station, equality_line]):
+            self.ax.legend()
 
         self.show_save_and_close_plot(None, save_name=save_name)
 

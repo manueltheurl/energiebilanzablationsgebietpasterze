@@ -18,6 +18,7 @@ import sys
 import pickle
 import numpy as np
 from height_level import HeightLevel
+import copy
 
 sys.path.append("GUI")
 
@@ -34,15 +35,16 @@ import frame_read
 import frame_energy_balance as frame_scope
 import frame_sum
 import visualizer
+from height_level import MeteorologicalYear
 
 
 class NoGuiManager:
     def __init__(self):
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
 
-        # read
-        self.startTime = dt.datetime(2016, 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = dt.datetime(2019, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.years_looked_at = list(range(2016, 2020))
+        self.startTime = dt.datetime(self.years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.endTime = dt.datetime(self.years_looked_at[1], 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.pickle_file_name = "multiple_measurements_singleton.pkl"
 
     def run(self):
@@ -53,20 +55,21 @@ class NoGuiManager:
         if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
             res = dt.timedelta(days=1)
 
-            reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
-                                                              endtime=self.endTime,
-                                                              resolution_by_percentage=100,
-                                                              resolution_by_time_interval=None)
+            # reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
+            #                                                   endtime=self.endTime,
+            #                                                   resolution_by_percentage=100,
+            #                                                   resolution_by_time_interval=None)
             #
             # with open(self.pickle_file_name, 'wb') as f:
             #     pickle.dump(multiple_measurements.singleton, f)
-            #
-            # with open(self.pickle_file_name, 'rb') as f:
-            #     multiple_measurements.singleton = pickle.load(f)
+
+            with open(self.pickle_file_name, 'rb') as f:
+                multiple_measurements.singleton = pickle.load(f)
 
             multiple_measurements.singleton.correct_snow_measurements_for_scope()
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
+            
 
             height_level_step_width = 25
             use_tongue_only = False
@@ -83,119 +86,131 @@ class NoGuiManager:
             radiations_at_station = pickle.load(open(f"outputData/{subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
             height_level_objects = pickle.load(open(f"outputData/{subfolder_name}/pickle_height_level_objects.pkl", "rb"))
 
-            visualizer.singleton.show_plots = True
+            # for now create yearly height level objects .. this will probably be over-thinked again and will be different later TODO
 
             snowings_per_day_for_height_levels_starting_value = list(
                 reversed(np.linspace(0.01, 0.04, len(height_level_objects) // 2)))
             snowings_per_day_for_height_levels_starting_value += [0] * (
                         len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
 
-            for i, height_level in enumerate(height_level_objects):
-                """ Lets try to find the optimum amount of snowing for not loosing mass """
-                print("Doing calculations for height level", height_level)
-                current_snowing_per_day = snowings_per_day_for_height_levels_starting_value[i]
-                current_delta = None
+            meteorologic_years = dict()
+            accuracy = 0.1
+            for year in self.years_looked_at[:-1]:
+                print(f"___ Looking at meteorologic year {year} ___")
 
-                while True:
-                    print("Snowing per day", round(current_snowing_per_day*1000, 1), "mm", current_delta)
-                    height_level.clear_simulated_measurements()
-                    multiple_measurements.singleton.simulate(height_level, radiations_at_station, current_snowing_per_day)
+                meteorologic_years[year] = MeteorologicalYear(copy.deepcopy(height_level_objects))
+                multiple_measurements.singleton.reset_scope_to_all()
+                multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+                    dt.datetime(year, 10, 1), dt.datetime(year+1, 9, 30))
 
-                    if height_level.is_continuously_snow_laying():
-                        if current_delta is None:  # this will be true for the second iteration
-                            current_delta = -0.01
-                        else:
-                            if current_delta > 0:
-                                current_delta /= -2
+                for i, height_level in enumerate(meteorologic_years[year].height_level_objects):
+
+                    """ Lets try to find the optimum amount of snowing for not loosing mass """
+                    print("Doing calculations for height level", height_level)
+                    current_snowing_per_day = snowings_per_day_for_height_levels_starting_value[i]
+                    current_delta = None
+
+                    while True:
+                        print("Snowing per day", round(current_snowing_per_day*1000, 1), "mm", current_delta)
+                        height_level.clear_simulated_measurements()
+                        height_level.artificial_snowing_per_day = current_snowing_per_day
+
+                        multiple_measurements.singleton.simulate(height_level, radiations_at_station)
+
+                        if height_level.is_continuously_snow_laying():
+                            if current_delta is None:  # this will be true for the second iteration
+                                current_delta = -0.01
                             else:
-                                # reduced snowing and it is still too much -> stick with the bigger delta value
-                                pass
-                        if abs(current_delta) < 0.0001:
-                            print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
-                            break  # found good enough estimation
-                        elif current_snowing_per_day <= 0:
-                            print("No snowing needed at all")
-                            break
-                    else:
-                        if current_delta is None:  # this will be true for the second iteration
-                            current_delta = 0.01
+                                if current_delta > 0:
+                                    current_delta /= -2
+                                else:
+                                    # reduced snowing and it is still too much -> stick with the bigger delta value
+                                    pass
+                            if abs(current_delta) < accuracy:
+                                print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
+                                break  # found good enough estimation
+                            elif current_snowing_per_day <= 0:
+                                print("No snowing needed at all")
+                                break
                         else:
-                            if current_delta < 0:
-                                current_delta /= -2
+                            if current_delta is None:  # this will be true for the second iteration
+                                current_delta = 0.01
                             else:
-                                # increased snowing and it is still too little -> stick with the bigger delta value
-                                pass
+                                if current_delta < 0:
+                                    current_delta /= -2
+                                else:
+                                    # increased snowing and it is still too little -> stick with the bigger delta value
+                                    pass
 
-                    current_snowing_per_day += current_delta
+                        current_snowing_per_day += current_delta
 
-                    if current_snowing_per_day < 0:
-                        current_snowing_per_day = 0
+                        if current_snowing_per_day < 0:
+                            current_snowing_per_day = 0
 
-            total_overall_amount_of_water_in_liters = 0
-            for height_level in height_level_objects:
-                height_level: HeightLevel
-                total_amount_water_for_height_level = height_level.get_mean_yearly_water_consumption_of_snow_canons_for_height_level_in_liters()
-                print(height_level)
-                print(f" - Total water needed: {round(total_amount_water_for_height_level/1000, 1)} m^3")
-                print(f" - Water per square meter: {round(total_amount_water_for_height_level/height_level.area, 1)} liters")
-                total_overall_amount_of_water_in_liters += total_amount_water_for_height_level
+                print("Overall water needed:", round(meteorologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
 
-            print("Overall water needed:", round(total_overall_amount_of_water_in_liters/1000, 1), "m^3")
+            with open(f"outputData/{subfolder_name}/meteorologic_years.pkl", "wb") as f:
+                pickle.dump(meteorologic_years, f)
 
-            with open(f"outputData/{subfolder_name}/pickle_height_level_objects_filled.pkl", "wb") as f:
-                pickle.dump(height_level_objects, f)
+            with open(f"outputData/{subfolder_name}/meteorologic_years.pkl", 'rb') as f:
+                meteorologic_years = pickle.load(f)
 
             with open("multiple_measurements_singleton_filled.pkl", 'wb') as f:
                 pickle.dump(multiple_measurements.singleton, f)
 
-            visualizer.singleton.plot_shape(height_level_objects, only_tongue=use_tongue_only)
+            for year in range(2016, 2017):
+                year = 2017
+                visualizer.singleton.show_plots = True
+                visualizer.singleton.plot_comparison_of_years(meteorologic_years)
 
-            # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
-            # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
+                visualizer.singleton.plot_shape(meteorologic_years[year], "inputData/AWS_Station.shp", "inputData/equality_line_2018.shp", only_tongue=use_tongue_only)
+                exit()
 
-            visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_depth", ), "m",
-                                                      use_summed_measurements=True,
-                                                      save_name="height_lvls")
+                # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
+                # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
-            visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_water_equivalent",), "l",
-                                                      use_summed_measurements=True,
-                                                      save_name="height_lvls")
+                visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("total_snow_depth", ), "m",
+                                                          use_summed_measurements=True,
+                                                          save_name="height_lvls")
 
-            visualizer.singleton.plot_components_lvls(height_level_objects, ("artificial_snow_water_equivalent",), "l",
-                                                      use_summed_measurements=True,
-                                                      save_name="height_lvls")
+                visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("total_snow_water_equivalent",), "l",
+                                                          use_summed_measurements=True,
+                                                          save_name="height_lvls")
 
-            exit()
-            # visualizer.singleton.plot_components_lvls(height_level_objects, ("air_pressure",), "m",
-            #                                           use_summed_measurements=True,
-            #                                           save_name="air_pressure")
-
-            # visualizer.singleton.plot_components_lvls(height_level_objects, ("temperature",), "m",
-            #                                           use_summed_measurements=True,
-            #                                           save_name="temperature")
-
-            # visualizer.singleton.plot_components_lvls(height_level_objects, ("temperature",), "m",
-            #                                           use_summed_measurements=True,
-            #                                           save_name="temperature")
-
-            # visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"),
-            #                                      r"$m$", ("theoretical_melt_water_per_sqm",), r"$l/m^2$",
-            #                                      use_summed_measurements=True, save_name="pasterze_0_with_albedo")
-
-            # visualizer.singleton.plot_components(("total_snow_depth",),
-            #                                      r"$m$", ("albedo",), "",
-            #                                      use_summed_measurements=True)
-
-            # visualizer.singleton.plot_components_lvls(height_level_objects, ("snow_depth_delta_artificial",), "m",
-            #                                           use_summed_measurements=True,
-            #                                           save_name="snow_depth_delta_artificial")
+                visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("artificial_snow_water_equivalent",), "l",
+                                                          use_summed_measurements=True,
+                                                          save_name="height_lvls")
 
 
 
+                exit()
+                # visualizer.singleton.plot_components_lvls(height_level_objects, ("air_pressure",), "m",
+                #                                           use_summed_measurements=True,
+                #                                           save_name="air_pressure")
 
-            # visualizer.singleton.plot_single_component("theoretical_melt_water_per_sqm", "m", use_summed_measurements=True)
+                # visualizer.singleton.plot_components_lvls(height_level_objects, ("temperature",), "m",
+                #                                           use_summed_measurements=True,
+                #                                           save_name="temperature")
 
-            exit()
+                # visualizer.singleton.plot_components_lvls(height_level_objects, ("temperature",), "m",
+                #                                           use_summed_measurements=True,
+                #                                           save_name="temperature")
+
+                # visualizer.singleton.plot_components(("total_snow_depth", "snow_depth_natural", "snow_depth_artificial"),
+                #                                      r"$m$", ("theoretical_melt_water_per_sqm",), r"$l/m^2$",
+                #                                      use_summed_measurements=True, save_name="pasterze_0_with_albedo")
+
+                # visualizer.singleton.plot_components(("total_snow_depth",),
+                #                                      r"$m$", ("albedo",), "",
+                #                                      use_summed_measurements=True)
+
+                # visualizer.singleton.plot_components_lvls(height_level_objects, ("snow_depth_delta_artificial",), "m",
+                #                                           use_summed_measurements=True,
+                #                                           save_name="snow_depth_delta_artificial")
+
+                # visualizer.singleton.plot_single_component("theoretical_melt_water_per_sqm", "m", use_summed_measurements=True)
+
+                exit()
 
             if cfg["USE_PICKLE_FOR_SAVING_TIME"]:
                 with open(self.pickle_file_name, 'wb') as f:
@@ -232,7 +247,6 @@ class NoGuiManager:
             multiple_measurements.singleton = pickle.load(f)
 
         visualizer.singleton.show_plots = True
-
         visualizer.singleton.plot_shape(height_level_objects, "inputData/AWS_Station.shp", "inputData/equality_line_2018.shp", only_tongue=use_tongue_only)
 
         # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()

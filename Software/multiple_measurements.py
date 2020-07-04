@@ -157,19 +157,29 @@ class MultipleMeasurements:
         first_measurement.snow_depth_delta_natural = 0
         first_measurement.snow_depth_delta_artificial = 0
 
-    def simulate(self, height_level, radiations_at_station, snowing_per_day):
+    def simulate(self, height_level, radiations_at_station):
         """
         Lets do magic
         """
 
         height_level: HeightLevel
-        height_level.artificial_snowing_per_day = snowing_per_day
 
         minute_resolution = self.get_time_resolution(of="summed")
 
+        first_measurement_of_scope = self.__all_mean_measurements[sorted(self.__current_mean_index_scope)[0]]
+        first_measurement_of_scope: MeanMeasurement
+
         # temporary data
-        current_height_lvl_natural_snow_height = 0
-        current_height_lvl_artificial_snow_height = 0
+        if first_measurement_of_scope.snow_depth_natural is None or True:
+            current_height_lvl_natural_snow_height = 0
+        else:
+            current_height_lvl_natural_snow_height = first_measurement_of_scope.snow_depth_natural
+
+        if first_measurement_of_scope.snow_depth_artificial is None or True:
+            current_height_lvl_artificial_snow_height = 0
+        else:
+            current_height_lvl_artificial_snow_height = first_measurement_of_scope.snow_depth_artificial
+
         current_height_lvl_time_of_last_snow_fall = None
 
         for __obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
@@ -497,6 +507,7 @@ class MultipleMeasurements:
             self.__current_mean_index_scope.difference_update(indexes_to_remove)
 
     def change_measurement_resolution_by_start_end_time(self, starttime=None, endtime=None):
+        """ If you use this function multiple times, do not forget to reset scope before new constraint """
         if starttime is not None:
             if type(starttime) != dt.datetime:
                 starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")

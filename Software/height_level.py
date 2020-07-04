@@ -92,3 +92,32 @@ class HeightLevel:
 
     def clear_simulated_measurements(self):
         self.simulated_measurements = []
+
+
+class MeteorologicalYear:
+    def __init__(self, height_level_objects):
+        self.height_level_objects = height_level_objects
+        self.__overall_amount_of_water_needed_in_liters = None  # will be calculated
+
+    @property
+    def overall_amount_of_water_needed_in_liters(self):
+        """
+        calculate once, use as attribute as often as you want, but WARNING, if this value changes in reality, it will
+        not change here after once calculated
+
+        """
+        if self.__overall_amount_of_water_needed_in_liters is None:
+            self.__overall_amount_of_water_needed_in_liters = self.__get_overall_amount_of_water_needed_in_liters()
+        return self.__overall_amount_of_water_needed_in_liters
+
+    def __get_overall_amount_of_water_needed_in_liters(self):
+        total_overall_amount_of_water_in_liters = 0
+        for height_level in self.height_level_objects:
+            height_level: HeightLevel
+            total_amount_water_for_height_level = height_level.get_mean_yearly_water_consumption_of_snow_canons_for_height_level_in_liters()
+            # print(height_level)
+            # print(f" - Total water needed: {round(total_amount_water_for_height_level / 1000, 1)} m^3")
+            # print(
+            #     f" - Water per square meter: {round(total_amount_water_for_height_level / height_level.area, 1)} liters")
+            total_overall_amount_of_water_in_liters += total_amount_water_for_height_level
+        return total_overall_amount_of_water_in_liters
