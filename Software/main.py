@@ -124,7 +124,7 @@ class NoGuiManager:
 
                         multiple_measurements.singleton.simulate(height_level, radiations_at_station)
 
-                        if height_level.is_continuously_snow_laying():
+                        if height_level.get_time_of_first_ice_exposure_in_new_year() is None:
                             if current_delta is None:  # this will be true for the second iteration
                                 current_delta = -0.01
                             else:
@@ -244,15 +244,23 @@ class NoGuiManager:
         with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
             multiple_measurements.singleton = pickle.load(f)
 
+        radiations_at_station = pickle.load(open(f"outputData/{self.subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
+
         visualizer.singleton.plot_comparison_of_years(meteorologic_years,
                                                       save_name=f"req_water_compare_{self.years_looked_at[0]}_{self.years_looked_at[-1]}")
+
+        visualizer.singleton.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, 2094, radiations_at_station,
+                                                       save_name=f"day_of_ice_exposure_{self.years_looked_at[0]}_{self.years_looked_at[-1]}_for_height_{2094}")
 
         for year in self.years_looked_at[:-1]:
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
                 dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
 
-            fix_lower_limit = 4000 if self.use_tongue_only else 0
+            visualizer.singleton.plot_day_of_ice_exposures_for_year(year, meteorologic_years, radiations_at_station,
+                                                           save_name=f"day_of_ice_exposure_{year}")
+
+            fix_lower_limit = 3000 if self.use_tongue_only else 0
             visualizer.singleton.plot_shape(meteorologic_years[year], "inputData/AWS_Station.shp",
                                             "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
                                             fix_lower_limit=fix_lower_limit, fix_upper_limit=7500,

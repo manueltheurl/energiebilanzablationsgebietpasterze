@@ -80,16 +80,34 @@ class HeightLevel:
         return self.mean_height
         # return (self.upper_border+self.lower_border)/2
 
-    def is_continuously_snow_laying(self):
-        first_snow_event_happened = False
+    def get_time_of_first_ice_exposure_in_new_year(self):
+        """
+        Ice exposure in the beginning is ignored. As soon as a certain snow water equivalent is reached it counts
+
+        TODO
+        This is actually not really ideal, because due to artificial snowing it can happen that this border of 50
+        liters is crossed and then afterwards before the winter ice is again there.
+        Maybe another constraints would be good: only a date after 1. december till 30. september can be returned e.g.
+
+        -> Did this as planned, maybe december could be allowed here as well, so ice exposurese in october and november allowed maybe?
+        """
         for measure in self.simulated_measurements:
             measure: MeanMeasurement
-            if not measure.total_snow_depth and first_snow_event_happened:
-                return False
-            else:
-                if measure.total_snow_depth > 0.1:  # 10 cm have to be reached once for it to count
-                    first_snow_event_happened = True
-        return True
+            if not measure.total_snow_water_equivalent and (
+                    1 <= measure.datetime.month < 10):  # or measure.datetime.month == 12 making problems
+                return measure.datetime
+        return None
+
+        # -> Deprecated
+        # first_snow_event_happened = False
+        # for measure in self.simulated_measurements:
+        #     measure: MeanMeasurement
+        #     if not measure.total_snow_depth and first_snow_event_happened:
+        #         return measure.datetime
+        #     else:
+        #         if measure.total_snow_water_equivalent > 50:  # 50 per m^2 have to be reached once for it to count, approx 15 cm snow
+        #             first_snow_event_happened = True
+        # return None
 
     def clear_simulated_measurements(self):
         self.simulated_measurements = []
@@ -122,3 +140,9 @@ class MeteorologicalYear:
             #     f" - Water per square meter: {round(total_amount_water_for_height_level / height_level.area, 1)} liters")
             total_overall_amount_of_water_in_liters += total_amount_water_for_height_level
         return total_overall_amount_of_water_in_liters
+
+    def get_height_level_close_to_height(self, desired_height):
+        abs_diffs_to_height = []
+        for height_level in self.height_level_objects:
+            abs_diffs_to_height.append(abs(height_level.height-desired_height))
+        return self.height_level_objects[np.argmin(abs_diffs_to_height)]

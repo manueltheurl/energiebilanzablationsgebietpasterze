@@ -162,17 +162,17 @@ class Measurement:
 
     @property
     def total_snow_water_equivalent(self):
-        # in liters
+        # in liters per square meter
         return self.natural_snow_water_equivalent + self.artificial_snow_water_equivalent
 
     @property
     def natural_snow_water_equivalent(self):
-        # in liters
+        # in liters per square meter
         return self._snow_depth_natural * cfg["NATURAL_SNOW_SWE_FACTOR"] * 1000
 
     @property
     def artificial_snow_water_equivalent(self):
-        # in liters
+        # in liters per square meter
         try:
             return self._snow_depth_artificial * cfg["NATURAL_SNOW_SWE_FACTOR"] * 1000
         except TypeError:

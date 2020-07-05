@@ -27,7 +27,7 @@ import matplotlib.colorbar
 from height_level import MeteorologicalYear
 from matplotlib.ticker import MaxNLocator
 from single_measurement import MeanMeasurement
-
+import copy
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
 
@@ -431,6 +431,85 @@ class Visualize:
 
         self.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
+        self.show_save_and_close_plot(None, save_name=save_name)
+
+    def plot_day_of_ice_exposures_for_year(self, year, meteorological_years, radiations_at_station, resolution=0.0025, save_name=None):
+        self.initialize_plot(None)
+
+        meteorological_year = copy.deepcopy(meteorological_years[year])  # to not modify the original one
+        meteorological_year: MeteorologicalYear
+
+        self.ax.set_xlabel(str(year))
+        self.ax.set_ylabel("Amount of artificial snowing per day if possible [cm]")
+
+        multiple_measurements.singleton.reset_scope_to_all()
+        multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+            dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
+
+        for i, height_level in enumerate(meteorological_year.height_level_objects):
+            current_amount_of_snowing_per_day = 0
+            x_days_of_exposure = []
+            y_snowing_amounts = []
+
+            if i % 6 == 0:
+                height_level: HeightLevel
+                while True:
+                    current_snowing_per_day = current_amount_of_snowing_per_day
+                    height_level.clear_simulated_measurements()
+                    height_level.artificial_snowing_per_day = current_snowing_per_day
+                    multiple_measurements.singleton.simulate(height_level, radiations_at_station)
+
+                    day_of_ice_exposure = height_level.get_time_of_first_ice_exposure_in_new_year()
+                    if day_of_ice_exposure is None:
+                        break
+                    x_days_of_exposure.append(day_of_ice_exposure)
+                    y_snowing_amounts.append(current_snowing_per_day)
+                    current_amount_of_snowing_per_day += resolution
+
+                self.ax.plot(x_days_of_exposure, y_snowing_amounts,
+                             label=self._pretty_label("Date of ice exposure at height " + str(int(height_level.height)) + "m"))
+        self.modify_axes()
+        self.ax.legend()
+        self.show_save_and_close_plot(None, save_name=save_name)
+
+    def plot_day_of_ice_exposures_for_years_at_height(self, meteorological_years, height, radiations_at_station, resolution=0.0025, save_name=None):
+        self.initialize_plot(None)
+
+        for year, meteorological_year in meteorological_years.items():
+            meteorological_year = copy.deepcopy(meteorological_years[year])  # to not modify the original one
+            meteorological_year: MeteorologicalYear
+
+            self.ax.set_ylabel("Amount of artificial snowing per day if possible [cm]")
+
+            multiple_measurements.singleton.reset_scope_to_all()
+            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+                dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
+
+            height_level = meteorological_year.get_height_level_close_to_height(height)
+            current_amount_of_snowing_per_day = 0
+            x_days_of_exposure = []
+            y_snowing_amounts = []
+
+            height_level: HeightLevel
+            while True:
+                current_snowing_per_day = current_amount_of_snowing_per_day
+                height_level.clear_simulated_measurements()
+                height_level.artificial_snowing_per_day = current_snowing_per_day
+                multiple_measurements.singleton.simulate(height_level, radiations_at_station)
+
+                day_of_ice_exposure = height_level.get_time_of_first_ice_exposure_in_new_year()
+                if day_of_ice_exposure is None:
+                    break
+                # having the same year for all, 2020 as leap year, for not having problems with feb 29
+                x_days_of_exposure.append(day_of_ice_exposure.replace(year=2020))
+                y_snowing_amounts.append(current_snowing_per_day)
+                current_amount_of_snowing_per_day += resolution
+
+            self.ax.plot(x_days_of_exposure, y_snowing_amounts,
+                         label=self._pretty_label(f"{year} date of ice exposure"))
+        self.modify_axes()
+        self.ax.set_xlim(dt.datetime(2020, 1, 15))
+        self.ax.legend()
         self.show_save_and_close_plot(None, save_name=save_name)
 
     def plot_shape(self, meteorological_year, aws_station=None, equality_line=None, only_tongue=False,
