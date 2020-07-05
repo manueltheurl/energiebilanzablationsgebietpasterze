@@ -10,6 +10,7 @@ import pickle
 from height_level import HeightLevel
 import copy
 
+
 class MultipleMeasurements:
     singleton_created = False
 
@@ -157,6 +158,26 @@ class MultipleMeasurements:
         first_measurement.snow_depth_delta_natural = 0
         first_measurement.snow_depth_delta_artificial = 0
 
+    def get_time_frames_of_valid_state_for_scope(self, valid_state):
+        """
+        valid_state: one of MeanMeasurement.valid_states values
+        """
+        # height level number does not matter for this
+
+        valid_state_frame_started = False
+        valid_state_time_frames = []
+        current_state_frame = [None, None]
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            if obj.valid_state == valid_state and not valid_state_frame_started:
+                current_state_frame[0] = obj.datetime_begin
+                valid_state_frame_started = True
+            elif obj.valid_state != valid_state and valid_state_frame_started:
+                current_state_frame[1] = obj.datetime_end
+                valid_state_time_frames.append(current_state_frame)
+                current_state_frame = [None, None]
+                valid_state_frame_started = False
+        return valid_state_time_frames
+
     def simulate(self, height_level, radiations_at_station):
         """
         Lets do magic
@@ -187,10 +208,8 @@ class MultipleMeasurements:
 
             """ Adapt radiation """
             day_of_year = __obj.datetime.timetuple().tm_yday if __obj.datetime.timetuple().tm_yday < 366 else 365
-            try:
-                radiation_scale_factor = __obj.sw_radiation_in/radiations_at_station[day_of_year]
-            except TypeError:
-                print(__obj.datetime)
+            radiation_scale_factor = __obj.sw_radiation_in/radiations_at_station[day_of_year]
+
             measure_obj = copy.deepcopy(__obj)
 
             """ Adapt meteorologic values to the height """
@@ -222,14 +241,12 @@ class MultipleMeasurements:
             measure_obj.calculate_energy_balance()
             measure_obj.calculate_theoretical_melt_rate()
             measure_obj.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
-            try:
-                if total_snow_swe and measure_obj.theoretical_melt_water_per_sqm > 0:
-                    snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
-                    snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
-                    current_height_lvl_natural_snow_height *= snow_depth_scale_factor
-                    current_height_lvl_artificial_snow_height *= snow_depth_scale_factor
-            except TypeError:
-                print("Cannot scale snow height for ", measure_obj.datetime, ".. skipping")
+
+            if total_snow_swe and measure_obj.theoretical_melt_water_per_sqm > 0:
+                snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
+                snow_depth_scale_factor = 0 if snow_depth_scale_factor < 0 else snow_depth_scale_factor
+                current_height_lvl_natural_snow_height *= snow_depth_scale_factor
+                current_height_lvl_artificial_snow_height *= snow_depth_scale_factor
 
             measure_obj.snow_depth_natural = current_height_lvl_natural_snow_height  # overwrite values for plot as well
             measure_obj.snow_depth_artificial = current_height_lvl_artificial_snow_height  # overwrite values for plot as well
@@ -607,6 +624,63 @@ class MultipleMeasurements:
                 pass
 
         return total_meltwater
+
+    def fix_invalid_summed_measurements_for_scope(self):
+        # TODO maybe another flag which tells if measurement is just computed or real
+
+        # This would be another option to replace single gaps by the mean of the previous and following measurement
+        # for i in sorted(self.__current_mean_index_scope):
+        #     obj = self.__all_mean_measurements[i]
+        #     obj: MeanMeasurement
+        #
+        #     if not obj.is_valid:
+        #         """ Check objects afterwards if they are valid """
+        #         obj_afterwards = self.__all_mean_measurements[i+1]
+        #         if obj_afterwards.is_valid:
+        #             obj_previously = self.__all_mean_measurements[i-1]  # TODO be aware of indexerror
+        #             if not obj_previously.is_valid:
+        #                 print("WHAT")
+        #             obj.replace_this_measurement_by_mean_of([obj_afterwards, obj_previously])
+        #         else:
+        #             print(obj.datetime)
+
+        invalid_measurements_and_replacements = dict()
+
+        for i in sorted(self.__current_mean_index_scope):
+            obj = self.__all_mean_measurements[i]
+            obj: MeanMeasurement
+
+            if obj.valid_state == MeanMeasurement.valid_states["invalid"]:
+                invalid_measurements_and_replacements[obj] = list()
+
+        for i in sorted(self.__current_mean_index_scope):
+            obj = self.__all_mean_measurements[i]
+            obj: MeanMeasurement
+
+            if obj.valid_state == MeanMeasurement.valid_states["valid"]:
+                current_datetime = copy.deepcopy(obj.datetime)  # deepcopy needed? TODO
+
+                for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
+                    year_of_invalid = invalid_measurement.datetime_begin.year  # endtime is ignored here
+
+                    try:
+                        current_datetime = current_datetime.replace(year=year_of_invalid)  # adapt year to compare
+                    except ValueError:
+                        current_datetime = current_datetime.replace(year=year_of_invalid, day=28)  # leap year
+
+                    if invalid_measurement.datetime_begin <= current_datetime < invalid_measurement.datetime_end:
+                        replacement_measurements.append(obj)
+
+        i = 0
+        for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
+            if replacement_measurements:
+                invalid_measurement.replace_this_measurement_by_mean_of(replacement_measurements)
+                i += 1
+            else:
+                print(invalid_measurement.datetime, "No replacement measurements found -> for every year this "
+                                                    "measurement is bad")
+
+        print(f"{i}/{len(invalid_measurements_and_replacements)} invalid summed measurements have been replaced")
 
     def download_components(self, options: list, use_summed_measurements=False):
         # currently not support for downloading summed measurements

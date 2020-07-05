@@ -42,10 +42,22 @@ class NoGuiManager:
     def __init__(self):
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
 
-        self.years_looked_at = list(range(2016, 2020))
+        self.years_looked_at = list(range(2012, 2020))
         self.startTime = dt.datetime(self.years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = dt.datetime(self.years_looked_at[1], 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.endTime = dt.datetime(self.years_looked_at[-1], 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.pickle_file_name = "multiple_measurements_singleton.pkl"
+        self.simulation_accuracy = 0.0001
+        self.use_tongue_only = True
+        self.high_res_rad_grid = True
+        height_level_step_width = 25
+
+        self.subfolder_name = f"height_level_step_width_{height_level_step_width}"
+
+        if self.use_tongue_only:
+            self.subfolder_name += "_tongue"
+        if self.high_res_rad_grid:
+            self.subfolder_name += "_radGridHighRes"
+        visualizer.singleton.change_result_plot_subfolder(self.subfolder_name)
 
     def run(self):
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
@@ -55,13 +67,10 @@ class NoGuiManager:
         if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
             res = dt.timedelta(days=1)
 
-            # reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
-            #                                                   endtime=self.endTime,
-            #                                                   resolution_by_percentage=100,
-            #                                                   resolution_by_time_interval=None)
-            #
-            # with open(self.pickle_file_name, 'wb') as f:
-            #     pickle.dump(multiple_measurements.singleton, f)
+            reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
+                                                              endtime=self.endTime,
+                                                              resolution_by_percentage=100,
+                                                              resolution_by_time_interval=None)
 
             with open(self.pickle_file_name, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
@@ -69,32 +78,30 @@ class NoGuiManager:
             multiple_measurements.singleton.correct_snow_measurements_for_scope()
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
             multiple_measurements.singleton.sum_measurements_by_time_interval(res)
-            
 
-            height_level_step_width = 25
-            use_tongue_only = False
-            high_res_rad_grid = False
+            # with open(self.pickle_file_name, 'wb') as f:
+            #     pickle.dump(multiple_measurements.singleton, f)
+            #
+            # #
+            with open(self.pickle_file_name, 'rb') as f:
+                multiple_measurements.singleton = pickle.load(f)
 
-            subfolder_name = f"height_level_step_width_{height_level_step_width}"
+            multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
 
-            if use_tongue_only:
-                subfolder_name += "_tongue"
-            if high_res_rad_grid:
-                if use_tongue_only:
-                    subfolder_name += "_radGridHighRes"
 
-            radiations_at_station = pickle.load(open(f"outputData/{subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
-            height_level_objects = pickle.load(open(f"outputData/{subfolder_name}/pickle_height_level_objects.pkl", "rb"))
+
+            radiations_at_station = pickle.load(open(f"outputData/{self.subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
+            height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/pickle_height_level_objects.pkl", "rb"))
 
             # for now create yearly height level objects .. this will probably be over-thinked again and will be different later TODO
 
             snowings_per_day_for_height_levels_starting_value = list(
-                reversed(np.linspace(0.01, 0.04, len(height_level_objects) // 2)))
+                reversed(np.linspace(0.01, 0.1, len(height_level_objects) // 2)))
             snowings_per_day_for_height_levels_starting_value += [0] * (
                         len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
 
             meteorologic_years = dict()
-            accuracy = 0.1
+
             for year in self.years_looked_at[:-1]:
                 print(f"___ Looking at meteorologic year {year} ___")
 
@@ -126,7 +133,7 @@ class NoGuiManager:
                                 else:
                                     # reduced snowing and it is still too much -> stick with the bigger delta value
                                     pass
-                            if abs(current_delta) < accuracy:
+                            if abs(current_delta) < self.simulation_accuracy:
                                 print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
                                 break  # found good enough estimation
                             elif current_snowing_per_day <= 0:
@@ -149,41 +156,43 @@ class NoGuiManager:
 
                 print("Overall water needed:", round(meteorologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
 
-            with open(f"outputData/{subfolder_name}/meteorologic_years.pkl", "wb") as f:
+            with open(f"outputData/{self.subfolder_name}/meteorologic_years.pkl", "wb") as f:
                 pickle.dump(meteorologic_years, f)
 
-            with open(f"outputData/{subfolder_name}/meteorologic_years.pkl", 'rb') as f:
-                meteorologic_years = pickle.load(f)
+            # with open(f"outputData/{self.subfolder_name}/meteorologic_years.pkl", 'rb') as f:
+            #     meteorologic_years = pickle.load(f)
 
             with open("multiple_measurements_singleton_filled.pkl", 'wb') as f:
                 pickle.dump(multiple_measurements.singleton, f)
 
-            for year in range(2016, 2017):
-                year = 2017
-                visualizer.singleton.show_plots = True
-                visualizer.singleton.plot_comparison_of_years(meteorologic_years)
+            # with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
+            #     multiple_measurements.singleton = pickle.load(f)
 
-                visualizer.singleton.plot_shape(meteorologic_years[year], "inputData/AWS_Station.shp", "inputData/equality_line_2018.shp", only_tongue=use_tongue_only)
-                exit()
+            # visualizer.singleton.show_plots = True
+
+            visualizer.singleton.plot_comparison_of_years(meteorologic_years,
+                                                          save_name=f"req_water_compare_{self.years_looked_at[0]}_{self.years_looked_at[-1]}")
+
+            for year in self.years_looked_at[:-1]:
+                visualizer.singleton.plot_shape(meteorologic_years[year], "inputData/AWS_Station.shp",
+                                                "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
+                                                save_name=f"pasterze_water_needed_{year}")
 
                 # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
                 # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
 
-                visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("total_snow_depth", ), "m",
-                                                          use_summed_measurements=True,
-                                                          save_name="height_lvls")
+                # visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("total_snow_depth", ), "m",
+                #                                           use_summed_measurements=True,
+                #                                           save_name="height_lvls")
 
                 visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("total_snow_water_equivalent",), "l",
                                                           use_summed_measurements=True,
-                                                          save_name="height_lvls")
+                                                          save_name=f"snow_water_equivalent_{year}")
+                continue
+                # visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("artificial_snow_water_equivalent",), "l",
+                #                                           use_summed_measurements=True,
+                #                                           save_name="height_lvls")
 
-                visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("artificial_snow_water_equivalent",), "l",
-                                                          use_summed_measurements=True,
-                                                          save_name="height_lvls")
-
-
-
-                exit()
                 # visualizer.singleton.plot_components_lvls(height_level_objects, ("air_pressure",), "m",
                 #                                           use_summed_measurements=True,
                 #                                           save_name="air_pressure")
@@ -229,47 +238,48 @@ class NoGuiManager:
               f"meter from {self.startTime} till {self.endTime}")
 
     def run_without_calculations(self):
-        height_level_step_width = 25
-        use_tongue_only = True
-        high_res_rad_grid = True
-
-        subfolder_name = f"height_level_step_width_{height_level_step_width}"
-
-        if use_tongue_only:
-            subfolder_name += "_tongue"
-        if high_res_rad_grid:
-            if use_tongue_only:
-                subfolder_name += "_radGridHighRes"
-
-        height_level_objects = pickle.load(open(f"outputData/{subfolder_name}/pickle_height_level_objects_filled.pkl", "rb"))
+        with open(f"outputData/{self.subfolder_name}/meteorologic_years.pkl", 'rb') as f:
+            meteorologic_years = pickle.load(f)
 
         with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
             multiple_measurements.singleton = pickle.load(f)
 
-        visualizer.singleton.show_plots = True
-        visualizer.singleton.plot_shape(height_level_objects, "inputData/AWS_Station.shp", "inputData/equality_line_2018.shp", only_tongue=use_tongue_only)
+        visualizer.singleton.plot_comparison_of_years(meteorologic_years,
+                                                      save_name=f"req_water_compare_{self.years_looked_at[0]}_{self.years_looked_at[-1]}")
 
-        # total_meltwater = multiple_measurements.singleton.get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements()
-        # swes = multiple_measurements.singleton.calculate_water_input_through_snow_for_scope()
-        #
-        # visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_depth",), "m",
-        #                                           use_summed_measurements=True,
-        #                                           save_name="height_lvls")
-        #
-        # visualizer.singleton.plot_components_lvls(height_level_objects, ("total_snow_water_equivalent",), "liters",
-        #                                           use_summed_measurements=True,
-        #                                           save_name="height_lvls")
-        #
-        # visualizer.singleton.plot_components_lvls(height_level_objects, ("artificial_snow_water_equivalent",), "l",
-        #                                           use_summed_measurements=True,
-        #                                           save_name="height_lvls")
+        for year in self.years_looked_at[:-1]:
+            multiple_measurements.singleton.reset_scope_to_all()
+            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+                dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
+
+            fix_lower_limit = 4000 if self.use_tongue_only else 0
+            visualizer.singleton.plot_shape(meteorologic_years[year], "inputData/AWS_Station.shp",
+                                            "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
+                                            fix_lower_limit=fix_lower_limit, fix_upper_limit=7500,
+                                            save_name=f"pasterze_water_needed_{year}")
+
+            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("natural_snow_water_equivalent",), "l",
+                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
+                                                      save_name=f"natural_snow_water_equivalent_{year}")
+
+            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("albedo",), "l",
+                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
+                                                      save_name=f"albedo{year}")
+
+            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("artificial_snow_water_equivalent",), "l",
+                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
+                                                      save_name=f"artificial_snow_water_equivalent_{year}")
+
+            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("total_snow_water_equivalent",), "l",
+                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
+                                                      save_name=f"total_snow_water_equivalent_{year}")
 
 
 if __name__ == "__main__":
     if not cfg["GUI"]:
         no_gui_manager = NoGuiManager()
-        no_gui_manager.run()
-        # no_gui_manager.run_without_calculations()
+        # no_gui_manager.run()
+        no_gui_manager.run_without_calculations()
 
     else:
         """

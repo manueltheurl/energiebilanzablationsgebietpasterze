@@ -13,7 +13,8 @@ class HeightLevel:
         self.mean_radiation = dict()
         self.mean_height = None
         self.mean_winter_balance = None
-        self.shape_layer_path = None  # TODO change to shape path
+        self.shape_layer_path = None
+        self.artificial_snowing_per_day = None
         self.simulated_measurements = []
 
     @classmethod

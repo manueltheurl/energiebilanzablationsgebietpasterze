@@ -26,6 +26,7 @@ import matplotlib.colors
 import matplotlib.colorbar
 from height_level import MeteorologicalYear
 from matplotlib.ticker import MaxNLocator
+from single_measurement import MeanMeasurement
 
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
@@ -36,13 +37,15 @@ DAYS_365 = dt.timedelta(days=365)  # hours=5, minutes=48     365.2422 days in ye
 class Visualize:
     singleton_created = False
 
-    def __init__(self):
+    def __init__(self, result_plot_path=cfg["RESULT_PLOT_PATH"]):
         if Visualize.singleton_created:
             raise Exception("Reader is a singleton")
         Visualize.singleton_created = True
 
-        if not os.path.exists(cfg["RESULT_PLOT_PATH"]):
-            os.makedirs(cfg["RESULT_PLOT_PATH"])
+        if not os.path.exists(result_plot_path):
+            os.makedirs(result_plot_path)
+
+        self.result_plot_path = result_plot_path
 
         self.title_dict = {
             "sw_radiation_in": "Short wave in",
@@ -59,6 +62,7 @@ class Visualize:
             "theoretical_melt_water_per_sqm": "Theoretical Melt Water",
             "total_snow_water_equivalent": "Total snow water equivalent",
             "artificial_snow_water_equivalent": "Artificial snow water equivalent",
+            "natural_snow_water_equivalent": "Natural snow water equivalent",
         }
 
         self.accumulate_plots = False
@@ -72,6 +76,11 @@ class Visualize:
         "trend": False,
         "temperature": False
     }
+
+    def change_result_plot_subfolder(self, result_plot_subfolder):
+        if not os.path.exists(self.result_plot_path + '/' + result_plot_subfolder):
+            os.makedirs(self.result_plot_path + '/' + result_plot_subfolder)
+        self.result_plot_path = self.result_plot_path + '/' + result_plot_subfolder
 
     def _pretty_label(self, key):
         try:
@@ -158,7 +167,7 @@ class Visualize:
             plt.show()
 
         if save_name is not None:
-            plt.savefig(cfg["RESULT_PLOT_PATH"] + "/" + save_name + ".png", dpi=cfg["PLOT_RESOLUTION"],
+            plt.savefig(self.result_plot_path + "/" + save_name + ".png", dpi=cfg["PLOT_RESOLUTION"],
                         bbox_inches='tight')
             self.plot_type_initialized = dict.fromkeys(self.plot_type_initialized, False)
 
@@ -360,7 +369,10 @@ class Visualize:
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_components_lvls(self, meteorological_year, components1: tuple, components1_unit, components2: tuple = None, components2_unit = None, use_summed_measurements=True, save_name=None):
+    def plot_components_lvls(self, meteorological_year, components1: tuple, components1_unit, components2: tuple = None,
+                             components2_unit=None, use_summed_measurements=True,
+                             show_estimated_measurement_areas=False, save_name=None):
+
         self.initialize_plot(None)
         meteorological_year: MeteorologicalYear
 
@@ -377,13 +389,22 @@ class Visualize:
                 if i % 6 == 0:
 
                     height_lvl: HeightLevel
-                    snow_heights = []
+                    x_vals = []
                     for measure in height_lvl.simulated_measurements:
-                        snow_heights.append(getattr(measure, component))
+                        x_vals.append(getattr(measure, component))
 
-                    self.ax.plot(y_dates, snow_heights, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m"),
+                    self.ax.plot(y_dates, x_vals, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m"),
                                  color=next(color_generator))
+
                 i += 1
+
+        if show_estimated_measurement_areas:
+            for estimated_area in multiple_measurements.singleton.get_time_frames_of_valid_state_for_scope(MeanMeasurement.valid_states["estimated"]):
+                rect = patches.Rectangle((estimated_area[0], self.ax.get_ylim()[0]), estimated_area[1]-estimated_area[0], self.ax.get_ylim()[1]-self.ax.get_ylim()[0],
+                                         edgecolor='none', facecolor='lightgray')
+                self.ax.add_patch(rect)
+            self.ax.add_patch(patches.Rectangle((0, 0), 0, 0, edgecolor='none', facecolor='lightgray',
+                                                label="Estimated measurements"))
 
         self.ax.legend(loc="upper left", fontsize=7)
 
@@ -393,10 +414,16 @@ class Visualize:
     def plot_comparison_of_years(self, meteorological_years, save_name=None):
         self.initialize_plot(None)
 
+        x_vals = []
+        y_vals = []
+
         for year, meteorological_year in meteorological_years.items():
             meteorological_year: MeteorologicalYear
+            self.ax.scatter(year, meteorological_year.overall_amount_of_water_needed_in_liters/1000000, color="black")
+            x_vals.append(year)
+            y_vals.append(meteorological_year.overall_amount_of_water_needed_in_liters/1000000)
 
-            self.ax.scatter(year, meteorological_year.overall_amount_of_water_needed_in_liters/1000000)
+        self.ax.plot(x_vals, y_vals)
 
         self.ax.set_xlabel("Year")
         self.ax.set_ylabel("Overall Water needed [1.000.000 liters]")
@@ -406,13 +433,14 @@ class Visualize:
 
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_shape(self, meteorological_year, aws_station=None, equality_line=None, only_tongue=False, save_name=None):
+    def plot_shape(self, meteorological_year, aws_station=None, equality_line=None, only_tongue=False,
+                   fix_lower_limit=None, fix_upper_limit=None, save_name=None):
         self.initialize_plot(None)
         meteorological_year: MeteorologicalYear
 
         if only_tongue:
-            self.ax.set_xlim([401000, 405500])
-            self.ax.set_ylim([214500, 218700])
+            self.ax.set_xlim([402000, 405500])
+            self.ax.set_ylim([214500, 218000])
             ax_colorbar = self.fig.add_axes([0.84, 0.11, 0.02, 0.76])  # left, bottom, width, height
         else:
             self.ax.set_xlim([398000, 405500])
@@ -432,7 +460,12 @@ class Visualize:
                         meteorological_year.height_level_objects]
 
         # normalize value between 0 and max speed to 0 and 1 for cmap
-        norm = matplotlib.colors.Normalize(vmin=0, vmax=max(vals_to_plot))
+
+        upper_limit = fix_upper_limit if fix_upper_limit is not None else max(vals_to_plot)
+        lower_limit = fix_lower_limit if fix_lower_limit is not None else min(vals_to_plot)
+
+        norm = matplotlib.colors.Normalize(vmin=lower_limit, vmax=upper_limit)
+
         cb1 = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
                                                norm=norm,
                                                orientation='vertical', extend="max")
@@ -470,7 +503,6 @@ class Visualize:
         self.show_save_and_close_plot(None, save_name=save_name)
 
     def plot_temperature_and_water_equivalent(self, use_summed_measurements=False, save_name=None):
-
         self.initialize_plot("temperature")
 
         x_vals = multiple_measurements.singleton.get_all_of("snow_depth",

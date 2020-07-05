@@ -3,6 +3,7 @@ import energy_balance
 from manage_config import cfg
 import math as m
 from natural_snow_scaler import NaturalSnowScaler
+from statistics import mean
 
 # TODO maybe make another subclass "ArtificialMeasurement"  or better not?  with just the artificial methods
 
@@ -129,6 +130,15 @@ class Measurement:
                                                ])
         except TypeError:
             pass  # Something is None
+            print(self.sw_radiation_in,  # get it over property cause may be glob br. simul
+                                               self._energy_balance_components["sw_radiation_out"],
+                                               self._energy_balance_components["lw_radiation_in"],
+                                               self._energy_balance_components["lw_radiation_out"],
+                                               self._energy_balance_components["sensible_heat"],
+                                               self._energy_balance_components["latent_heat"])
+            print(self._air_pressure, self._wind_speed, self._temperature)
+            print(self._temperature, self._rel_moisture, self._wind_speed)
+            exit("NONE" )
 
         if not cfg["IGNORE_PRECIPITATION_HEAT"]:
             self._total_energy_balance += self._energy_balance_components["precipitation_heat"]
@@ -332,10 +342,17 @@ class MeanMeasurement(Measurement):
     Object refers to the sum of multiple single measurements
     Values can be read but NOT be modified
     """
+    valid_states = {
+        "valid": 0,
+        "invalid": 1,
+        "estimated": 2,
+    }
 
     def __init__(self):
         Measurement.__init__(self, None, None, None, None, None, None,
                  None, None, None, None, None, None, None, None)
+
+        self.__valid_state = self.valid_states["invalid"]  # this flag will be set valid if calculate_mean() is good
 
         self.__relative_ablation_measured = None
         self.__relative_ablation_modelled = None
@@ -352,6 +369,8 @@ class MeanMeasurement(Measurement):
         self.__actual_melt_water_per_sqm = None
         self.__theoretical_melt_water_per_sqm = None
 
+        self.contains_single_measurements = 0
+        # -- components .. TODO maybe summarize this somehow, with dict or whatever
         self.contains_sw_in = 0
         self.contains_sw_out = 0
         self.contains_lw_in = 0
@@ -374,6 +393,8 @@ class MeanMeasurement(Measurement):
             self.contains_temperature = 0
 
     def __iadd__(self, single_measurement: SingleMeasurement):
+        self.contains_single_measurements += 1
+
         if self.__datetime_begin is None or single_measurement.datetime < self.__datetime_begin:
             self.__datetime_begin = single_measurement.datetime
 
@@ -513,6 +534,23 @@ class MeanMeasurement(Measurement):
 
         return self  # important
 
+    def __ratio(self, amount_of_specific_value):
+        return amount_of_specific_value/self.contains_single_measurements
+
+    def __check_if_measurement_is_valid(self):
+        """
+        At the end of the calculate mean fx, this function is called and according to the result of this function the
+        flag is_valid gets set.
+        This function is fully subjective and can be adapted as needed
+        """
+
+        if min([self.__ratio(self.contains_sw_in), self.__ratio(self.contains_sw_out), self.__ratio(self.contains_lw_in),
+               self.__ratio(self.contains_lw_out), self.__ratio(self.contains_air_pressure), self.__ratio(self.contains_rel_moisture),
+               self.contains_temperature, self.contains_wind_speed]) < 0.8:
+            self.__valid_state = self.valid_states["invalid"]
+        else:
+            self.__valid_state = self.valid_states["valid"]
+
     def calculate_mean(self, endtime, end_ablation):
         self.__datetime_end = endtime  # first date of next measurement .. important for calculating melt water
         self.__ending_ablation = end_ablation
@@ -572,6 +610,8 @@ class MeanMeasurement(Measurement):
         if self._total_energy_balance is not None:
             self._total_energy_balance /= self.contains_total_energy_balance
 
+        self.__check_if_measurement_is_valid()
+
     def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
         if self.__relative_ablation_measured is not None:
 
@@ -591,9 +631,52 @@ class MeanMeasurement(Measurement):
             self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
                 self.__theoretical_melt_water_per_sqm)
 
+    def replace_this_measurement_by_mean_of(self, mean_measurements):
+        temperatures = []
+        rel_moistures = []
+        air_pressures = []
+        wind_speeds = []
+        sw_ins = []
+        sw_outs = []
+        lw_ins = []
+        lw_outs = []
+        snow_deltas = []
+
+        for mean_measurement in mean_measurements:
+            mean_measurement: MeanMeasurement
+            temperatures.append(mean_measurement.temperature)
+            rel_moistures.append(mean_measurement.rel_moisture)
+            wind_speeds.append(mean_measurement.wind_speed)
+            air_pressures.append(mean_measurement.air_pressure)
+            sw_ins.append(mean_measurement.sw_radiation_in)
+            sw_outs.append(mean_measurement.sw_radiation_out)
+            lw_ins.append(mean_measurement.lw_radiation_in)
+            lw_outs.append(mean_measurement.lw_radiation_out)
+            snow_deltas.append(mean_measurement.snow_depth_delta_natural)
+
+        # no error should occur here, no none values should be parsed
+        self._temperature = mean(temperatures)
+        self._rel_moisture = mean(rel_moistures)
+        self._air_pressure = mean(air_pressures)
+        self._wind_speed = mean(wind_speeds)
+        self._energy_balance_components["sw_radiation_in"] = mean(sw_ins)
+        self._energy_balance_components["sw_radiation_out"] = mean(sw_outs)
+        self._energy_balance_components["lw_radiation_in"] = mean(lw_ins)
+        self._energy_balance_components["lw_radiation_out"] = mean(lw_outs)
+        self._snow_depth_delta_natural = mean(snow_deltas)
+        self.__valid_state = self.valid_states["estimated"]
+
+    @property
+    def valid_state(self):
+        return self.__valid_state
+
     @property
     def datetime_begin(self):
         return self.__datetime_begin
+
+    @property
+    def datetime_end(self):
+        return self.__datetime_end
 
     @property
     def relative_ablation_measured(self):
@@ -626,3 +709,4 @@ class MeanMeasurement(Measurement):
     @property
     def datetime(self):
         return self.__datetime_begin + (self.__datetime_end - self.__datetime_begin) / 2
+
