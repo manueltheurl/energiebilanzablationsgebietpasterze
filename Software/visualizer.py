@@ -28,8 +28,12 @@ from height_level import MeteorologicalYear
 from matplotlib.ticker import MaxNLocator
 from single_measurement import MeanMeasurement
 import copy
+import locale
+
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
+matplotlib.rcParams['axes.formatter.use_locale'] = True
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
 DAYS_365 = dt.timedelta(days=365)  # hours=5, minutes=48     365.2422 days in year approximately  dont change to that
 
@@ -88,7 +92,7 @@ class Visualize:
         except KeyError:
             return key
 
-    def initialize_plot(self, type_):
+    def initialize_plot(self, type_, figsize=(14, 9), create_ax=True):
         """
         :rtype: object
         """
@@ -113,8 +117,9 @@ class Visualize:
                 plt.close()  # should one be open
 
         if yet_to_initialize or not bool(cfg["PRO_VERSION"]):
-            self.fig = plt.figure(figsize=(14, 9))
-            self.ax = self.fig.add_subplot(111)
+            self.fig = plt.figure(figsize=figsize)
+            if create_ax:
+                self.ax = self.fig.add_subplot(111)
 
     def modify_axes(self):
         years = mdates.YearLocator()
@@ -246,7 +251,7 @@ class Visualize:
 
     @staticmethod
     def _color_generator():
-        colors = ["blue", "red", "green", "dimgray", "lightgray", "rosybrown", "lightcoral", "darkorange",
+        colors = ["blue", "red", "green", "dimgray", "rosybrown", "lightgray", "lightcoral", "darkorange",
                   "darkgoldenrod", "darkkhaki", "olive", "darkseagreen", "mediumaquamarine", "rebeccapurple", "pink",
                   "darkblue", "black"]
         i = 0
@@ -369,42 +374,50 @@ class Visualize:
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_components_lvls(self, meteorological_year, components1: tuple, components1_unit, components2: tuple = None,
-                             components2_unit=None, use_summed_measurements=True,
+    def plot_components_lvls(self, height_level_objects, components1: tuple, components1_unit, components2: tuple = None,
+                             components2_unit=None, factor=1, stack_fill=False, use_summed_measurements=True,
                              show_estimated_measurement_areas=False, save_name=None):
 
         self.initialize_plot(None)
-        meteorological_year: MeteorologicalYear
 
         color_generator = self._color_generator()
 
         y_dates = multiple_measurements.singleton.get_all_of("datetime",
                                                              use_summed_measurements=use_summed_measurements)
 
+        if len(height_level_objects) > 1 and len(components1) > 1:
+            exit("Cannot visualize that, either one height lvl and multiple components or multiple height lvls and one"
+                 "component")
+
+        if len(components1) > 1:
+            self.ax.set_ylabel(f"Snow water equivalent [{components1_unit}]")  # TODO this actually a manual thing here, should be removed
+        else:
+            self.ax.set_ylabel(f"{self._pretty_label(components1[0])} [{components1_unit}]")
+
         i = 0
         for component in components1:
             # bad if more components
-            self.ax.set_ylabel(f"{self._pretty_label(component)} [{components1_unit}]")
-            for height_lvl in meteorological_year.height_level_objects:
-                if i % 6 == 0:
+            for height_lvl in height_level_objects:
+                height_lvl: HeightLevel
+                x_vals = []
+                for measure in height_lvl.simulated_measurements:
+                    x_vals.append(getattr(measure, component)*factor)
 
-                    height_lvl: HeightLevel
-                    x_vals = []
-                    for measure in height_lvl.simulated_measurements:
-                        x_vals.append(getattr(measure, component))
-
-                    self.ax.plot(y_dates, x_vals, label=self._pretty_label("Lvl mid height: " + str(int(height_lvl.height)) + "m"),
-                                 color=next(color_generator))
-
+                label = self._pretty_label(component) if len(height_level_objects) == 1 else "Average elevation band " + str(int(height_lvl.height)) + "m a.s.l."
+                color = next(color_generator)
+                self.ax.plot(y_dates, x_vals, label=label, color=color)
+                if stack_fill:
+                    self.ax.fill(y_dates + [y_dates[-1]], x_vals + [0], color=color)  # hacky hack to fill till bottom
                 i += 1
 
         if show_estimated_measurement_areas:
+            zorder = 5 if stack_fill else -1
             for estimated_area in multiple_measurements.singleton.get_time_frames_of_valid_state_for_scope(MeanMeasurement.valid_states["estimated"]):
                 rect = patches.Rectangle((estimated_area[0], self.ax.get_ylim()[0]), estimated_area[1]-estimated_area[0], self.ax.get_ylim()[1]-self.ax.get_ylim()[0],
-                                         edgecolor='none', facecolor='lightgray')
+                                         edgecolor='none', facecolor='lightgray', zorder=zorder, alpha=1)
                 self.ax.add_patch(rect)
             self.ax.add_patch(patches.Rectangle((0, 0), 0, 0, edgecolor='none', facecolor='lightgray',
-                                                label="Estimated measurements"))
+                                                label="Gap-filled measurements"))
 
         self.ax.legend(loc="upper left", fontsize=7)
 
@@ -417,30 +430,53 @@ class Visualize:
         x_vals = []
         y_vals = []
 
+        print("Table artificial snow production for neutral balance, yearly comparison:")
+        print("[Year]\t[m^3]")
         for year, meteorological_year in meteorological_years.items():
             meteorological_year: MeteorologicalYear
-            self.ax.scatter(year, meteorological_year.overall_amount_of_water_needed_in_liters/1000000, color="black")
             x_vals.append(year)
-            y_vals.append(meteorological_year.overall_amount_of_water_needed_in_liters/1000000)
-
-        self.ax.plot(x_vals, y_vals)
+            y_vals.append(meteorological_year.overall_amount_of_snow_needed_in_cubic_meters/1000000)
+            print(f"{year}\t{round(meteorological_year.overall_amount_of_snow_needed_in_cubic_meters, 1)}")
 
         self.ax.set_xlabel("Year")
-        self.ax.set_ylabel("Overall Water needed [1.000.000 liters]")
-        self.ax.grid(zorder=-2, ls="--", lw="0.5")
+        self.ax.set_ylabel(r"Total volume of ASP necessary for neutral balance [$1.000.000~m^3$]")
+        self.ax.grid(zorder=1, ls="--", lw="0.5", axis="y")
+        self.ax.bar(x_vals, y_vals, align='center', alpha=0.6, color="blue", zorder=5)
 
         self.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         self.show_save_and_close_plot(None, save_name=save_name)
 
+    def plot_compare_water_and_height(self, years, meteorological_years, save_name=None):
+        self.initialize_plot(None)
+
+        color_gen = self._color_generator()
+
+        for year in years:
+            x_vals = []
+            y_vals = []
+            for height_level in meteorological_years[year].height_level_objects:
+                meteorological_year: MeteorologicalYear
+                x_vals.append(
+                    height_level.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters()/1000)
+                y_vals.append(height_level.height)
+
+            label = str(year) if len(years) > 1 else None
+            self.ax.plot(x_vals, y_vals, color=next(color_gen), zorder=5, label=label)
+
+        self.ax.set_xlabel("Average specific water required in elevation band [m w.e.]")
+        self.ax.set_ylabel(r"Mean elevation [m a.s.l.]")
+        self.ax.grid(zorder=1, ls="--", lw="0.5", axis="both")
+        if len(years) > 1:
+            self.ax.legend()
+        self.show_save_and_close_plot(None, save_name=save_name)
+
     def plot_day_of_ice_exposures_for_year(self, year, meteorological_years, radiations_at_station, resolution=0.0025, save_name=None):
+        # TODO here and for the other plot could be drawn a line till 1. oct in the end
         self.initialize_plot(None)
 
         meteorological_year = copy.deepcopy(meteorological_years[year])  # to not modify the original one
         meteorological_year: MeteorologicalYear
-
-        self.ax.set_xlabel(str(year))
-        self.ax.set_ylabel("Amount of artificial snowing per day if possible [cm]")
 
         multiple_measurements.singleton.reset_scope_to_all()
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
@@ -463,12 +499,14 @@ class Visualize:
                     if day_of_ice_exposure is None:
                         break
                     x_days_of_exposure.append(day_of_ice_exposure)
-                    y_snowing_amounts.append(current_snowing_per_day*100)
+                    y_snowing_amounts.append(current_snowing_per_day*cfg["ARTIFICIAL_SNOW_SWE_FACTOR"]*1000)
                     current_amount_of_snowing_per_day += resolution
 
                 self.ax.plot(x_days_of_exposure, y_snowing_amounts,
-                             label=self._pretty_label("Date of ice exposure at height " + str(int(height_level.height)) + "m"))
+                             label=self._pretty_label("Average elevation band " + str(int(height_level.height)) + "m a.s.l."))
         self.modify_axes()
+        self.ax.set_xlabel("Date of bare ice exposure")
+        self.ax.set_ylabel("Daily ASP when conditions permit [mm w.e.]")
         self.ax.legend()
         self.show_save_and_close_plot(None, save_name=save_name)
 
@@ -478,8 +516,6 @@ class Visualize:
         for year, meteorological_year in meteorological_years.items():
             meteorological_year = copy.deepcopy(meteorological_years[year])  # to not modify the original one
             meteorological_year: MeteorologicalYear
-
-            self.ax.set_ylabel("Amount of artificial snowing per day if possible [cm]")
 
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
@@ -502,82 +538,125 @@ class Visualize:
                     break
                 # having the same year for all, 2020 as leap year, for not having problems with feb 29
                 x_days_of_exposure.append(day_of_ice_exposure.replace(year=2020))
-                y_snowing_amounts.append(current_snowing_per_day)
+                y_snowing_amounts.append(current_snowing_per_day*cfg["ARTIFICIAL_SNOW_SWE_FACTOR"]*1000)
                 current_amount_of_snowing_per_day += resolution
 
             self.ax.plot(x_days_of_exposure, y_snowing_amounts,
-                         label=self._pretty_label(f"{year} date of ice exposure"))
+                         label=str(year))
         self.modify_axes()
+        self.ax.set_xlabel("Date of bare ice exposure")
+        self.ax.set_ylabel("Daily ASP when conditions permit [mm w.e.]")
         self.ax.set_xlim(dt.datetime(2020, 1, 15))
         self.ax.legend()
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_shape(self, meteorological_year, aws_station=None, equality_line=None, only_tongue=False,
-                   fix_lower_limit=None, fix_upper_limit=None, save_name=None):
-        self.initialize_plot(None)
-        meteorological_year: MeteorologicalYear
+    def plot_pasterze(self, meteorological_years_dict, years, aws_station=None, equality_line=None, only_tongue=False,
+                      fix_lower_limit=None, fix_upper_limit=None, save_name=None):
+
+        only_one_ax = True
+
+        # TODO this is not so beautiful at all .. when time, take a look at this again
+
+        axes = []
+        if len(years) == 1:
+            self.initialize_plot(None)
+            axes.append(self.ax)
+        elif len(years) > 1:
+            self.initialize_plot(None, figsize=(14, 11), create_ax=False)
+            plt.subplots_adjust(wspace=0.1, hspace=0.03)
+            for i in range(len(years)):
+                # TODO for later if needed find out 22 or 33 or whatever
+                axes.append(self.fig.add_subplot(f"23{i+1}"))
+                only_one_ax = False
+
+        snr_cmap = matplotlib.cm.get_cmap('coolwarm')
 
         if only_tongue:
-            self.ax.set_xlim([402000, 405500])
-            self.ax.set_ylim([214500, 218000])
-            ax_colorbar = self.fig.add_axes([0.84, 0.11, 0.02, 0.76])  # left, bottom, width, height
+            if only_one_ax:
+                ax_colorbar = self.fig.add_axes([0.8, 0.11, 0.02, 0.76])  # left, bottom, width, height
+            else:
+                ax_colorbar = self.fig.add_axes([0.93, 0.11, 0.02, 0.76])  # left, bottom, width, height
         else:
-            self.ax.set_xlim([398000, 405500])
-            self.ax.set_ylim([212500, 225000])
             ax_colorbar = self.fig.add_axes([0.7, 0.11, 0.02, 0.76])  # left, bottom, width, height
 
-        self.ax.set_ylabel("x [m]")
-        self.ax.set_xlabel("y [m]")
+        if not only_one_ax:
+            if None in (fix_upper_limit, fix_lower_limit):
+                exit("When plotting multiple years, fix limits have to be set!")
+            upper_limit = fix_upper_limit
+            lower_limit = fix_lower_limit
 
-        self.ax.set_aspect("equal")
+            norm = matplotlib.colors.Normalize(vmin=lower_limit, vmax=upper_limit)
+            cb1 = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
+                                                   norm=norm,
+                                                   orientation='vertical', extend="both")
+            cb1.set_label(r'Elevation-averaged specific ASP necessary for neutral balance [m w.e.]')
 
-        self.ax.grid(zorder=-2, ls="--", lw="0.5")
+        for ax, year in zip(axes, years):
+            meteorological_year: MeteorologicalYear
+            meteorological_year = meteorological_years_dict[year]
 
-        snr_cmap = matplotlib.cm.get_cmap('winter_r')
+            if only_tongue:
+                ax.set_xlim([402000, 405500])
+                ax.set_ylim([214500, 218000])
+            else:
+                ax.set_xlim([398000, 405500])
+                ax.set_ylim([212500, 225000])
 
-        vals_to_plot = [x.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters() for x in
-                        meteorological_year.height_level_objects]
+            if only_one_ax:
+                ax.set_ylabel("x [m]")
+                ax.set_xlabel("y [m]")
+            else:
+                ax.get_xaxis().set_visible(False)
+                ax.get_yaxis().set_visible(False)
 
-        # normalize value between 0 and max speed to 0 and 1 for cmap
+            ax.set_aspect("equal")
+            ax.grid(zorder=-2, ls="--", lw="0.5")
 
-        upper_limit = fix_upper_limit if fix_upper_limit is not None else max(vals_to_plot)
-        lower_limit = fix_lower_limit if fix_lower_limit is not None else min(vals_to_plot)
+            vals_to_plot = [x.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters()/1000 for x in
+                            meteorological_year.height_level_objects]
 
-        norm = matplotlib.colors.Normalize(vmin=lower_limit, vmax=upper_limit)
+            # normalize value between 0 and max speed to 0 and 1 for cmap
+            if only_one_ax:
+                upper_limit = fix_upper_limit if fix_upper_limit is not None else max(vals_to_plot)
+                lower_limit = fix_lower_limit if fix_lower_limit is not None else min(vals_to_plot)
 
-        cb1 = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
-                                               norm=norm,
-                                               orientation='vertical', extend="max")
-        cb1.set_label(r'Mean yearly water consumption of snow canons in liters per $m^2$')
+                norm = matplotlib.colors.Normalize(vmin=lower_limit, vmax=upper_limit)
+                cb1 = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
+                                                       norm=norm,
+                                                       orientation='vertical', extend="both")
+                cb1.set_label(r'Elevation-averaged specific ASP necessary for neutral balance [m w.e.]')
 
-        if aws_station is not None:
-            self.ax.scatter(*shp.Reader(aws_station).shapes()[0].points[0], zorder=10, s=40, color="red",
-                            label="Weather Station")
+                if aws_station is not None:
+                    ax.scatter(*shp.Reader(aws_station).shapes()[0].points[0], zorder=10, s=40, color="red",
+                                    label="Weather Station")
+            else:
+                ax.set_title(year)
 
-        if equality_line is not None:
-            line_of_equality = shp.Reader(equality_line).shapes()[0].points
+            if equality_line is not None and not only_tongue:
+                # line_of_equality = shp.Reader(equality_line).shapes()[0].points
+                for line_part in shp.Reader(equality_line).shapes():
+                    if not only_tongue:
+                        xs = []
+                        ys = []
+                        for x, y in line_part.points:
+                            xs.append(x)
+                            ys.append(y)
+                        ax.plot(xs, ys, lw=3, zorder=50, color="red")
+                ax.plot(0, 0, lw=3, zorder=50, color="red", label="Common line of equality")
 
-            if not only_tongue:
-                xs = []
-                ys = []
-                for x, y in line_of_equality:
-                    xs.append(x)
-                    ys.append(y)
-                self.ax.plot(xs, ys, lw=3, zorder=50, label="Common line of equality")
+            for i, height_lvl in enumerate(meteorological_year.height_level_objects):
+                height_lvl: HeightLevel
 
-        for i, height_lvl in enumerate(meteorological_year.height_level_objects):
-            height_lvl: HeightLevel
+                shp_file = shp.Reader(height_lvl.shape_layer_path)
 
-            shp_file = shp.Reader(height_lvl.shape_layer_path)
-
-            for shape in shp_file.shapes():
-                color = snr_cmap(norm(vals_to_plot[i])) if vals_to_plot[i] else "white"
-                self.ax.add_patch(PolygonPatch(shape.__geo_interface__,
-                                               fc=color,
-                                               ec="gray"))
-
-        if not not any([aws_station, equality_line]):
-            self.ax.legend()
+                for shape in shp_file.shapes():
+                    color = snr_cmap(norm(vals_to_plot[i])) if vals_to_plot[i] else "white"
+                    ax.add_patch(PolygonPatch(shape.__geo_interface__,
+                                                   fc=color,
+                                                   ec="gray"))
+            if only_one_ax:
+                if any([aws_station, equality_line]):
+                    ax.legend()
 
         self.show_save_and_close_plot(None, save_name=save_name)
 

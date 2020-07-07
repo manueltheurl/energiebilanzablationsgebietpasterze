@@ -412,6 +412,17 @@ if __name__ == "__main__":
     # QGisHandler().run_creating_height_levels(height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
     #                                          path_to_winter_balance, path_to_directory_with_radiations)
 
-    QGisHandler().run_creating_dvol_file(
-        "/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/Data_for_Germ/auto_dvol_generation/inputData",
-        (1850, 1969, 1998, 2012))
+    # QGisHandler().run_creating_dvol_file(
+    #     "/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/Data_for_Germ/auto_dvol_generation/inputData",
+    #     (1850, 1969, 1998, 2012))
+
+    # print(QGisHandler().get_area_of_shapes("/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/GitRepo/Software/inputData/pasterze_2018.shp"))
+    print(QGisHandler().get_area_of_shapes("/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/GitRepo/Software/inputData/pas_tongue_2018.shp"))
+
+    params_rasterlayerstatistics = {
+        'INPUT': "/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/GitRepo/Software/inputData/DEL_Ras_shape_tongue.tif",
+        'BAND': 1,
+        'LEVEL': 0,
+        'METHOD': 2,
+    }
+    print(QGisHandler().rastersurfacevolume(params_rasterlayerstatistics)["AREA"])

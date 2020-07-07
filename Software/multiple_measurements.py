@@ -6,7 +6,6 @@ import csv
 from single_measurement import SingleMeasurement, MeanMeasurement
 from snow_to_swe_model import SnowToSwe
 import numpy as np
-import pickle
 from height_level import HeightLevel
 import copy
 import scipy.signal
@@ -137,21 +136,35 @@ class MultipleMeasurements:
                 [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]):
             obj.snow_depth_natural = filtered
 
-    def simulate_artificial_snowing(self):
+    def correct_snow_measurements_for_scope_deprecated(self):
         """
-        TODO deprecated?
+        If measured snow is NULL, then take last measurement as new value
+        If measured snow height is < 10cm from June till september, then set 0
+        If jump from one measurement to the next is too big, then take previous measurement
         """
         minute_resolution = self.get_time_resolution()
-
-        artificial_snowing_in_m_height_per_day = float(cfg["MAX_ARTIFICIAL_SNOW_PER_DAY"])
-        artificial_snowing_in_m_per_time_step = artificial_snowing_in_m_height_per_day / (24*60) * minute_resolution
-
+        past_snow_depth = None
+        first_snow_depth = True
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            try:
-                if obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
-                    obj.snow_depth_delta_artificial = artificial_snowing_in_m_per_time_step
-            except TypeError:
-                pass
+            if obj.snow_depth_natural is None:
+                if first_snow_depth:
+                    # when the first depth looking at is None, just set it to 0
+                    obj.snow_depth_natural = 0
+                    first_snow_depth = False
+                else:
+                    obj.snow_depth_natural = past_snow_depth
+
+            if 6 <= obj.datetime.month <= 8:
+                if obj.snow_depth_natural <= 0.1:
+                    obj.snow_depth_natural = 0
+
+            if past_snow_depth is not None and abs(past_snow_depth-obj.snow_depth_natural) > 0.05*minute_resolution:
+                obj.snow_depth_natural = past_snow_depth
+
+            if past_snow_depth is not None:
+                obj.snow_depth_delta_natural = obj.snow_depth_natural - past_snow_depth
+
+            past_snow_depth = obj.snow_depth_natural
 
     def calculate_snow_height_deltas_for_scope(self):
         past_snow_depth = None

@@ -41,11 +41,11 @@ from height_level import MeteorologicalYear
 class NoGuiManager:
     def __init__(self):
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
-
-        self.years_looked_at = list(range(2012, 2020))
-        self.startTime = dt.datetime(self.years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = dt.datetime(self.years_looked_at[-1], 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
-        self.pickle_file_name = "multiple_measurements_singleton.pkl"
+        # TODO well seems like it actually is a hydrologic year .. maybe change that some time
+        self.meteorologic_years_looked_at = [2012, 2013, 2014, 2016, 2017, 2018]  # 2015 is baad
+        self.startTime = dt.datetime(self.meteorologic_years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.endTime = dt.datetime(self.meteorologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.pickle_file_name = "multiple_measurements_singleton.pkl"  # TODO do this with date and tongue as well
         self.simulation_accuracy = 0.0001
         self.use_tongue_only = True
         self.high_res_rad_grid = True
@@ -60,6 +60,7 @@ class NoGuiManager:
         visualizer.singleton.change_result_plot_subfolder(self.subfolder_name)
 
     def run_calculations(self):
+        print("STARTING WITH THE CALCULATIONS")
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
 
         reader.singleton.fetch_file_metadata()
@@ -93,7 +94,7 @@ class NoGuiManager:
 
             meteorologic_years = dict()
 
-            for year in self.years_looked_at[:-1]:
+            for year in self.meteorologic_years_looked_at:
                 print(f"___ Looking at meteorologic year {year} ___")
 
                 meteorologic_years[year] = MeteorologicalYear(copy.deepcopy(height_level_objects))
@@ -127,6 +128,7 @@ class NoGuiManager:
                                     pass
                             if abs(current_delta) < self.simulation_accuracy:
                                 print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
+                                print(f"Compensated {int(liters_melted_anyways)} liters/m^2 from beginning of meteorological year")
                                 break  # found good enough estimation
                             elif current_snowing_per_day <= 0:
                                 print("No snowing needed at all")
@@ -155,55 +157,77 @@ class NoGuiManager:
                 pickle.dump(multiple_measurements.singleton, f)
 
     def run_visualizations(self):
+        print("STARTING WITH THE VISUALIZATIONS")
         with open(f"outputData/{self.subfolder_name}/meteorologic_years.pkl", 'rb') as f:
             meteorologic_years = pickle.load(f)
-
         with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
             multiple_measurements.singleton = pickle.load(f)
 
         radiations_at_station = pickle.load(open(f"outputData/{self.subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
 
         visualizer.singleton.plot_comparison_of_years(meteorologic_years,
-                                                      save_name=f"req_water_compare_{self.years_looked_at[0]}_{self.years_looked_at[-1]}")
+                                                      save_name=f"req_snow_compare_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}")
 
-        visualizer.singleton.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, 2094, radiations_at_station,
-                                                       save_name=f"day_of_ice_exposure_{self.years_looked_at[0]}_{self.years_looked_at[-1]}_for_height_{2094}")
+        visualizer.singleton.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, cfg["AWS_STATION_HEIGHT"], radiations_at_station,
+                                                                           save_name=f"day_of_ice_exposure_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
 
-        for year in self.years_looked_at[:-1]:
+        fix_lower_limit = 3 if self.use_tongue_only else 0
+        fix_upper_limit = 7.5
+
+        # # TODO for whole pasterze, equality_line_2018 from all hast to be taken
+        visualizer.singleton.plot_pasterze(meteorologic_years, self.meteorologic_years_looked_at, "inputData/AWS_Station.shp",
+                                           "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
+                                           fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
+                                           save_name=f"pasterze_water_needed_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}_")
+
+        visualizer.singleton.plot_compare_water_and_height(self.meteorologic_years_looked_at, meteorologic_years,
+                                                           save_name=f"water_vs_height_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}")
+
+        for year in self.meteorologic_years_looked_at:
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
                 dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
 
+            visualizer.singleton.plot_components_lvls([
+                meteorologic_years[year].get_height_level_close_to_height(cfg["AWS_STATION_HEIGHT"])],
+                ("total_snow_water_equivalent", "artificial_snow_water_equivalent", "natural_snow_water_equivalent"),
+                "m w. e.", factor=1/1000, stack_fill=True,
+                use_summed_measurements=True, show_estimated_measurement_areas=True,
+                save_name=f"all_snow_water_equivalents_{year}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
+
+            visualizer.singleton.plot_compare_water_and_height([year], meteorologic_years,
+                                                               save_name=f"water_vs_height_{year}")
+
             visualizer.singleton.plot_day_of_ice_exposures_for_year(year, meteorologic_years, radiations_at_station,
                                                            save_name=f"day_of_ice_exposure_{year}")
 
-            fix_lower_limit = 3000 if self.use_tongue_only else 0
-            visualizer.singleton.plot_shape(meteorologic_years[year], "inputData/AWS_Station.shp",
-                                            "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
-                                            fix_lower_limit=fix_lower_limit, fix_upper_limit=7500,
-                                            save_name=f"pasterze_water_needed_{year}")
+            visualizer.singleton.plot_pasterze(meteorologic_years, [year], "inputData/AWS_Station.shp",
+                                            f"inputData/equality_line_{year}.shp", only_tongue=self.use_tongue_only,
+                                               fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
+                                               save_name=f"pasterze_water_needed_{year}")
 
-            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("natural_snow_water_equivalent",), "l",
-                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
+            visualizer.singleton.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("natural_snow_water_equivalent",), "m w. e.",
+                                                      use_summed_measurements=True, show_estimated_measurement_areas=True, factor=1/1000,
                                                       save_name=f"natural_snow_water_equivalent_{year}")
 
-            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("albedo",), "l",
-                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
-                                                      save_name=f"albedo{year}")
-
-            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("artificial_snow_water_equivalent",), "l",
-                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
+            visualizer.singleton.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("artificial_snow_water_equivalent",), "m w. e.",
+                                                      use_summed_measurements=True, show_estimated_measurement_areas=True, factor=1/1000,
                                                       save_name=f"artificial_snow_water_equivalent_{year}")
 
-            visualizer.singleton.plot_components_lvls(meteorologic_years[year], ("total_snow_water_equivalent",), "l",
-                                                      use_summed_measurements=True, show_estimated_measurement_areas=True,
+            visualizer.singleton.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("total_snow_water_equivalent",), "m w. e.",
+                                                      use_summed_measurements=True, show_estimated_measurement_areas=True, factor=1/1000,
                                                       save_name=f"total_snow_water_equivalent_{year}")
+
+            # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible
+            # visualizer.singleton.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("albedo",), "",
+            #                                           use_summed_measurements=True, show_estimated_measurement_areas=True,
+            #                                           save_name=f"albedo{year}")
 
 
 if __name__ == "__main__":
     if not cfg["GUI"]:
         no_gui_manager = NoGuiManager()
-        no_gui_manager.run_calculations()
+        # no_gui_manager.run_calculations()
         no_gui_manager.run_visualizations()
 
     else:
