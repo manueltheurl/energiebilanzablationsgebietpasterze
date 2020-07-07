@@ -463,7 +463,7 @@ class Visualize:
                     if day_of_ice_exposure is None:
                         break
                     x_days_of_exposure.append(day_of_ice_exposure)
-                    y_snowing_amounts.append(current_snowing_per_day)
+                    y_snowing_amounts.append(current_snowing_per_day*100)
                     current_amount_of_snowing_per_day += resolution
 
                 self.ax.plot(x_days_of_exposure, y_snowing_amounts,

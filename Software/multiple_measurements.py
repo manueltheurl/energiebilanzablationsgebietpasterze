@@ -9,6 +9,7 @@ import numpy as np
 import pickle
 from height_level import HeightLevel
 import copy
+import scipy.signal
 
 
 class MultipleMeasurements:
@@ -90,9 +91,15 @@ class MultipleMeasurements:
         If measured snow height is < 10cm from June till september, then set 0
         If jump from one measurement to the next is too big, then take previous measurement
         """
+
+        manual_jump_restrictions = [(dt.datetime(2017, 4, 15), dt.datetime(2017, 4, 25)),
+                                    (dt.datetime(2018, 10, 28), dt.datetime(2018, 12, 1)),
+                                    (dt.datetime(2013, 3, 1), dt.datetime(2013, 3, 25))]
+
         minute_resolution = self.get_time_resolution()
         past_snow_depth = None
         first_snow_depth = True
+        last_one_not_none = None
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             if obj.snow_depth_natural is None:
                 if first_snow_depth:
@@ -101,18 +108,34 @@ class MultipleMeasurements:
                     first_snow_depth = False
                 else:
                     obj.snow_depth_natural = past_snow_depth
+            else:
+                if last_one_not_none is not None and (obj.datetime - last_one_not_none.datetime) < dt.timedelta(
+                        days=100):
+                    if 1.665 <= obj.snow_depth_natural <= 1.715 or 1.74 <= obj.snow_depth_natural <= 1.82:
+                        obj.snow_depth_natural = past_snow_depth
 
-            if 6 <= obj.datetime.month <= 8:
-                if obj.snow_depth_natural <= 0.1:
-                    obj.snow_depth_natural = 0
+                    max_jump_per_min = 0.028
 
-            if past_snow_depth is not None and abs(past_snow_depth-obj.snow_depth_natural) > 0.05*minute_resolution:
-                obj.snow_depth_natural = past_snow_depth
+                    for jump_restricted_area in manual_jump_restrictions:
+                        if jump_restricted_area[0] <= obj.datetime <= jump_restricted_area[1]:
+                            max_jump_per_min = 0.005
+                            break
 
-            if past_snow_depth is not None:
-                obj.snow_depth_delta_natural = obj.snow_depth_natural - past_snow_depth
+                    if past_snow_depth is not None and abs(
+                            obj.snow_depth_natural - past_snow_depth) > max_jump_per_min * minute_resolution:
+                        obj.snow_depth_natural = past_snow_depth
 
+                    if 7 <= obj.datetime.month <= 8:
+                        obj.snow_depth_natural = 0
+
+                last_one_not_none = obj
             past_snow_depth = obj.snow_depth_natural
+
+        # lets apply a median filter as well
+        for filtered, obj in zip(
+                scipy.signal.medfilt([self.__all_single_measurement_objects[i].snow_depth_natural for i in sorted(self.__current_single_index_scope)], 501),
+                [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]):
+            obj.snow_depth_natural = filtered
 
     def simulate_artificial_snowing(self):
         """
@@ -181,6 +204,8 @@ class MultipleMeasurements:
     def simulate(self, height_level, radiations_at_station):
         """
         Lets do magic
+        Returning the swe melted in this simulation. Cause in October, November it can happen, that there is still
+        melting going on, because too little snow is laying
         """
 
         height_level: HeightLevel
@@ -190,18 +215,18 @@ class MultipleMeasurements:
         first_measurement_of_scope = self.__all_mean_measurements[sorted(self.__current_mean_index_scope)[0]]
         first_measurement_of_scope: MeanMeasurement
 
+        current_height_lvl_time_of_last_snow_fall = None
+
         # temporary data
-        if first_measurement_of_scope.snow_depth_natural is None or True:
+        if not first_measurement_of_scope.snow_depth_natural or True:  # if None or 0
             current_height_lvl_natural_snow_height = 0
-        else:
+        else:  # or is it better to always start with 0? for better comparison? TODO currently deactivated
+            current_height_lvl_time_of_last_snow_fall = first_measurement_of_scope.datetime
             current_height_lvl_natural_snow_height = first_measurement_of_scope.snow_depth_natural
 
-        if first_measurement_of_scope.snow_depth_artificial is None or True:
-            current_height_lvl_artificial_snow_height = 0
-        else:
-            current_height_lvl_artificial_snow_height = first_measurement_of_scope.snow_depth_artificial
-
-        current_height_lvl_time_of_last_snow_fall = None
+        # no artificial snow in the beginning
+        current_height_lvl_artificial_snow_height = 0
+        glacier_melt_water_equivalent_in_liters = 0
 
         for __obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
             __obj: MeanMeasurement
@@ -248,10 +273,14 @@ class MultipleMeasurements:
                 current_height_lvl_natural_snow_height *= snow_depth_scale_factor
                 current_height_lvl_artificial_snow_height *= snow_depth_scale_factor
 
+            if measure_obj.theoretical_melt_water_per_sqm-total_snow_swe > 0:
+                glacier_melt_water_equivalent_in_liters += (measure_obj.theoretical_melt_water_per_sqm-total_snow_swe)
+
             measure_obj.snow_depth_natural = current_height_lvl_natural_snow_height  # overwrite values for plot as well
             measure_obj.snow_depth_artificial = current_height_lvl_artificial_snow_height  # overwrite values for plot as well
 
             height_level.simulated_measurements.append(measure_obj)
+        return glacier_melt_water_equivalent_in_liters
 
     def convert_energy_balance_to_water_rate_equivalent_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
@@ -626,24 +655,6 @@ class MultipleMeasurements:
         return total_meltwater
 
     def fix_invalid_summed_measurements_for_scope(self):
-        # TODO maybe another flag which tells if measurement is just computed or real
-
-        # This would be another option to replace single gaps by the mean of the previous and following measurement
-        # for i in sorted(self.__current_mean_index_scope):
-        #     obj = self.__all_mean_measurements[i]
-        #     obj: MeanMeasurement
-        #
-        #     if not obj.is_valid:
-        #         """ Check objects afterwards if they are valid """
-        #         obj_afterwards = self.__all_mean_measurements[i+1]
-        #         if obj_afterwards.is_valid:
-        #             obj_previously = self.__all_mean_measurements[i-1]  # TODO be aware of indexerror
-        #             if not obj_previously.is_valid:
-        #                 print("WHAT")
-        #             obj.replace_this_measurement_by_mean_of([obj_afterwards, obj_previously])
-        #         else:
-        #             print(obj.datetime)
-
         invalid_measurements_and_replacements = dict()
 
         for i in sorted(self.__current_mean_index_scope):

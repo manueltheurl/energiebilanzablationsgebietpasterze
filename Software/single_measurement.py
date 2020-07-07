@@ -4,6 +4,7 @@ from manage_config import cfg
 import math as m
 from natural_snow_scaler import NaturalSnowScaler
 from statistics import mean
+import numpy as np
 
 # TODO maybe make another subclass "ArtificialMeasurement"  or better not?  with just the artificial methods
 
@@ -367,7 +368,7 @@ class MeanMeasurement(Measurement):
         self.__theoretical_mm_we_per_d = None
 
         self.__actual_melt_water_per_sqm = None
-        self.__theoretical_melt_water_per_sqm = None
+        self.__theoretical_melt_water_per_sqm = None  # in liters
 
         self.contains_single_measurements = 0
         # -- components .. TODO maybe summarize this somehow, with dict or whatever
@@ -545,8 +546,9 @@ class MeanMeasurement(Measurement):
         """
 
         if min([self.__ratio(self.contains_sw_in), self.__ratio(self.contains_sw_out), self.__ratio(self.contains_lw_in),
-               self.__ratio(self.contains_lw_out), self.__ratio(self.contains_air_pressure), self.__ratio(self.contains_rel_moisture),
-               self.contains_temperature, self.contains_wind_speed]) < 0.8:
+               self.__ratio(self.contains_lw_out), self.__ratio(self.contains_air_pressure),
+               self.contains_temperature, self.contains_wind_speed]) < 0.8 or min(
+            [self.__ratio(self.contains_rel_moisture)]) < 0.3:
             self.__valid_state = self.valid_states["invalid"]
         else:
             self.__valid_state = self.valid_states["valid"]

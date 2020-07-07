@@ -80,16 +80,22 @@ class HeightLevel:
         return self.mean_height
         # return (self.upper_border+self.lower_border)/2
 
+    def get_swe_of_last_measurement_and_constantly_laying_snow(self):
+        """
+        Ice exposure till January is ignored.
+        Return in mm w e / liters per square meter
+        """
+        for measure in self.simulated_measurements:
+            measure: MeanMeasurement
+            if not measure.total_snow_water_equivalent and (
+                    1 <= measure.datetime.month < 10):  # or measure.datetime.month == 12 making problems
+                return 0
+        return self.simulated_measurements[-1].total_snow_water_equivalent
+
     def get_time_of_first_ice_exposure_in_new_year(self):
         """
-        Ice exposure in the beginning is ignored. As soon as a certain snow water equivalent is reached it counts
-
-        TODO
-        This is actually not really ideal, because due to artificial snowing it can happen that this border of 50
-        liters is crossed and then afterwards before the winter ice is again there.
-        Maybe another constraints would be good: only a date after 1. december till 30. september can be returned e.g.
-
-        -> Did this as planned, maybe december could be allowed here as well, so ice exposurese in october and november allowed maybe?
+        Ice exposure till January is ignored.
+        return datetime of first ice exposure
         """
         for measure in self.simulated_measurements:
             measure: MeanMeasurement

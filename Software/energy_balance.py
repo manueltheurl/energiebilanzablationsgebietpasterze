@@ -135,7 +135,7 @@ class EnergyBalance:
 
     @staticmethod
     def meltrate_to_melt_water(melt_rate, timespawn):
-        return melt_rate * timespawn.total_seconds() * 1000  # * 1000 cause result is in m^3, and not liter (dm^3)
+        return melt_rate * timespawn.total_seconds() * 1000  # * 1000 cause result is liters
 
     @staticmethod
     def energy_balance_to_melt_rate(energy_balance):
