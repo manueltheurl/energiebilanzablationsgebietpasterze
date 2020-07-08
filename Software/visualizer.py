@@ -419,7 +419,7 @@ class Visualize:
             self.ax.add_patch(patches.Rectangle((0, 0), 0, 0, edgecolor='none', facecolor='lightgray',
                                                 label="Gap-filled measurements"))
 
-        self.ax.legend(loc="upper left", fontsize=7)
+        self.ax.legend(loc="upper left")  # fontsize=7
 
         self.modify_axes()
         self.show_save_and_close_plot(None, save_name=save_name)
@@ -432,18 +432,23 @@ class Visualize:
 
         print("Table artificial snow production for neutral balance, yearly comparison:")
         print("[Year]\t[m^3]")
+        last_year = None
         for year, meteorological_year in meteorological_years.items():
+            if last_year is not None and last_year + 1 != year:  # TODO rework this, this is just a dirty quick way to implement the gap year, and works only if only one year is missing
+                x_vals.append(self.met_year_str(last_year+1))
+                y_vals.append(0)
             meteorological_year: MeteorologicalYear
-            x_vals.append(year)
+            x_vals.append(self.met_year_str(year))
             y_vals.append(meteorological_year.overall_amount_of_snow_needed_in_cubic_meters/1000000)
             print(f"{year}\t{round(meteorological_year.overall_amount_of_snow_needed_in_cubic_meters, 1)}")
+            last_year = year
 
         self.ax.set_xlabel("Year")
         self.ax.set_ylabel(r"Total volume of ASP necessary for neutral balance [$1.000.000~m^3$]")
         self.ax.grid(zorder=1, ls="--", lw="0.5", axis="y")
         self.ax.bar(x_vals, y_vals, align='center', alpha=0.6, color="blue", zorder=5)
 
-        self.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        # self.ax.xaxis.set_major_locator(MaxNLocator(integer=True))
 
         self.show_save_and_close_plot(None, save_name=save_name)
 
@@ -461,7 +466,7 @@ class Visualize:
                     height_level.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters()/1000)
                 y_vals.append(height_level.height)
 
-            label = str(year) if len(years) > 1 else None
+            label = self.met_year_str(year) if len(years) > 1 else None
             self.ax.plot(x_vals, y_vals, color=next(color_gen), zorder=5, label=label)
 
         self.ax.set_xlabel("Average specific water required in elevation band [m w.e.]")
@@ -542,7 +547,7 @@ class Visualize:
                 current_amount_of_snowing_per_day += resolution
 
             self.ax.plot(x_days_of_exposure, y_snowing_amounts,
-                         label=str(year))
+                         label=self.met_year_str(year))
         self.modify_axes()
         self.ax.set_xlabel("Date of bare ice exposure")
         self.ax.set_ylabel("Daily ASP when conditions permit [mm w.e.]")
@@ -630,7 +635,7 @@ class Visualize:
                     ax.scatter(*shp.Reader(aws_station).shapes()[0].points[0], zorder=10, s=40, color="red",
                                     label="Weather Station")
             else:
-                ax.set_title(year)
+                ax.set_title(self.met_year_str(year))
 
             if equality_line is not None and not only_tongue:
                 # line_of_equality = shp.Reader(equality_line).shapes()[0].points
@@ -692,6 +697,13 @@ class Visualize:
         self.modify_axes()
         self.ax.set_ylabel("Temperature [°C]")
         self.show_save_and_close_plot("temperature", save_name=save_name)
+
+    @staticmethod
+    def met_year_str(year):
+        """
+        Converts year (2016) to 2016/17
+        """
+        return str(year)+'/'+str(int(year)+1)[2:4]
 
     def plot_energy_balance_components(self,
                                        options, use_summed_measurements=False, save_name=None):
