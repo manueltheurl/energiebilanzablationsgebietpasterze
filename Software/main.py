@@ -28,6 +28,7 @@ import gui_main_frame as gui_main
 import navigation_bar
 import version_bar
 import info_bar
+
 import frame_plot
 import frame_energy_balance
 import frame_download
@@ -45,19 +46,21 @@ class NoGuiManager:
         self.meteorologic_years_looked_at = [2012, 2013, 2014, 2016, 2017, 2018]  # 2015 is baad
         self.startTime = dt.datetime(self.meteorologic_years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
         self.endTime = dt.datetime(self.meteorologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
-        self.pickle_file_name = "multiple_measurements_singleton.pkl"  # TODO do this with date and tongue as well
         self.simulation_accuracy = 0.0001
         self.use_tongue_only = True
         self.high_res_rad_grid = True
         height_level_step_width = 25
-
+        self.hourly_resolution = 1
+        self.pickle_multiple_measurement_singleton = f"outputData/pickle_multiple_measurements_singleton_h{self.hourly_resolution}.pkl"
+        self.pickle_meteorological_years = f"pickle_meteorologic_years_h{self.hourly_resolution}.pkl"
+        self.pickle_height_levels_objects = f"pickle_height_level_objects.pkl"
+        self.pickle_radiations_at_station = "pickle_radiations_at_station.pkl"
         self.subfolder_name = f"height_level_step_width_{height_level_step_width}"
 
         if self.use_tongue_only:
             self.subfolder_name += "_tongue"
-        if self.high_res_rad_grid:
+        if self.high_res_rad_grid:  # this could be removed some day, if always the high rad grids are taken TODO
             self.subfolder_name += "_radGridHighRes"
-        visualizer.singleton.change_result_plot_subfolder(self.subfolder_name)
 
     def run_calculations(self):
         print("STARTING WITH THE CALCULATIONS")
@@ -65,9 +68,7 @@ class NoGuiManager:
 
         reader.singleton.fetch_file_metadata()
 
-        if not os.path.exists(self.pickle_file_name) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
-            res = dt.timedelta(days=1)
-
+        if not os.path.exists(self.pickle_multiple_measurement_singleton) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
             reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
                                                               endtime=self.endTime,
                                                               resolution_by_percentage=100,
@@ -75,17 +76,20 @@ class NoGuiManager:
 
             multiple_measurements.singleton.correct_snow_measurements_for_scope()
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-            multiple_measurements.singleton.sum_measurements_by_time_interval(res)
+            multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(hours=self.hourly_resolution))
             multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
 
-            with open(self.pickle_file_name, 'wb') as f:
+            if int(cfg["ARTIFICIAL_SNOWING_USE_WET_BULB_TEMPERATURE"]):
+                multiple_measurements.singleton.calculate_wetbulb_temperature_for_summed_scope()
+
+            with open(self.pickle_multiple_measurement_singleton, 'wb') as f:
                 pickle.dump(multiple_measurements.singleton, f)
 
-            with open(self.pickle_file_name, 'rb') as f:
+            with open(self.pickle_multiple_measurement_singleton, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
 
-            radiations_at_station = pickle.load(open(f"outputData/{self.subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
-            height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/pickle_height_level_objects.pkl", "rb"))
+            radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
+            height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/{self.pickle_height_levels_objects}", "rb"))
 
             snowings_per_day_for_height_levels_starting_value = list(
                 reversed(np.linspace(0.01, 0.1, len(height_level_objects) // 2)))
@@ -96,7 +100,6 @@ class NoGuiManager:
 
             for year in self.meteorologic_years_looked_at:
                 print(f"___ Looking at meteorologic year {year} ___")
-
                 meteorologic_years[year] = MeteorologicalYear(copy.deepcopy(height_level_objects))
                 multiple_measurements.singleton.reset_scope_to_all()
                 multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
@@ -150,7 +153,7 @@ class NoGuiManager:
 
                 print("Overall water needed:", round(meteorologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
 
-            with open(f"outputData/{self.subfolder_name}/meteorologic_years.pkl", "wb") as f:
+            with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", "wb") as f:
                 pickle.dump(meteorologic_years, f)
 
             with open("multiple_measurements_singleton_filled.pkl", 'wb') as f:
@@ -158,12 +161,18 @@ class NoGuiManager:
 
     def run_visualizations(self):
         print("STARTING WITH THE VISUALIZATIONS")
-        with open(f"outputData/{self.subfolder_name}/meteorologic_years.pkl", 'rb') as f:
+        visualizer.singleton.change_result_plot_subfolder(f"{self.subfolder_name}_h{self.hourly_resolution}")
+
+        with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", 'rb') as f:
             meteorologic_years = pickle.load(f)
-        with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
+        # height_level_objects = pickle.load(
+        #     open(f"outputData/{self.subfolder_name}/pickle_height_level_objects_filled.pkl", "rb"))
+        # with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
+        #     multiple_measurements.singleton = pickle.load(f)
+        with open(self.pickle_multiple_measurement_singleton, 'rb') as f:
             multiple_measurements.singleton = pickle.load(f)
 
-        radiations_at_station = pickle.load(open(f"outputData/{self.subfolder_name}/pickle_radiations_at_station.pkl", "rb"))
+        radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
 
         visualizer.singleton.plot_comparison_of_years(meteorologic_years,
                                                       save_name=f"req_snow_compare_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}")

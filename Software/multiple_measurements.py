@@ -255,8 +255,12 @@ class MultipleMeasurements:
             measure_obj.adapt_natural_snowings_in_respect_to_height_difference(height_level.height, float(cfg["AWS_STATION_HEIGHT"]), method="linear")
 
             """ Now that temperature is adapted, lets snow artificially """
-            if measure_obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
-                measure_obj.snow_depth_delta_artificial = float(height_level.artificial_snowing_per_day) * minute_resolution / 60 / 24
+            if int(cfg["ARTIFICIAL_SNOWING_USE_WET_BULB_TEMPERATURE"]):
+                if measure_obj.wetbulb_temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
+                    measure_obj.snow_depth_delta_artificial = float(height_level.artificial_snowing_per_day) * minute_resolution / 60 / 24
+            else:
+                if measure_obj.temperature < float(cfg["ARTIFICIAL_SNOWING_TEMPERATURE_THRESHOLD"]):
+                    measure_obj.snow_depth_delta_artificial = float(height_level.artificial_snowing_per_day) * minute_resolution / 60 / 24
 
             if measure_obj.snow_depth_delta_natural > 0:  # only on snow accumulation add the snow height
                 current_height_lvl_natural_snow_height += measure_obj.snow_depth_delta_natural
@@ -705,6 +709,10 @@ class MultipleMeasurements:
                                                     "measurement is bad")
 
         print(f"{i}/{len(invalid_measurements_and_replacements)} invalid summed measurements have been replaced")
+
+    def calculate_wetbulb_temperature_for_summed_scope(self):
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            obj.calculate_wetbulb_temperature()
 
     def download_components(self, options: list, use_summed_measurements=False):
         # currently not support for downloading summed measurements

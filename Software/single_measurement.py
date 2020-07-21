@@ -5,6 +5,7 @@ import math as m
 from natural_snow_scaler import NaturalSnowScaler
 from statistics import mean
 import numpy as np
+from WetBulb import WetBulb
 
 # TODO maybe make another subclass "ArtificialMeasurement"  or better not?  with just the artificial methods
 
@@ -40,6 +41,7 @@ class Measurement:
 
         # DEPRECATED
         self._swe_input_from_snow = None  # unit TODO
+        self._wetbulb_temperature = None
 
         self._rel_moisture = rel_moisture  # in percent*100 .. e.g. 67
         self._wind_speed = wind_speed
@@ -153,6 +155,12 @@ class Measurement:
             # TODO NO NEGATIVE MELT RATE, DOES IT AFFECT SOMETHING ELSE?
             self._theoretical_melt_rate = 0 if self._theoretical_melt_rate < 0 else self._theoretical_melt_rate
 
+    def calculate_wetbulb_temperature(self):
+        # I do not really like the implementation of that WetBulb function, but other than the small bug fix taken this
+        # will remain original
+        self._wetbulb_temperature = WetBulb(
+            np.array([self._temperature]), np.array([self._air_pressure]), np.array([self._rel_moisture]), 1)[0][0]
+
     # TODO rewrite this whole stuff to only save water equivalents .. else this makes absolutely no sense
     @property
     def total_snow_depth(self):
@@ -182,6 +190,10 @@ class Measurement:
     @property
     def temperature(self):
         return self._temperature
+
+    @property
+    def wetbulb_temperature(self):
+        return self._wetbulb_temperature
 
     @property
     def rel_moisture(self):
@@ -698,7 +710,11 @@ class MeanMeasurement(Measurement):
 
     @property
     def albedo(self):
-        return abs(self.sw_radiation_out/self.sw_radiation_in)
+        # TODO ZeroDivisionError: float division by zero
+        try:
+            return abs(self.sw_radiation_out/self.sw_radiation_in)
+        except ZeroDivisionError:
+            return None
 
     @property
     def actual_melt_water_per_sqm(self):
