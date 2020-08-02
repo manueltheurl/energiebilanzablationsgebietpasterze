@@ -70,7 +70,7 @@ class Visualize:
         }
 
         self.accumulate_plots = False
-        self.show_plots = False
+        self.show_plots = True
 
         self.fig = None
         self.ax = None
@@ -198,7 +198,6 @@ class Visualize:
             if ablation_or_water_equivalent == "show_ablation":
                 second_ax_vals = multiple_measurements.singleton.get_all_of(
                     "cumulated_ablation", use_summed_measurements=use_summed_measurements)
-
                 second_ax.plot(y_dates, second_ax_vals, label="Ablation", color="red")
                 second_ax.set_ylabel("Ablation [m]")
 
@@ -222,7 +221,6 @@ class Visualize:
 
                     # calculate correlation coefficient
                     if save_name is not None:
-
                         actual_melt_water_per_sqm, theoretical_melt_water_per_sqm = fc.remove_none_in_lists(
                             [actual_melt_water_per_sqm, theoretical_melt_water_per_sqm])
 
@@ -242,8 +240,9 @@ class Visualize:
             main_title = "Total Energy balance"
             self.ax.legend()
 
-        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-        # self.ax.set_title(main_title + summed_title_appendix)
+        if int(cfg["PLOT_TITLE"]):
+            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+            self.ax.set_title(main_title + summed_title_appendix)
         self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
         
@@ -721,9 +720,10 @@ class Visualize:
 
         self.ax.legend(loc="upper right")
 
-        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+        if int(cfg["PLOT_TITLE"]):
+            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+            self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
 
-        # self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
         self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
         self.show_save_and_close_plot("energy_balance", save_name=save_name)
@@ -799,9 +799,10 @@ class Visualize:
         self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
 
-        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+        if int(cfg["PLOT_TITLE"]):
+            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+            self.ax.set_title("Total energy balance - Periodic trend eliminated" + summed_title_appendix)
 
-        # self.ax.set_title("Total energy balance - Periodic trend eliminated" + summed_title_appendix)
         self.show_save_and_close_plot("trend", save_name=save_name)
 
     def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True,
@@ -826,9 +827,9 @@ class Visualize:
         self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
 
-        summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-
-        title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
+        if int(cfg["PLOT_TITLE"]):
+            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+            title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
         # self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
         self.show_save_and_close_plot("trend", save_name=save_name)
 

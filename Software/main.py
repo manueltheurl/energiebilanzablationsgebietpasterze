@@ -48,9 +48,10 @@ class NoGuiManager:
         self.endTime = dt.datetime(self.meteorologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.simulation_accuracy = 0.0001
         self.use_tongue_only = True
+        self.no_debris = True
         self.high_res_rad_grid = True
         height_level_step_width = 25
-        self.hourly_resolution = 1
+        self.hourly_resolution = 24
         self.pickle_multiple_measurement_singleton = f"outputData/pickle_multiple_measurements_singleton_h{self.hourly_resolution}.pkl"
         self.pickle_meteorological_years = f"pickle_meteorologic_years_h{self.hourly_resolution}.pkl"
         self.pickle_height_levels_objects = f"pickle_height_level_objects.pkl"
@@ -59,6 +60,8 @@ class NoGuiManager:
 
         if self.use_tongue_only:
             self.subfolder_name += "_tongue"
+        if self.no_debris:
+            self.subfolder_name += "_noDebris"
         if self.high_res_rad_grid:  # this could be removed some day, if always the high rad grids are taken TODO
             self.subfolder_name += "_radGridHighRes"
 
@@ -69,21 +72,21 @@ class NoGuiManager:
         reader.singleton.fetch_file_metadata()
 
         if not os.path.exists(self.pickle_multiple_measurement_singleton) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
-            reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
-                                                              endtime=self.endTime,
-                                                              resolution_by_percentage=100,
-                                                              resolution_by_time_interval=None)
-
-            multiple_measurements.singleton.correct_snow_measurements_for_scope()
-            multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-            multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(hours=self.hourly_resolution))
-            multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
-
-            if int(cfg["ARTIFICIAL_SNOWING_USE_WET_BULB_TEMPERATURE"]):
-                multiple_measurements.singleton.calculate_wetbulb_temperature_for_summed_scope()
-
-            with open(self.pickle_multiple_measurement_singleton, 'wb') as f:
-                pickle.dump(multiple_measurements.singleton, f)
+            # reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
+            #                                                   endtime=self.endTime,
+            #                                                   resolution_by_percentage=None,
+            #                                                   resolution_by_time_interval=None)
+            #
+            # multiple_measurements.singleton.correct_snow_measurements_for_scope()
+            # multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
+            # multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(hours=self.hourly_resolution))
+            # multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
+            #
+            # if int(cfg["ARTIFICIAL_SNOWING_USE_WET_BULB_TEMPERATURE"]):
+            #     multiple_measurements.singleton.calculate_wetbulb_temperature_for_summed_scope()
+            #
+            # with open(self.pickle_multiple_measurement_singleton, 'wb') as f:
+            #     pickle.dump(multiple_measurements.singleton, f)
 
             with open(self.pickle_multiple_measurement_singleton, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
@@ -227,24 +230,115 @@ class NoGuiManager:
                                                       use_summed_measurements=True, show_estimated_measurement_areas=True, factor=1/1000,
                                                       save_name=f"total_snow_water_equivalent_{year}")
 
-            # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible
+            # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
             # visualizer.singleton.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("albedo",), "",
             #                                           use_summed_measurements=True, show_estimated_measurement_areas=True,
             #                                           save_name=f"albedo{year}")
+
+    def run_calculations_bachelor(self, type_, year, only_summer=False):
+        """
+        type_ either adapted or original
+        """
+        print(f"\nRunning bachelor calaculations {type_} for year {year} (only summer: {only_summer}):")
+        reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
+        # reader.singleton.fetch_file_metadata()
+
+        if not os.path.exists(self.pickle_multiple_measurement_singleton) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
+            if only_summer:
+                reader.singleton.read_meterologic_file_to_objects(starttime=dt.datetime(year, 7, 1),
+                                                                  endtime=dt.datetime(year, 7, 30),
+                                                                  resolution_by_percentage=None,
+                                                                  resolution_by_time_interval=None)
+            else:
+                reader.singleton.read_meterologic_file_to_objects(starttime=dt.datetime(year, 1, 1),
+                                                                  endtime=dt.datetime(year, 12, 31),
+                                                                  resolution_by_percentage=None,
+                                                                  resolution_by_time_interval=None)
+
+            multiple_measurements.singleton.correct_snow_measurements_for_scope()
+            multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
+            multiple_measurements.singleton.cumulate_ablation_for_scope()
+            # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()  # TODO if this is used do it above as well
+            multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
+
+            if type_ == "original":
+                multiple_measurements.singleton.calculate_energy_balance_for("scope")
+                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("scope")
+                multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
+                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+
+            elif type_ == "adapted":
+                multiple_measurements.singleton.sum_measurements_by_time_interval(
+                    dt.timedelta(hours=self.hourly_resolution))
+
+                # multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
+
+                multiple_measurements.singleton.calculate_energy_balance_for("summed")
+                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
+                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+
+            measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
+            modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
+
+            print("Nones measured_ablations:", sum(x is None for x in measured_ablations))
+            print("Nones modelled_ablations:", sum(x is None for x in modelled_ablations))
+            for i in range(len(measured_ablations)):
+                measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
+            for i in range(len(modelled_ablations)):
+                modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+
+            modelled_ablation = sum(modelled_ablations)
+            measured_ablation = sum(measured_ablations)
+            reality_factor = measured_ablation / modelled_ablation
+
+            # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
+            # visualizer.singleton.plot_single_component("albedo", "", use_summed_measurements=True,
+            #                                            save_name=f"albedo_{year}_{type_}_onlysummer_{only_summer}")
+
+            # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("temperature",), "°C", use_summed_measurements=True,
+            #                                            save_name=f"sensible_heat_and_temperature")
+            #
+            # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("air_pressure",), "pa",
+            #                                      use_summed_measurements=True,
+            #                                      save_name=f"sensible_heat_and_air_pressure")
+            #
+            # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("wind_speed",), "m/s",
+            #                                      use_summed_measurements=True,
+            #                                      save_name=f"sensible_heat_and_wind_speed")
+
+            # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("albedo",), "-",
+            #                                      use_summed_measurements=True,
+            #                                      save_name=f"swinout")
+            #
+            # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("total_snow_depth",), "m",
+            #                                      use_summed_measurements=True,
+            #                                      save_name=f"snow_depth")
+
+            print("Measured ablation", round(measured_ablation, 2))
+            print("Modelled ablation",
+                  round(modelled_ablation, 2))  # measured stays the same .. cause thats wont be affected
+            print("Reality factor:", round(reality_factor, 2))
 
 
 if __name__ == "__main__":
     if not cfg["GUI"]:
         no_gui_manager = NoGuiManager()
         # no_gui_manager.run_calculations()
-        no_gui_manager.run_visualizations()
+        # no_gui_manager.run_visualizations()
+        # no_gui_manager.run_bachelor_stuff()
 
+        year = 2017
+        # no_gui_manager.run_calculations_bachelor("original", year)
+        # no_gui_manager.run_calculations_bachelor("adapted", year)
+        # no_gui_manager.run_calculations_bachelor("original", year, only_summer=True)
+        no_gui_manager.run_calculations_bachelor("adapted", year, only_summer=True)
     else:
         """
         Order matters here, cause all need the gui_main_frame
         So each singleton is saved in a singleton variable in the corresponding file. So every file can then access
         those singletons by including the module    
         """
+        # TODO albedo in gui
         gui_main.create_singleton()
         navigation_bar.create_singleton()
         info_bar.create_singleton()

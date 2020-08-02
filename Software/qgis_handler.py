@@ -53,7 +53,7 @@ class QGisHandler:
                 'method': 1, 'output': f'/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/Tägliche Gitter der mittleren direkten Sonneneinstrahlung/pasterze_grid/dir{str(day).zfill(3)}24_high_res.grid', 'GRASS_REGION_PARAMETER': None,
                 'GRASS_REGION_CELLSIZE_PARAMETER': 5, 'GRASS_RASTER_FORMAT_OPT': '', 'GRASS_RASTER_FORMAT_META': ''})
 
-    def run_creating_height_levels(self, height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape, path_to_winter_balance,
+    def run_creating_height_levels(self, height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
                                    path_to_directory_with_radiations):
         subfolder_name = f"height_level_step_width_{height_level_step_width}"
 
@@ -92,7 +92,7 @@ class QGisHandler:
 
         height_level_objects = HeightLevel.get_beautiful_height_levels_by_step(height_level_step_width, statistics["MIN"],
                                                                                statistics["MAX"])
-
+        height_level_objects.pop(-1)
         try:
             shutil.rmtree(f"{self.output_folder}/{subfolder_name}")
             os.makedirs(f"{self.output_folder}/{subfolder_name}")
@@ -409,15 +409,15 @@ if __name__ == "__main__":
     if ONLY_TONGUE and not NO_DEBRIS:
         path_to_glacier_shape = "inputData/pas_tongue_2018.shp"
     elif ONLY_TONGUE and NO_DEBRIS:
-        path_to_glacier_shape = "inputData/pas_tongue_2018_no_debris12.shp"
+        path_to_glacier_shape = "inputData/pas_tongue_2018_no_debris18.shp"
     else:
         path_to_glacier_shape = "inputData/pasterze_2018.shp"
 
-    path_to_winter_balance = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/massenbilanzen/Winterbilanz_2016/wb_2016.tif"
+    # path_to_winter_balance = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/massenbilanzen/Winterbilanz_2016/wb_2016.tif"
     path_to_directory_with_radiations = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/Tägliche Gitter der mittleren direkten Sonneneinstrahlung/pasterze_grid"
     height_level_step_width = int(input("Enter height level step width: "))
     QGisHandler().run_creating_height_levels(height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
-                                             path_to_winter_balance, path_to_directory_with_radiations)
+                                             path_to_directory_with_radiations)
 
     # QGisHandler().run_creating_dvol_file(
     #     "/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/Data_for_Germ/auto_dvol_generation/inputData",

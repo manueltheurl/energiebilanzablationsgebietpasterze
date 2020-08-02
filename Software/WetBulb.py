@@ -398,5 +398,50 @@ if __name__ == "__main__":
     # print(Twb)
     # print(Teq)
     # print(epott)
-    for i in range(650):
-        print(WetBulb(np.array([31]),np.array([101325]),np.array([70]),1))
+    # for i in range(650):
+    print(WetBulb(np.array([31]),np.array([101325]),np.array([70]),1))
+
+    """ 
+    Comparison of temp scale and then wetbulb or wetbulb and then wetbulb scale.
+    """
+
+    import matplotlib.pyplot as plt
+    import os
+
+    result_plot_path = "outputData/wetbulb_comparison_plots"
+
+    if not os.path.exists(result_plot_path):
+        os.makedirs(result_plot_path)
+
+
+
+    height_diffs = range(-1000, 1001, 100)
+    rel_moistures = range(0, 101, 25)
+    temperatures = range(-30, 21, 10)
+
+    pressure = 78500  # pa  fix here
+
+    for temperature in temperatures:
+        for rel_moisture in rel_moistures:
+            plt.figure()
+            save_name = f"wetbulb_scale_before_after_with_temperature_{temperature}_relMoist_{rel_moisture}"
+
+            wetbulb_temps_scale_before = []
+            wetbulb_temps_scale_after = []
+
+            for height_dif in height_diffs:
+                deg_per_100_meters = 0.65
+                wetbulb_temps_scale_before.append(WetBulb(np.array([temperature - deg_per_100_meters * height_dif / 100]), np.array([pressure]), np.array([rel_moisture]), HumidityMode=1)[0])
+                wetbulb_temps_scale_after.append(WetBulb(np.array([temperature]), np.array([pressure]), np.array([rel_moisture]), HumidityMode=1)[0] - deg_per_100_meters * height_dif / 100)
+
+            plt.plot(wetbulb_temps_scale_before, height_diffs, label="Scaled before")
+            plt.plot(wetbulb_temps_scale_after, height_diffs, label="Scaled after")
+
+            plt.xlabel("Wetbulb temperature [°C]")
+            plt.ylabel("Height difference [m]")
+
+            plt.grid()
+            plt.legend()
+            plt.title(f"Wetbulb scale before after with temperature {temperature}°C rel moist {rel_moisture}%")
+            plt.savefig(result_plot_path + "/" + save_name + ".png", dpi=100)
+

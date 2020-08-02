@@ -63,12 +63,16 @@ class EnergyBalance:
 
         temperature_ice = self.calculate_ice_temperature(longwave_out)  # degree celcius
 
-        surface_type = "ice" if snow_depth <= 0 else "snow"
+        # TODO would it be better to parse surface type already or better that way?
+        surface_type = "ice" if snow_depth is None or snow_depth <= 0 else "snow"
+
+        # if 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice) > 400:
+        #     print(self.c_star[surface_type], air_pressure, wind_speed, temperature, temperature_ice)
 
         return 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice)
 
     def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, snow_depth,
-                              use_standard_fomula=True):
+                              use_standard_formula=True):
         # E_H
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
@@ -80,7 +84,7 @@ class EnergyBalance:
         e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000
         e_air = rel_moisture / 100 * e_air_saturated
 
-        if use_standard_fomula:
+        if use_standard_formula:
             e_surface_saturated = (0.6108 * m.e ** (
                         17.27 * self.calculate_ice_temperature(longwave_out) /
                         (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
@@ -101,7 +105,7 @@ class EnergyBalance:
 
         # TODO e_air and e_surface is Pa .. yes it is .. proof in 05_VO_Mountainhydrology Page 22
 
-        surface_type = "ice" if snow_depth <= 0 else "snow"
+        surface_type = "ice" if snow_depth is None or snow_depth <= 0 else "snow"
 
         return 22.2 * self.c_star[surface_type] * u * (e_air - e_surface_saturated)
 

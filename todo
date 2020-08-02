@@ -1,34 +1,5 @@
-An example of the build-up and removal of the artificial and natural snow cover at the AWS is given in
--> What is meant with that?  how is the plot supposed to look
+do simulation with bachelor stuff .. so natural snow is meant by that .. so that no ablation is happening
 
+albedo > 100%
 
-https://en.wikipedia.org/wiki/Atmospheric_pressure
--> Altitude variation
-- more accurate equation needed?
-
-
-we apply according to values from the 2012 DEM (refXXX) that we resample to a resolution of  1m
-
-
-manuel, ist mir eigentlich nicht mehr ganz klar. Wenn wir eh schnee draufhauen alle pott, dann wird der ja nie alt? Oder eben in den sommertagen, wo wir folgen von tagen ueber 0 deg haben – ah ja, wahrscheinlich das, dann macht das sinn.
-Oder wie oder was
--> genau nur in den sommertagen
-
-with elevation is introduced therein that amounts to approx. 12%/100 m  ->  11.2% -> 11%
-
-We solve the spatial approach in 25m elevation bands
-
-da bin ich jetyt auch nicht mehr ganz unverwirrt. Wir haben ja den fixen gradienten. Damit schaffen wir dann jedes hoehenband auf 0. Was, wenn ein hoehenband aber eine vom gradienten abweichende schneemenge braucht um 0 zu werden. Verstehst, was ich mein?
--> Nein ich versteh nicht ganz was du meinst
-
-
-
-typical snow density of artificial snow is applied for conversion (525 kg/m3 according to XXX)
-
-525 genau nicht mehr gefunden aber von 
--> Der Kunstschnee (im Mittel 523 g/l) war rund 33%   (Kunstschnee und Schneezusätze: Eigenschaften und Wirkungenauf Vegetation und Boden in alpinen Skigebieten) Wert adaptiert auf 523
-ABER: Diese Zahl ändert am Ergebnis nichts, ist im Endeffekt komplett irrelevant
-
-
-
-
+look at all the stuff that would be necessary to calc energy bilance before summing again .. maybe thats better .. talk with abermann about that as well

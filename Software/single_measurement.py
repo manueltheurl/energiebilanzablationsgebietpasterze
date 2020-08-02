@@ -67,9 +67,10 @@ class Measurement:
         """
         height_difference is positive if measurement should be higher up
         """
-        # TODO which formulas, more values? air pressure as well?
         deg_per_100_meters = 0.65
         self._temperature -= deg_per_100_meters * height_difference_in_m / 100
+        self._wetbulb_temperature -= deg_per_100_meters * height_difference_in_m / 100  # is this legitimate?
+        # self.calculate_wetbulb_temperature()  # this is taking quite long
 
         hpa_for_100_meters = 12
         self._air_pressure -= height_difference_in_m * hpa_for_100_meters  # 100 meter and hecto cancel each other out
@@ -133,19 +134,18 @@ class Measurement:
                                                ])
         except TypeError:
             pass  # Something is None
-            print(self.sw_radiation_in,  # get it over property cause may be glob br. simul
-                                               self._energy_balance_components["sw_radiation_out"],
-                                               self._energy_balance_components["lw_radiation_in"],
-                                               self._energy_balance_components["lw_radiation_out"],
-                                               self._energy_balance_components["sensible_heat"],
-                                               self._energy_balance_components["latent_heat"])
-            print(self._air_pressure, self._wind_speed, self._temperature)
-            print(self._temperature, self._rel_moisture, self._wind_speed)
-            exit("NONE" )
+            # print(self.sw_radiation_in,  # get it over property cause may be glob br. simul
+            #                                    self._energy_balance_components["sw_radiation_out"],
+            #                                    self._energy_balance_components["lw_radiation_in"],
+            #                                    self._energy_balance_components["lw_radiation_out"],
+            #                                    self._energy_balance_components["sensible_heat"],
+            #                                    self._energy_balance_components["latent_heat"])
+            # print(self._air_pressure, self._wind_speed, self._temperature)
+            # print(self._temperature, self._rel_moisture, self._wind_speed)
+            # exit("NONE")
 
         if not cfg["IGNORE_PRECIPITATION_HEAT"]:
             self._total_energy_balance += self._energy_balance_components["precipitation_heat"]
-
 
     def calculate_theoretical_melt_rate(self):
         if None not in [self._total_energy_balance]:
@@ -233,9 +233,17 @@ class Measurement:
     def lw_radiation_in(self):
         return self._energy_balance_components["lw_radiation_in"]
 
+    @lw_radiation_in.setter
+    def lw_radiation_in(self, value):
+        self._energy_balance_components["lw_radiation_in"] = value
+
     @property
     def lw_radiation_out(self):
         return self._energy_balance_components["lw_radiation_out"]
+
+    @lw_radiation_out.setter
+    def lw_radiation_out(self, value):
+        self._energy_balance_components["lw_radiation_out"] = value
 
     @property
     def sensible_heat(self):
@@ -328,6 +336,14 @@ class Measurement:
     def theoretical_melt_rate(self):
         return self._theoretical_melt_rate
 
+    @property
+    def albedo(self):
+        # TODO ZeroDivisionError: float division by zero
+        try:
+            return abs(self.sw_radiation_out/self.sw_radiation_in)
+        except (ZeroDivisionError, TypeError):
+            return None
+
 
 class SingleMeasurement(Measurement):
     """
@@ -367,20 +383,20 @@ class MeanMeasurement(Measurement):
 
         self.__valid_state = self.valid_states["invalid"]  # this flag will be set valid if calculate_mean() is good
 
-        self.__relative_ablation_measured = None
-        self.__relative_ablation_modelled = None
-
         self.__starting_ablation = None
         self.__ending_ablation = None
 
         self.__datetime_begin = None
         self.__datetime_end = None
 
-        self.__actual_mm_we_per_d = None
-        self.__theoretical_mm_we_per_d = None
+        self.__actual_mm_we_per_d = None  # derived from the ablation measurement
+        self.__theoretical_mm_we_per_d = None  # derived from the energy balance
 
-        self.__actual_melt_water_per_sqm = None
-        self.__theoretical_melt_water_per_sqm = None  # in liters
+        self.__actual_melt_water_per_sqm = None  # in liters - derived from the ablation measurement
+        self.__theoretical_melt_water_per_sqm = None  # in liters - derived from the energy balance
+
+        self.__relative_ablation_measured = None  # in meter ice - directly from the ablation measurement (current - last one)
+        self.__relative_ablation_modelled = None  # in meter ice - derived from the energy balance
 
         self.contains_single_measurements = 0
         # -- components .. TODO maybe summarize this somehow, with dict or whatever
@@ -626,9 +642,14 @@ class MeanMeasurement(Measurement):
 
         self.__check_if_measurement_is_valid()
 
-    def calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter(self):
+    def calculate_measured_and_theoretical_ablation_values(self):
+        """
+        Ablation values are:
+            measured and theoretic melt water per square meter in given time frame of mean measurement
+            measured and theoretic mm water equivalent per day
+            theoretic ablation in liters or kg of water
+        """
         if self.__relative_ablation_measured is not None:
-
             self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
                 self.__relative_ablation_measured)
 
@@ -707,14 +728,6 @@ class MeanMeasurement(Measurement):
     @property
     def theoretical_mm_we_per_d(self):
         return self.__theoretical_mm_we_per_d
-
-    @property
-    def albedo(self):
-        # TODO ZeroDivisionError: float division by zero
-        try:
-            return abs(self.sw_radiation_out/self.sw_radiation_in)
-        except ZeroDivisionError:
-            return None
 
     @property
     def actual_melt_water_per_sqm(self):

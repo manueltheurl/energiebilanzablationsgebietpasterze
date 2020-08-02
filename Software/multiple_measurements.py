@@ -36,9 +36,13 @@ class MultipleMeasurements:
         self.__current_mean_index_scope.add(len(self.__all_mean_measurements))
         self.__all_mean_measurements.append(summed_measurement_object)
 
-    def calculate_energy_balance_for_scope(self, simulate_global_dimming_brightening=0):
-        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            obj.calculate_energy_balance(simulate_global_dimming_brightening)
+    def calculate_energy_balance_for(self, which="scope", simulate_global_dimming_brightening=0):
+        if which == "scope":
+            for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+                obj.calculate_energy_balance(simulate_global_dimming_brightening)
+        elif which == "summed":
+            for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+                obj.calculate_energy_balance(simulate_global_dimming_brightening)
 
     def calculate_water_input_through_snow_for_scope(self):
         # DEPRECATED
@@ -64,7 +68,6 @@ class MultipleMeasurements:
         obs = np.array(snow_observations)
         swe_ = np.array(swe_results)
 
-
         return swe_results  # todo delete this
 
     def cumulate_ablation_for_scope(self):
@@ -83,6 +86,27 @@ class MultipleMeasurements:
 
                     old_ablation_value = obj.ablation
                     obj.cumulated_ablation = obj.ablation - current_subtractive
+
+    def correct_long_wave_measurements_for_scope(self):
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if None not in [obj.lw_radiation_out, obj.lw_radiation_in]:
+                if obj.lw_radiation_out < int(cfg["MIN_LWO_VALUE"]):
+                    # obj.lw_radiation_in -= (int(cfg["MIN_LWO_VALUE"])-obj.lw_radiation_out)  # fix offset?
+                    obj.lw_radiation_out = int(cfg["MIN_LWO_VALUE"])
+
+    def correct_short_wave_measurements_for_scope(self):
+        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+            if None not in [obj.sw_radiation_out, obj.sw_radiation_in]:
+                if obj.sw_radiation_in < 0:  # cannot be negative
+                    obj.sw_radiation_in = 0
+
+                if obj.albedo is not None and obj.albedo < 0.35:
+                    obj.sw_radiation_out = -0.35 * obj.sw_radiation_in
+
+                if not obj.total_snow_depth:
+                    obj.sw_radiation_out = -0.35*obj.sw_radiation_in
+                # else:
+                #     print(obj.total_snow_depth)
 
     def correct_snow_measurements_for_scope(self):
         """
@@ -120,12 +144,17 @@ class MultipleMeasurements:
                             max_jump_per_min = 0.005
                             break
 
+                    # if 7 <= obj.datetime.month <= 8:
+                    #     obj.snow_depth_natural = 0
+
+                    # setting snow height to 0 if albedo indicates so
+                    if obj.albedo is not None and obj.albedo < 0.5:
+                        obj.snow_depth_natural = 0
+
+                    # TODO has this to be at bottom?  probably yes right that way
                     if past_snow_depth is not None and abs(
                             obj.snow_depth_natural - past_snow_depth) > max_jump_per_min * minute_resolution:
                         obj.snow_depth_natural = past_snow_depth
-
-                    if 7 <= obj.datetime.month <= 8:
-                        obj.snow_depth_natural = 0
 
                 last_one_not_none = obj
             past_snow_depth = obj.snow_depth_natural
@@ -134,6 +163,7 @@ class MultipleMeasurements:
         for filtered, obj in zip(
                 scipy.signal.medfilt([self.__all_single_measurement_objects[i].snow_depth_natural for i in sorted(self.__current_single_index_scope)], 501),
                 [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]):
+
             obj.snow_depth_natural = filtered
 
     def correct_snow_measurements_for_scope_deprecated(self):
@@ -282,7 +312,7 @@ class MultipleMeasurements:
 
             measure_obj.calculate_energy_balance()
             measure_obj.calculate_theoretical_melt_rate()
-            measure_obj.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter()
+            measure_obj.calculate_measured_and_theoretical_ablation_values()
 
             if total_snow_swe and measure_obj.theoretical_melt_water_per_sqm > 0:
                 snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
@@ -299,11 +329,23 @@ class MultipleMeasurements:
             height_level.simulated_measurements.append(measure_obj)
         return glacier_melt_water_equivalent_in_liters
 
-    def convert_energy_balance_to_water_rate_equivalent_for_scope(self):
-        for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            obj.calculate_theoretical_melt_rate()
+    def convert_energy_balance_to_water_rate_equivalent_for(self, which="scope"):
+        if which == "scope":
+            for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
+                obj.calculate_theoretical_melt_rate()
+        elif which == "summed":
+            for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+                obj.calculate_theoretical_melt_rate()
+
+    def calculate_measured_and_theoretical_ablation_values_for_summed(self):
+        """
+        Summed only, as the time frame is needed for that (start and endtime)
+        """
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            obj.calculate_measured_and_theoretical_ablation_values()
 
     def get_all_of(self, attribute_name, use_summed_measurements=False):
+        # TODO arg which scope or summed better prob
         if use_summed_measurements:
             return list(map(
                 lambda obj: getattr(obj, attribute_name),
@@ -672,6 +714,10 @@ class MultipleMeasurements:
         return total_meltwater
 
     def fix_invalid_summed_measurements_for_scope(self):
+        """
+        Scope must include several years for this to work
+        """
+
         invalid_measurements_and_replacements = dict()
 
         for i in sorted(self.__current_mean_index_scope):
