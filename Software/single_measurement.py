@@ -110,13 +110,14 @@ class Measurement:
                 self.total_snow_depth
             )
 
-        if None not in [self._temperature, self._rel_moisture, self._wind_speed,
+        if None not in [self._temperature, self._rel_moisture, self._wind_speed, self._air_pressure,
                         self._energy_balance_components["lw_radiation_out"]]:
             self._energy_balance_components["latent_heat"] = energy_balance.singleton.calculate_latent_heat(
                 self._temperature,
                 self._rel_moisture,
                 self._wind_speed,
                 self._energy_balance_components["lw_radiation_out"],
+                self._air_pressure,
                 self.total_snow_depth
             )
 

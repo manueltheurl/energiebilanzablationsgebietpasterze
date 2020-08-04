@@ -57,22 +57,25 @@ class EnergyBalance:
 
         return temperature
 
-    def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out, snow_depth):  # E_E
+    def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out, snow_depth, use_bulk=True):  # E_E
         # air_pressure in Pa
         # wind_speed in m/s
 
         temperature_ice = self.calculate_ice_temperature(longwave_out)  # degree celcius
 
-        # TODO would it be better to parse surface type already or better that way?
-        surface_type = "ice" if snow_depth is None or snow_depth <= 0 else "snow"
+        if use_bulk:
+            # TODO would it be better to parse surface type already or better that way?
+            surface_type = "ice" if snow_depth is None or snow_depth <= 0 else "snow"
 
-        # if 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice) > 400:
-        #     print(self.c_star[surface_type], air_pressure, wind_speed, temperature, temperature_ice)
+            # if 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice) > 400:
+            #     print(self.c_star[surface_type], air_pressure, wind_speed, temperature, temperature_ice)
 
-        return 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice)
+            return 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice)
+        else:
+            return 5.7*m.sqrt(wind_speed) * (temperature - temperature_ice)
 
-    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, snow_depth,
-                              use_standard_formula=True):
+    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, air_pressure, snow_depth,
+                              use_standard_formula_for_e_surface_saturated=True, use_bulk=True):
         # E_H
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
@@ -84,7 +87,7 @@ class EnergyBalance:
         e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000
         e_air = rel_moisture / 100 * e_air_saturated
 
-        if use_standard_formula:
+        if use_standard_formula_for_e_surface_saturated:
             e_surface_saturated = (0.6108 * m.e ** (
                         17.27 * self.calculate_ice_temperature(longwave_out) /
                         (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
@@ -107,7 +110,22 @@ class EnergyBalance:
 
         surface_type = "ice" if snow_depth is None or snow_depth <= 0 else "snow"
 
-        return 22.2 * self.c_star[surface_type] * u * (e_air - e_surface_saturated)
+        if use_bulk:
+            return 22.2 * self.c_star[surface_type] * u * (e_air - e_surface_saturated)
+        else:
+            L_v = 2.5*10**6  # verdunstungswärme
+            c_p = 1005  # spezifische Wärmekapazität von Luft bei konstantem Druck
+            T0 = 273.15  # 0 grad celsius
+            R_w = 461.5  # gaskonstante wasserdampf
+            e_0 = 611  # dampfdruck am Tripelpunkt
+
+            temperature += T0
+
+            e_s = e_0 * m.e ** ((L_v/R_w) * (1/T0 - 1/temperature))
+            e = rel_moisture/100*e_s
+            q = 0.622 * e / air_pressure
+            q_sat = 0.622 * e_s / air_pressure
+            return 5.7 * L_v/c_p * m.sqrt(wind_speed) * (q - q_sat)
 
     @staticmethod
     def calculate_precipitation_heat():
