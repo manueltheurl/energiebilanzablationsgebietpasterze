@@ -77,6 +77,8 @@ class EnergyBalance:
     def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, air_pressure, snow_depth,
                               use_standard_formula_for_e_surface_saturated=True, use_bulk=True):
         # E_H
+        # temperature in degree celcius
+
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
         # or https://books.google.at/books?id=Zi1coMyhlHoC&lpg=PP1&pg=PA350&hl=en&redir_esc=y#v=onepage&q&f=false
@@ -84,13 +86,20 @@ class EnergyBalance:
 
         # e_surface - vapor pressure at the surface [Pa] - assuming saturation  TODO find proof for that function
         # * 1000 for converting to Pa
-        e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000
+        e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # <- OLD
+        # e_air_saturated = (0.6108 * m.e ** (9.5 * temperature / (temperature + 265.5))) * 1000   # <- NEW
         e_air = rel_moisture / 100 * e_air_saturated
 
         if use_standard_formula_for_e_surface_saturated:
-            e_surface_saturated = (0.6108 * m.e ** (
+            # todo http://klimedia.ch/kap3/a11.html
+            e_surface_saturated = (0.6108 * m.e ** (  # <- OLD
                         17.27 * self.calculate_ice_temperature(longwave_out) /
                         (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
+
+            # e_surface_saturated = (0.6108 * m.e ** (  # <- NEW
+            #         9.5 * self.calculate_ice_temperature(longwave_out) /
+            #         (self.calculate_ice_temperature(longwave_out) + 265.5))) * 1000  # * 1000 for converting to Pa
+
         else:
             e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(self.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
 
@@ -113,7 +122,7 @@ class EnergyBalance:
         if use_bulk:
             return 22.2 * self.c_star[surface_type] * u * (e_air - e_surface_saturated)
         else:
-            L_v = 2.5*10**6  # verdunstungswärme
+            L_v = 2.5*10**6  # Sublimationswärme von Eis ..  verdunstungswärme
             c_p = 1005  # spezifische Wärmekapazität von Luft bei konstantem Druck
             T0 = 273.15  # 0 grad celsius
             R_w = 461.5  # gaskonstante wasserdampf
@@ -123,8 +132,8 @@ class EnergyBalance:
 
             e_s = e_0 * m.e ** ((L_v/R_w) * (1/T0 - 1/temperature))
             e = rel_moisture/100*e_s
-            q = 0.622 * e / air_pressure
-            q_sat = 0.622 * e_s / air_pressure
+            q = 0.622 * e / air_pressure  # specific moisture
+            q_sat = 0.622 * e_s / air_pressure  # saturated moisture?!
             return 5.7 * L_v/c_p * m.sqrt(wind_speed) * (q - q_sat)
 
     @staticmethod

@@ -328,9 +328,9 @@ if __name__ == "__main__":
         # no_gui_manager.run_bachelor_stuff()
 
         year = 2017
-        # no_gui_manager.run_calculations_bachelor("original", year)
-        # no_gui_manager.run_calculations_bachelor("adapted", year)
-        # no_gui_manager.run_calculations_bachelor("original", year, only_summer=True)
+        no_gui_manager.run_calculations_bachelor("original", year)
+        no_gui_manager.run_calculations_bachelor("adapted", year)
+        no_gui_manager.run_calculations_bachelor("original", year, only_summer=True)
         no_gui_manager.run_calculations_bachelor("adapted", year, only_summer=True)
     else:
         """
