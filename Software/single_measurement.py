@@ -397,7 +397,9 @@ class MeanMeasurement(Measurement):
         self.__theoretical_melt_water_per_sqm = None  # in liters - derived from the energy balance
 
         self.__relative_ablation_measured = None  # in meter ice - directly from the ablation measurement (current - last one)
-        self.__relative_ablation_modelled = None  # in meter ice - derived from the energy balance
+        self.__relative_ablation_modelled = None  # in meter ice - derived from the energy balance, only if no snow is laying
+
+        self.midday_albedo = None
 
         self.contains_single_measurements = 0
         # -- components .. TODO maybe summarize this somehow, with dict or whatever
@@ -417,6 +419,7 @@ class MeanMeasurement(Measurement):
         self.contains_rel_moisture = 0
         self.contains_wind_speed = 0
         self.contains_air_pressure = 0
+        self.contains_midday_albedo = 0
 
         if cfg["PRO_VERSION"]:
             self._temperature = None
@@ -562,6 +565,16 @@ class MeanMeasurement(Measurement):
             else:
                 self._total_energy_balance += single_measurement.total_energy_balance
 
+        if 11 <= single_measurement.datetime.hour <= 13:
+            self.contains_midday_albedo += 1
+            try:
+                if self.midday_albedo is None:
+                    self.midday_albedo = abs(single_measurement.sw_radiation_out/single_measurement.sw_radiation_in)
+                else:
+                    self.midday_albedo += abs(single_measurement.sw_radiation_out/single_measurement.sw_radiation_in)
+            except:  # TODO
+                pass
+
         return self  # important
 
     def __ratio(self, amount_of_specific_value):
@@ -638,6 +651,9 @@ class MeanMeasurement(Measurement):
             if self.__starting_ablation is not None and self.__ending_ablation is not None:
                 self.__relative_ablation_measured = self.__ending_ablation - self.__starting_ablation
 
+        if self.midday_albedo is not None:
+            self.midday_albedo /= self.contains_midday_albedo
+
         if self._total_energy_balance is not None:
             self._total_energy_balance /= self.contains_total_energy_balance
 
@@ -664,8 +680,9 @@ class MeanMeasurement(Measurement):
             self.__theoretical_mm_we_per_d = energy_balance.singleton.melt_rate_to_mm_we_per_d(
                 self._theoretical_melt_rate)
 
-            self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
-                self.__theoretical_melt_water_per_sqm)
+            if self.total_snow_depth == 0:
+                self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
+                    self.__theoretical_melt_water_per_sqm)
 
     def replace_this_measurement_by_mean_of(self, mean_measurements):
         temperatures = []
@@ -677,6 +694,7 @@ class MeanMeasurement(Measurement):
         lw_ins = []
         lw_outs = []
         snow_deltas = []
+        # ablations = []
 
         for mean_measurement in mean_measurements:
             mean_measurement: MeanMeasurement
@@ -689,6 +707,7 @@ class MeanMeasurement(Measurement):
             lw_ins.append(mean_measurement.lw_radiation_in)
             lw_outs.append(mean_measurement.lw_radiation_out)
             snow_deltas.append(mean_measurement.snow_depth_delta_natural)
+            # ablations.append(mean_measurement.ablation)
 
         # no error should occur here, no none values should be parsed
         self._temperature = mean(temperatures)
@@ -700,7 +719,16 @@ class MeanMeasurement(Measurement):
         self._energy_balance_components["lw_radiation_in"] = mean(lw_ins)
         self._energy_balance_components["lw_radiation_out"] = mean(lw_outs)
         self._snow_depth_delta_natural = mean(snow_deltas)
-        self.__valid_state = self.valid_states["estimated"]
+
+        # """ Ablation values fixed as well if possible, else does not really matter """
+        # ablations = np.array(ablations, dtype=np.float)  # for converting None's to np.nan
+        # not_nans = ~np.isnan(ablations)
+        # if any(not_nans):
+        #     self._ablation = np.nanmean(ablations)
+        # else:
+        #     print(ablations)
+        #
+        # self.__valid_state = self.valid_states["estimated"]
 
     @property
     def valid_state(self):

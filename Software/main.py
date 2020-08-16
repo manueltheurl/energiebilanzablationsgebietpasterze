@@ -235,31 +235,25 @@ class NoGuiManager:
             #                                           use_summed_measurements=True, show_estimated_measurement_areas=True,
             #                                           save_name=f"albedo{year}")
 
-    def run_calculations_bachelor(self, type_, year, only_summer=False):
+    def run_calculations_bachelor(self, type_, startime: dt.datetime, endtime: dt.datetime, pegel_measure):
         """
         type_ either adapted or original
         """
-        print(f"\nRunning bachelor calaculations {type_} for year {year} (only summer: {only_summer}):")
+        print(f"\nRunning bachelor calaculations {type_} for {startime.strftime('%d.%m.%Y')} till {endtime.strftime('%d.%m.%Y')}:")
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
         # reader.singleton.fetch_file_metadata()
 
         if not os.path.exists(self.pickle_multiple_measurement_singleton) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
-            if only_summer:
-                reader.singleton.read_meterologic_file_to_objects(starttime=dt.datetime(year, 7, 1),
-                                                                  endtime=dt.datetime(year, 7, 30),
-                                                                  resolution_by_percentage=None,
-                                                                  resolution_by_time_interval=None)
-            else:
-                reader.singleton.read_meterologic_file_to_objects(starttime=dt.datetime(year, 1, 1),
-                                                                  endtime=dt.datetime(year, 12, 31),
-                                                                  resolution_by_percentage=None,
-                                                                  resolution_by_time_interval=None)
+            reader.singleton.read_meterologic_file_to_objects(starttime=startime,
+                                                              endtime=endtime,
+                                                              resolution_by_percentage=None,
+                                                              resolution_by_time_interval=None)
 
             multiple_measurements.singleton.correct_snow_measurements_for_scope()
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
             multiple_measurements.singleton.cumulate_ablation_for_scope()
             # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()  # TODO if this is used do it above as well
-            multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
+            # multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
 
             if type_ == "original":
                 multiple_measurements.singleton.calculate_energy_balance_for("scope")
@@ -282,14 +276,14 @@ class NoGuiManager:
 
             print("Nones measured_ablations:", sum(x is None for x in measured_ablations))
             print("Nones modelled_ablations:", sum(x is None for x in modelled_ablations))
+
+
             for i in range(len(measured_ablations)):
                 measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
             for i in range(len(modelled_ablations)):
                 modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
 
-            modelled_ablation = sum(modelled_ablations)
-            measured_ablation = sum(measured_ablations)
-            reality_factor = measured_ablation / modelled_ablation
+
 
             # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
             # visualizer.singleton.plot_single_component("albedo", "", use_summed_measurements=True,
@@ -309,15 +303,124 @@ class NoGuiManager:
             # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("albedo",), "-",
             #                                      use_summed_measurements=True,
             #                                      save_name=f"swinout")
+
+            # visualizer.singleton.plot_components(("albedo",), "-",
+            #                                      use_summed_measurements=True,
+            #                                      save_name=f"albedo_normal")
             #
+            # visualizer.singleton.plot_components(("midday_albedo",), "-",
+            #                                      use_summed_measurements=True,
+            #                                      save_name=f"albedo_midday")
+
             # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("total_snow_depth",), "m",
             #                                      use_summed_measurements=True,
             #                                      save_name=f"snow_depth")
 
-            print("Measured ablation", round(measured_ablation, 2))
+            modelled_ablation = sum(modelled_ablations)
+            measured_ablation = sum(measured_ablations)
+            reality_factor_ablation = measured_ablation / modelled_ablation
+            reality_factor_pegel = (pegel_measure/100) / modelled_ablation
+            print("Measured ablation", round(measured_ablation, 2), "Pegel measure", pegel_measure/100)
             print("Modelled ablation",
                   round(modelled_ablation, 2))  # measured stays the same .. cause thats wont be affected
-            print("Reality factor:", round(reality_factor, 2))
+            print("Reality factor ablation:", round(reality_factor_ablation, 2))
+            print("Reality factor pegel:", round(reality_factor_pegel, 2))
+
+    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, tups):
+        reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
+        f_name = "dump_del"
+        if False:
+            reader.singleton.read_meterologic_file_to_objects()
+            multiple_measurements.singleton.correct_snow_measurements_for_scope()
+            multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
+            multiple_measurements.singleton.cumulate_ablation_for_scope()
+            # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()  # TODO if this is used do it above as well
+            multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
+
+            if type_ == "original":
+                multiple_measurements.singleton.calculate_energy_balance_for("scope")
+                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("scope")
+                multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
+                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+
+            elif type_ == "adapted":
+                multiple_measurements.singleton.sum_measurements_by_time_interval(
+                    dt.timedelta(hours=self.hourly_resolution))
+
+                multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
+                multiple_measurements.singleton.calculate_energy_balance_for("summed")
+                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
+                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+
+            with open(f_name, 'wb') as f:
+                pickle.dump(multiple_measurements.singleton, f)
+
+        with open(f_name, 'rb') as f:
+            multiple_measurements.singleton = pickle.load(f)
+
+        reality_factors_pegel = []
+        reality_factors_ablation = []
+
+        for tup in tups:
+            start_time = tup[0]
+            end_time = tup[1]
+            pegel_measure = -tup[2]
+
+            multiple_measurements.singleton.reset_scope_to_all()
+            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
+
+            measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
+            modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
+
+            amount_of_nones_in_measured_ablation = sum(x is None for x in measured_ablations)
+
+            for i in range(len(measured_ablations)):
+                measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
+            for i in range(len(modelled_ablations)):
+                modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+
+            modelled_ablation = sum(modelled_ablations)
+            measured_ablation = sum(measured_ablations)
+
+            reality_factor_ablation = measured_ablation / modelled_ablation if modelled_ablation else None
+            reality_factor_pegel = (pegel_measure/100) / modelled_ablation if modelled_ablation else None
+
+            reality_factors_pegel.append(reality_factor_pegel)
+
+            time_spawn_in_days = (end_time-start_time).total_seconds()/60/60/24
+
+            print(f"{start_time.strftime('%d.%m.%Y')} till {end_time.strftime('%d.%m.%Y')}:")
+            print("Pegel measure", pegel_measure/100, "m")
+            print("Modelled ablation",
+                  round(modelled_ablation, 2))  # measured stays the same .. cause thats wont be affected
+            if reality_factor_pegel is not None:
+                print("Reality factor Pegel:", round(reality_factor_pegel, 2), "diff cm/day:", round((pegel_measure-modelled_ablation*100)/time_spawn_in_days, 1))
+
+            if not amount_of_nones_in_measured_ablation:
+                print("Measured ablation", round(measured_ablation, 2))
+                if reality_factor_ablation is not None:
+                    print("Reality factor ablation:", round(reality_factor_ablation, 2), "diff cm/day:", round((measured_ablation*100-modelled_ablation*100)/time_spawn_in_days, 1))
+                reality_factors_ablation.append(reality_factor_ablation)
+            else:
+                reality_factors_ablation.append(None)
+
+            print()
+
+        import matplotlib.pyplot as plt
+        plt.plot(reality_factors_pegel)
+        plt.xlabel("Time frame number")
+        plt.ylabel("Pegel reality factor")
+        plt.grid()
+        plt.show()
+        plt.close()
+
+        plt.scatter(reality_factors_pegel, reality_factors_ablation)
+        plt.xlabel("Reality factor pegel")
+        plt.ylabel("Reality factor ablation")
+        plt.xlim(0, 1.5)
+        plt.ylim(0, 1.5)
+        plt.grid()
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -327,11 +430,35 @@ if __name__ == "__main__":
         # no_gui_manager.run_visualizations()
         # no_gui_manager.run_bachelor_stuff()
 
-        year = 2017
-        no_gui_manager.run_calculations_bachelor("original", year)
-        no_gui_manager.run_calculations_bachelor("adapted", year)
-        no_gui_manager.run_calculations_bachelor("original", year, only_summer=True)
-        no_gui_manager.run_calculations_bachelor("adapted", year, only_summer=True)
+        tups = [
+            (dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95),
+            (dt.datetime(2013, 9, 25), dt.datetime(2014, 8, 6), 424),
+            (dt.datetime(2014, 8, 6), dt.datetime(2014, 9, 23), 151),
+            (dt.datetime(2014, 9, 23), dt.datetime(2015, 6, 22), 193),
+            (dt.datetime(2015, 6, 22), dt.datetime(2015, 6, 26), 12),
+            (dt.datetime(2015, 6, 26), dt.datetime(2015, 7, 28), 283),
+            (dt.datetime(2015, 7, 28), dt.datetime(2015, 8, 2), 27),
+            (dt.datetime(2015, 8, 2), dt.datetime(2015, 10, 12), 292),
+            (dt.datetime(2015, 10, 12), dt.datetime(2016, 5, 27), -5),
+            (dt.datetime(2016, 5, 27), dt.datetime(2016, 6, 30), 176),
+            (dt.datetime(2016, 6, 30), dt.datetime(2016, 7, 21), 129),
+            (dt.datetime(2016, 7, 21), dt.datetime(2016, 9, 14), 317),
+            (dt.datetime(2016, 9, 14), dt.datetime(2016, 10, 17), 48),
+            (dt.datetime(2016, 10, 17), dt.datetime(2017, 7, 7), 294),
+            (dt.datetime(2017, 7, 7), dt.datetime(2017, 7, 26), 132),
+            (dt.datetime(2017, 7, 26), dt.datetime(2017, 10, 14), 246),
+            (dt.datetime(2017, 10, 14), dt.datetime(2018, 6, 22), 223),
+            (dt.datetime(2018, 6, 22), dt.datetime(2018, 7, 16), 135),
+            (dt.datetime(2018, 7, 16), dt.datetime(2018, 9, 30), 393),
+            (dt.datetime(2018, 9, 30), dt.datetime(2019, 6, 24), 182),
+            (dt.datetime(2019, 6, 24), dt.datetime(2019, 7, 17), 179),
+            (dt.datetime(2019, 7, 17), dt.datetime(2019, 10, 4), 370)]
+            # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
+
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
+
+
+
     else:
         """
         Order matters here, cause all need the gui_main_frame

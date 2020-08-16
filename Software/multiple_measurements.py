@@ -732,7 +732,7 @@ class MultipleMeasurements:
             obj: MeanMeasurement
 
             if obj.valid_state == MeanMeasurement.valid_states["valid"]:
-                current_datetime = copy.deepcopy(obj.datetime)  # deepcopy needed? TODO
+                current_datetime = copy.deepcopy(obj.datetime)
 
                 for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
                     year_of_invalid = invalid_measurement.datetime_begin.year  # endtime is ignored here
