@@ -371,6 +371,7 @@ class Visualize:
                 ax2.set_ylabel(components2_unit)
 
         self.modify_axes()
+        self.ax.set_ylim([0, 1])  # del todo
         self.show_save_and_close_plot(None, save_name=save_name)
 
     def plot_components_lvls(self, height_level_objects, components1: tuple, components1_unit, components2: tuple = None,
