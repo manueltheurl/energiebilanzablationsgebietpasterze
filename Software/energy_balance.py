@@ -74,45 +74,52 @@ class EnergyBalance:
         else:
             return 5.7*m.sqrt(wind_speed) * (temperature - temperature_ice)
 
-    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, air_pressure, snow_depth,
-                              use_standard_formula_for_e_surface_saturated=True, use_bulk=True):
-        # E_H
-        # temperature in degree celcius
+    @staticmethod
+    def calculate_saturation_vapor_pressure_above_water(temperature):
+        """
+        Formula from http://klimedia.ch/kap3/a11.html
 
+        temperature in deg celsius
+        return in Pa
+        """
+        return (6.107 * 10 ** (7.5 * temperature / (temperature + 237))) * 100  # hpa to pa
+
+    @staticmethod
+    def calculate_saturation_vapor_pressure_above_ice(temperature):
+        """
+        Formula from http://klimedia.ch/kap3/a11.html
+
+        temperature in deg celsius
+        return in Pa
+        """
+        return (6.107 * 10 ** (9.5 * temperature / (temperature + 265.5))) * 100  # hpa to pa
+
+        # old approach from
         # https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
-
         # or https://books.google.at/books?id=Zi1coMyhlHoC&lpg=PP1&pg=PA350&hl=en&redir_esc=y#v=onepage&q&f=false
         # see also post https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit for that
-
-        # e_surface - vapor pressure at the surface [Pa] - assuming saturation  TODO find proof for that function
-        # * 1000 for converting to Pa
-        e_air_saturated = (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # <- OLD
-        # e_air_saturated = (0.6108 * m.e ** (9.5 * temperature / (temperature + 265.5))) * 1000   # <- NEW
-        e_air = rel_moisture / 100 * e_air_saturated
-
-        if use_standard_formula_for_e_surface_saturated:
-            # todo http://klimedia.ch/kap3/a11.html
-            e_surface_saturated = (0.6108 * m.e ** (  # <- OLD
-                        17.27 * self.calculate_ice_temperature(longwave_out) /
-                        (self.calculate_ice_temperature(longwave_out) + 237.3))) * 1000  # * 1000 for converting to Pa
-
-            # e_surface_saturated = (0.6108 * m.e ** (  # <- NEW
-            #         9.5 * self.calculate_ice_temperature(longwave_out) /
-            #         (self.calculate_ice_temperature(longwave_out) + 265.5))) * 1000  # * 1000 for converting to Pa
-
-        else:
-            e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(self.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
-
         # http://www.fao.org/3/X0490E/x0490e07.htm confirms eq 12 states, that unit is kPa even .. TODO proof ..
         # https://www.hydrol-earth-syst-sci.net/17/1331/2013/hess-17-1331-2013-supplement.pdf .. S2.5  kPa here as well
         # -> should be enough proof
+        # (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # kpa to pa
 
-        # e_air - vapor pressure above the surface [Pa]
+    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, air_pressure, snow_depth,
+                              use_bulk=True):
+        # E_H
+        # temperature in degree celsius
+
+        e_air_saturated = self.calculate_saturation_vapor_pressure_above_water(temperature)
+        e_air = rel_moisture / 100 * e_air_saturated
+
+        if True:
+            e_surface_saturated = self.calculate_saturation_vapor_pressure_above_ice(self.calculate_ice_temperature(longwave_out))
+        else:
+            # TODO can probably be deleted
+            e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(self.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
 
         u = wind_speed
         # http://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0016-71692015000400299 PROOFS THAT ITS THE WIND SPEED INDEED
-        # TODO take a look in this article above on eq 14,  there P woiuld be the air pressure which we have, take it?
-
+        # TODO take a look in this article above on eq 14,  there P would be the air pressure which we have, take it?
         # e - e_s is actually the vapor Pressure Deficit  -- https://physics.stackexchange.com/questions/4343/how-can-i-calculate-vapor-pressure-deficit-from-temperature-and-relative-humidit
 
         # TODO e_air and e_surface is Pa .. yes it is .. proof in 05_VO_Mountainhydrology Page 22
