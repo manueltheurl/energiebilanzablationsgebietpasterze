@@ -27,7 +27,13 @@ class EnergyBalance:
 
         self.c_star = {
             "ice": self.calculate_c_star(float(cfg["Z_0_ROUGHNESS_ICE"])),
-            "snow": self.calculate_c_star(float(cfg["Z_0_ROUGHNESS_SNOW"])),
+            "snow": self.calculate_c_star(float(cfg["Z_0_ROUGHNESS_SNOW"]))
+        }
+
+    def set_new_roughness_parameters(self, z_0_ice, z_0_snow):
+        self.c_star = {
+            "ice": self.calculate_c_star(z_0_ice),
+            "snow": self.calculate_c_star(z_0_snow),
         }
 
     def calculate_c_star(self, z_0):
@@ -148,11 +154,15 @@ class EnergyBalance:
         # not implemented as there sadly is no information given about the rain rate m/s
         return 0
 
-    @staticmethod
-    def meter_ablation_to_melt_water(meter_ablation):
-        if meter_ablation <= 0:  # if melted
-            return abs(meter_ablation) * PURE_ICE_DENSITY_AT_ZERO_DEG
-        return 0
+    warned_once_about_negative_meter_ablation = False
+
+    @classmethod
+    def meter_ablation_to_melt_water(cls, meter_ablation):
+        if meter_ablation < 0:  # if melted
+            if not cls.warned_once_about_negative_meter_ablation:
+                print("WARNING: Ablation must be >= 0, fix measurements with set_negative_relative_ablation_zero_for_summed")
+                cls.warned_once_about_negative_meter_ablation = True
+        return abs(meter_ablation) * PURE_ICE_DENSITY_AT_ZERO_DEG
 
     @staticmethod
     def melt_water_per_m2_to_mm_we_per_d(melt_water, time_interval):
@@ -167,9 +177,9 @@ class EnergyBalance:
 
     @staticmethod
     def melt_water_to_meter_ablation(melt_water):
-        if melt_water >= 0:
-            return - melt_water / PURE_ICE_DENSITY_AT_ZERO_DEG
-        return 0
+        if melt_water < 0:
+            exit("Melt water must be positive")
+        return melt_water / PURE_ICE_DENSITY_AT_ZERO_DEG
 
     @staticmethod
     def meltrate_to_melt_water(melt_rate, timespawn):

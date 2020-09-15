@@ -229,7 +229,7 @@ class ScopeFrame(tk.Frame):
         multiple_measurements.singleton.calculate_energy_balance_for("scope",
             self.scale_simulate_dimming_brightening.get()
         )
-        multiple_measurements.singleton.cumulate_ablation_for_scope()
+        multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope()
         # multiple_measurements.singleton.check_for_snow_covering_for_scope()  # yet TODO
         multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for()
         # multiple_measurements.singleton.calculate_ablation_and_theoretical_melt_rate_to_meltwater_per_square_meter_for_scope()

@@ -8,15 +8,18 @@ import numpy as np
 from WetBulb import WetBulb
 
 # TODO maybe make another subclass "ArtificialMeasurement"  or better not?  with just the artificial methods
+# TODO get rid off all those properties, this makes it so unreadable, just use them if really necessary
 
 
 class Measurement:
     def __init__(self, temperature, rel_moisture, wind_speed, wind_direction, air_pressure, sw_radiation_in,
-                 sw_radiation_out, lw_radiation_in, lw_radiation_out, zenith_angle, tiltx, tilty, snow_depth, ablation):
+                 sw_radiation_out, lw_radiation_in, lw_radiation_out, zenith_angle, tiltx, tilty, snow_depth, measured_ice_thickness):
 
-        self._ablation = ablation  # this represents the ice thickness at the point of measurement
+        self._measured_ice_thickness = measured_ice_thickness  # this represents the ice thickness at the point of measurement
+        self._cumulated_ice_thickness = None
+
         self._theoretical_melt_rate = None
-        self._cumulated_ablation = None
+
         # sw out and lw out are negative here even though they are technically positive .. sum of the dict is actual
         # energy balance then
         self._energy_balance_components = {
@@ -317,17 +320,17 @@ class Measurement:
         self._swe_input_from_snow = value
 
     @property
-    def ablation(self):
-        return self._ablation
+    def measured_ice_thickness(self):
+        return self._measured_ice_thickness
 
     @property
-    def cumulated_ablation(self):
-        return self._cumulated_ablation
+    def cumulated_ice_thickness(self):
+        return self._cumulated_ice_thickness
 
-    @cumulated_ablation.setter
-    def cumulated_ablation(self, new_value):
-        # for clearning the ablation values
-        self._cumulated_ablation = new_value
+    @cumulated_ice_thickness.setter
+    def cumulated_ice_thickness(self, new_value):
+        # for clearing the ablation values
+        self._cumulated_ice_thickness = new_value
 
     @property
     def total_energy_balance(self):
@@ -384,8 +387,8 @@ class MeanMeasurement(Measurement):
 
         self.__valid_state = self.valid_states["invalid"]  # this flag will be set valid if calculate_mean() is good
 
-        self.__starting_ablation = None
-        self.__ending_ablation = None
+        self.__starting_ice_thickness = None
+        self.__ending_ice_thickness = None
 
         self.__datetime_begin = None
         self.__datetime_end = None
@@ -396,7 +399,7 @@ class MeanMeasurement(Measurement):
         self.__actual_melt_water_per_sqm = None  # in liters - derived from the ablation measurement
         self.__theoretical_melt_water_per_sqm = None  # in liters - derived from the energy balance
 
-        self.__relative_ablation_measured = None  # in meter ice - directly from the ablation measurement (current - last one)
+        self.__relative_ablation_measured = None  # in meter ice - directly from the ablation measurement (current - last one), gets set when summing measurement
         self.__relative_ablation_modelled = None  # in meter ice - derived from the energy balance, only if no snow is laying
 
         self.midday_albedo = None
@@ -517,20 +520,20 @@ class MeanMeasurement(Measurement):
                 else:
                     self._energy_balance_components["precipitation_heat"] += single_measurement.precipitation_energy
 
-        if single_measurement.ablation is not None:
+        if single_measurement.measured_ice_thickness is not None:
             self.contains_ablation += 1
-            if self._ablation is None:
-                self._ablation = single_measurement.ablation
+            if self._measured_ice_thickness is None:
+                self._measured_ice_thickness = single_measurement.measured_ice_thickness
             else:
-                self._ablation += single_measurement.ablation
+                self._measured_ice_thickness += single_measurement.measured_ice_thickness
 
-        if single_measurement.cumulated_ablation is not None:
+        if single_measurement.cumulated_ice_thickness is not None:
             self.contains_cumulated_ablation += 1
-            if self._cumulated_ablation is None:
-                self.__starting_ablation = single_measurement.cumulated_ablation
-                self._cumulated_ablation = single_measurement.cumulated_ablation
+            if self._cumulated_ice_thickness is None:
+                self.__starting_ice_thickness = single_measurement.cumulated_ice_thickness
+                self._cumulated_ice_thickness = single_measurement.cumulated_ice_thickness
             else:
-                self._cumulated_ablation += single_measurement.cumulated_ablation
+                self._cumulated_ice_thickness += single_measurement.cumulated_ice_thickness
 
         if single_measurement.snow_depth_natural is not None:
             self.contains_snow_depth_natural += 1
@@ -589,7 +592,7 @@ class MeanMeasurement(Measurement):
 
         if min([self.__ratio(self.contains_sw_in), self.__ratio(self.contains_sw_out), self.__ratio(self.contains_lw_in),
                self.__ratio(self.contains_lw_out), self.__ratio(self.contains_air_pressure),
-               self.contains_temperature, self.contains_wind_speed]) < 0.8 or min(
+               self.__ratio(self.contains_temperature), self.__ratio(self.contains_wind_speed)]) < 0.8 or min(
             [self.__ratio(self.contains_rel_moisture)]) < 0.3:
             self.__valid_state = self.valid_states["invalid"]
         else:
@@ -597,7 +600,7 @@ class MeanMeasurement(Measurement):
 
     def calculate_mean(self, endtime, end_ablation):
         self.__datetime_end = endtime  # first date of next measurement .. important for calculating melt water
-        self.__ending_ablation = end_ablation
+        self.__ending_ice_thickness = end_ablation
 
         if self._energy_balance_components["sw_radiation_in"] is not None:
             self._energy_balance_components["sw_radiation_in"] /= self.contains_sw_in
@@ -627,8 +630,8 @@ class MeanMeasurement(Measurement):
         if self._theoretical_melt_rate is not None:
             self._theoretical_melt_rate /= self.contains_theoretical_melt_rate
 
-        if self._ablation is not None:
-            self._ablation /= self.contains_ablation
+        if self._measured_ice_thickness is not None:
+            self._measured_ice_thickness /= self.contains_ablation
 
         if self._snow_depth_natural is not None:
             self._snow_depth_natural /= self.contains_snow_depth_natural
@@ -645,11 +648,14 @@ class MeanMeasurement(Measurement):
         if self._air_pressure is not None:
             self._air_pressure /= self.contains_air_pressure
 
-        if self._cumulated_ablation is not None:
-            self._cumulated_ablation /= self.contains_cumulated_ablation
+        if self._cumulated_ice_thickness is not None:
+            self._cumulated_ice_thickness /= self.contains_cumulated_ablation
 
-            if self.__starting_ablation is not None and self.__ending_ablation is not None:
-                self.__relative_ablation_measured = self.__ending_ablation - self.__starting_ablation
+            if self.__starting_ice_thickness is not None and self.__ending_ice_thickness is not None:
+                self.__relative_ablation_measured = self.__starting_ice_thickness - self.__ending_ice_thickness
+                if int(cfg["SET_NEGATIVE_MEASURED_ABLATION_ZERO"]):
+                    if self.__relative_ablation_measured < 0:
+                        self.__relative_ablation_measured = 0
 
         if self.midday_albedo is not None:
             self.midday_albedo /= self.contains_midday_albedo
@@ -659,8 +665,14 @@ class MeanMeasurement(Measurement):
 
         self.__check_if_measurement_is_valid()
 
-    def calculate_measured_and_theoretical_ablation_values(self):
+    def calculate_relative_ablation(self, set_negative_ablation_zero=False):
+        if self.__starting_ice_thickness is not None and self.__ending_ice_thickness is not None:
+            self.__relative_ablation_measured = self.__starting_ice_thickness - self.__ending_ice_thickness
+
+    def convert_measured_and_modeled_rel_ablations_in_water_equivalents(self):
         """
+        todo bad function name
+
         Ablation values are:
             measured and theoretic melt water per square meter in given time frame of mean measurement
             measured and theoretic mm water equivalent per day
@@ -680,11 +692,11 @@ class MeanMeasurement(Measurement):
             self.__theoretical_mm_we_per_d = energy_balance.singleton.melt_rate_to_mm_we_per_d(
                 self._theoretical_melt_rate)
 
-            if self.total_snow_depth == 0:
+            if self.total_snow_depth == 0:  # not the right place probably there for this todo, __relative_ablation_measured is set in summing process
                 self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
                     self.__theoretical_melt_water_per_sqm)
 
-    def replace_this_measurement_by_mean_of(self, mean_measurements):
+    def replace_this_measurement_by_mean_of(self, mean_measurements, ablation_as_well=False):
         temperatures = []
         rel_moistures = []
         air_pressures = []
@@ -694,7 +706,7 @@ class MeanMeasurement(Measurement):
         lw_ins = []
         lw_outs = []
         snow_deltas = []
-        # ablations = []
+        rel_ablations = []
 
         for mean_measurement in mean_measurements:
             mean_measurement: MeanMeasurement
@@ -707,7 +719,8 @@ class MeanMeasurement(Measurement):
             lw_ins.append(mean_measurement.lw_radiation_in)
             lw_outs.append(mean_measurement.lw_radiation_out)
             snow_deltas.append(mean_measurement.snow_depth_delta_natural)
-            # ablations.append(mean_measurement.ablation)
+            if ablation_as_well:
+                rel_ablations.append(mean_measurement.relative_ablation_measured)
 
         # no error should occur here, no none values should be parsed
         self._temperature = mean(temperatures)
@@ -720,15 +733,18 @@ class MeanMeasurement(Measurement):
         self._energy_balance_components["lw_radiation_out"] = mean(lw_outs)
         self._snow_depth_delta_natural = mean(snow_deltas)
 
-        # """ Ablation values fixed as well if possible, else does not really matter """
-        # ablations = np.array(ablations, dtype=np.float)  # for converting None's to np.nan
-        # not_nans = ~np.isnan(ablations)
-        # if any(not_nans):
-        #     self._ablation = np.nanmean(ablations)
-        # else:
-        #     print(ablations)
-        #
-        # self.__valid_state = self.valid_states["estimated"]
+        if ablation_as_well:
+            """ Ablation values fixed as well if possible, else does not really matter """
+            rel_ablations = np.array(rel_ablations, dtype=np.float)  # for converting None's to np.nan
+            not_nans = ~np.isnan(rel_ablations)
+            if any(not_nans):
+                self.__relative_ablation_measured = np.nanmean(rel_ablations)
+                print(self.__relative_ablation_measured)
+            else:
+                print("Warning, none in ablation measurement fix!")
+                print(rel_ablations)
+
+        self.__valid_state = self.valid_states["estimated"]
 
     @property
     def valid_state(self):

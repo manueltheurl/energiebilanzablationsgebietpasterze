@@ -37,6 +37,7 @@ import frame_energy_balance as frame_scope
 import frame_sum
 import visualizer
 from height_level import MeteorologicalYear
+import energy_balance
 
 
 class NoGuiManager:
@@ -251,9 +252,9 @@ class NoGuiManager:
 
             multiple_measurements.singleton.correct_snow_measurements_for_scope()
             multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-            multiple_measurements.singleton.cumulate_ablation_for_scope()
+            multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope()
             # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()  # TODO if this is used do it above as well
-            # multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
+            multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
 
             if type_ == "original":
                 multiple_measurements.singleton.calculate_energy_balance_for("scope")
@@ -276,7 +277,6 @@ class NoGuiManager:
 
             print("Nones measured_ablations:", sum(x is None for x in measured_ablations))
             print("Nones modelled_ablations:", sum(x is None for x in modelled_ablations))
-
 
             for i in range(len(measured_ablations)):
                 measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
@@ -326,102 +326,139 @@ class NoGuiManager:
             print("Reality factor ablation:", round(reality_factor_ablation, 2))
             print("Reality factor pegel:", round(reality_factor_pegel, 2))
 
-    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, tups):
+    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, tups, set_neg_abl_measures_0=True):
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
-        f_name = "dump_del"
-        if False:
-            reader.singleton.read_meterologic_file_to_objects()
-            multiple_measurements.singleton.correct_snow_measurements_for_scope()
-            multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-            multiple_measurements.singleton.cumulate_ablation_for_scope()
-            # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()  # TODO if this is used do it above as well
-            multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
 
-            if type_ == "original":
-                multiple_measurements.singleton.calculate_energy_balance_for("scope")
-                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("scope")
-                multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
-                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+        cfg["SET_NEGATIVE_MEASURED_ABLATION_ZERO"] = "1" if set_neg_abl_measures_0 else "0"
 
-            elif type_ == "adapted":
-                multiple_measurements.singleton.sum_measurements_by_time_interval(
-                    dt.timedelta(hours=self.hourly_resolution))
+        for rs in [(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]:
+            energy_balance.singleton.set_new_roughness_parameters(rs[0], rs[1])
 
-                multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
-                multiple_measurements.singleton.calculate_energy_balance_for("summed")
-                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
-                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+            f_name = f"picklsave_{rs[0]}_z0snow{rs[1]}_type{type_}"
+            if True:
+                reader.singleton.read_meterologic_file_to_objects()
+                multiple_measurements.singleton.correct_snow_measurements_for_scope()
+                multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
+                # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()
+                multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
+                multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope()
 
-            with open(f_name, 'wb') as f:
-                pickle.dump(multiple_measurements.singleton, f)
+                if type_ == "original":
+                    multiple_measurements.singleton.calculate_energy_balance_for("scope")
+                    multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("scope")
+                    multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
+                    multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+                elif type_ == "adapted":
+                    multiple_measurements.singleton.sum_measurements_by_time_interval(
+                        dt.timedelta(hours=self.hourly_resolution))
+                    multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope(rel_ablation_as_well=True)
+                    # TODO problem is, that rel ablation is None so many times, not whole measurement can be set invalid then, else there would
+                    # be just too many
+                    # solution would be to take the stuff which is good and just replace the stuff that is not .. that would be better anyways
 
-        with open(f_name, 'rb') as f:
-            multiple_measurements.singleton = pickle.load(f)
+                    multiple_measurements.singleton.calculate_energy_balance_for("summed")
+                    multiple_measurements.singleton.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
+                    multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
 
-        reality_factors_pegel = []
-        reality_factors_ablation = []
+                with open(f_name, 'wb') as f:
+                    pickle.dump(multiple_measurements.singleton, f)
 
-        for tup in tups:
-            start_time = tup[0]
-            end_time = tup[1]
-            pegel_measure = -tup[2]
+            with open(f_name, 'rb') as f:
+                multiple_measurements.singleton = pickle.load(f)
 
-            multiple_measurements.singleton.reset_scope_to_all()
-            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
+            appendix = "set neg abl measure to 0" if set_neg_abl_measures_0 else ""
+            print(f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]} ({appendix}, {type_})")
+            print("Time span, Modeled [m], Pegel measure [m], Diff [mm/d], Pressure transducer measure [m], Diff [mm/d]")
 
-            measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
-            modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
+            all_modelled_mm = []
+            all_measured_mm = []
+            all_pegel_mm = []
+            for tup in tups:
+                start_time = tup[0]
+                end_time = tup[1]
+                pegel_measure = tup[2]/100
 
-            amount_of_nones_in_measured_ablation = sum(x is None for x in measured_ablations)
+                multiple_measurements.singleton.reset_scope_to_all()
+                multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
 
-            for i in range(len(measured_ablations)):
-                measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
-            for i in range(len(modelled_ablations)):
-                modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+                measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
+                modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
 
-            modelled_ablation = sum(modelled_ablations)
-            measured_ablation = sum(measured_ablations)
+                amount_of_nones_in_measured_ablation = sum(x is None for x in measured_ablations)
+                print(amount_of_nones_in_measured_ablation)
 
-            reality_factor_ablation = measured_ablation / modelled_ablation if modelled_ablation else None
-            reality_factor_pegel = (pegel_measure/100) / modelled_ablation if modelled_ablation else None
+                for i in range(len(measured_ablations)):
+                    measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
+                for i in range(len(modelled_ablations)):
+                    modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
 
-            reality_factors_pegel.append(reality_factor_pegel)
+                modelled_ablation = sum(modelled_ablations)
+                measured_ablation = sum(measured_ablations)
 
-            time_spawn_in_days = (end_time-start_time).total_seconds()/60/60/24
+                time_spawn_in_days = (end_time-start_time).total_seconds()/60/60/24
 
-            print(f"{start_time.strftime('%d.%m.%Y')} till {end_time.strftime('%d.%m.%Y')}:")
-            print("Pegel measure", pegel_measure/100, "m")
-            print("Modelled ablation",
-                  round(modelled_ablation, 2))  # measured stays the same .. cause thats wont be affected
-            if reality_factor_pegel is not None:
-                print("Reality factor Pegel:", round(reality_factor_pegel, 2), "diff cm/day:", round((pegel_measure-modelled_ablation*100)/time_spawn_in_days, 1))
+                for modelled, measured in zip(modelled_ablations, measured_ablations):
+                    all_modelled_mm.append(modelled*1000)
+                    all_measured_mm.append(measured*1000)
+                    all_pegel_mm.append(pegel_measure/time_spawn_in_days*1000)
 
-            if not amount_of_nones_in_measured_ablation:
-                print("Measured ablation", round(measured_ablation, 2))
-                if reality_factor_ablation is not None:
-                    print("Reality factor ablation:", round(reality_factor_ablation, 2), "diff cm/day:", round((measured_ablation*100-modelled_ablation*100)/time_spawn_in_days, 1))
-                reality_factors_ablation.append(reality_factor_ablation)
-            else:
-                reality_factors_ablation.append(None)
+                # create tabular
+                cols = []
+                cols.append(f"{start_time.strftime('%d.%m.%Y')} - {end_time.strftime('%d.%m.%Y')}")
+                cols.append(str(round(modelled_ablation, 3)))
 
-            print()
+                cols.append(str(round(pegel_measure, 3)))
+                cols.append(str(round((pegel_measure-modelled_ablation) * 1000 / time_spawn_in_days, 1)))
 
-        import matplotlib.pyplot as plt
-        plt.plot(reality_factors_pegel)
-        plt.xlabel("Time frame number")
-        plt.ylabel("Pegel reality factor")
-        plt.grid()
-        plt.show()
-        plt.close()
+                cols.append(str(round(measured_ablation, 3)))
+                cols.append(str(round((measured_ablation-modelled_ablation) * 1000 / time_spawn_in_days, 1)))
 
-        plt.scatter(reality_factors_pegel, reality_factors_ablation)
-        plt.xlabel("Reality factor pegel")
-        plt.ylabel("Reality factor ablation")
-        plt.xlim(0, 1.5)
-        plt.ylim(0, 1.5)
-        plt.grid()
-        plt.show()
+                print(",".join(cols))
 
+            # create tabular
+            cols = []
+            cols.append("")
+            all_modelled_m = sum(all_modelled_mm)/1000
+            all_pegel_m = sum(all_pegel_mm)/1000
+            all_measured_m = sum(all_measured_mm)/1000
+            cols.append(str(round(all_modelled_m, 3)))
+            cols.append(str(round(all_pegel_m, 3)))
+
+            overall_time_spawn_in_days = (tups[-1][1] - tups[0][0]).total_seconds() / 60 / 60 / 24
+
+            cols.append(str(round((all_pegel_m - all_modelled_m) * 100 / overall_time_spawn_in_days, 1)))
+            cols.append(str(round(all_measured_m, 3)))
+            cols.append(str(round((all_measured_m - all_modelled_m) * 100 / overall_time_spawn_in_days, 1)))
+            print(",".join(cols))
+
+            import matplotlib.pyplot as plt
+
+            all_measured_mm_no0 = []
+            all_modelled_mm_no0 = []
+
+            for meas, mod in zip(all_measured_mm, all_modelled_mm):
+                if meas and mod:
+                    all_measured_mm_no0.append(meas)
+                    all_modelled_mm_no0.append(mod)
+
+            plt.scatter(all_measured_mm, all_modelled_mm, s=2.5)
+
+            z = np.polyfit(all_measured_mm, all_modelled_mm, 1)
+            p = np.poly1d(z)
+            plt.plot(all_measured_mm, p(all_measured_mm), color="orange", ls="--")
+
+            z = np.polyfit(all_measured_mm_no0, all_modelled_mm_no0, 1)
+            p = np.poly1d(z)
+            plt.plot(all_measured_mm_no0, p(all_measured_mm_no0), color="red", ls="--")
+
+            plt.xlabel("Measured [mm]")
+            plt.ylabel("Modelled [mm]")
+            plt.plot([0, 300], [0, 300], color='green')
+            plt.grid()
+            plt.savefig(f"plots/scatter_compare/z0ice{rs[0]}z0 snow{rs[1]}.png",
+                        dpi=cfg["PLOT_RESOLUTION"],
+                        bbox_inches='tight')
+            plt.close()
 
 if __name__ == "__main__":
     if not cfg["GUI"]:
@@ -456,8 +493,6 @@ if __name__ == "__main__":
             # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
         no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
-
-
 
     else:
         """

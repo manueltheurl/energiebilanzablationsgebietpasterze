@@ -70,22 +70,22 @@ class MultipleMeasurements:
 
         return swe_results  # todo delete this
 
-    def cumulate_ablation_for_scope(self):
-        old_ablation_value = None
+    def cumulate_ice_thickness_measures_for_scope(self):
+        old_ice_thickness_value = None
         current_subtractive = 0
 
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            if obj.ablation is not None:
-                if old_ablation_value is None:
-                    old_ablation_value = obj.ablation
+            if obj.measured_ice_thickness is not None:
+                if old_ice_thickness_value is None:
+                    old_ice_thickness_value = obj.measured_ice_thickness
                 else:
-                    if old_ablation_value < obj.ablation - float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
-                        current_subtractive += obj.ablation - old_ablation_value
-                    elif old_ablation_value > obj.ablation + float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
+                    if old_ice_thickness_value < obj.measured_ice_thickness - float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
+                        current_subtractive += obj.measured_ice_thickness - old_ice_thickness_value
+                    elif old_ice_thickness_value > obj.measured_ice_thickness + float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
                         continue  # cant be either .. first drop of ablation when picking up station
 
-                    old_ablation_value = obj.ablation
-                    obj.cumulated_ablation = obj.ablation - current_subtractive
+                    old_ice_thickness_value = obj.measured_ice_thickness
+                    obj.cumulated_ice_thickness = obj.measured_ice_thickness - current_subtractive
 
     def correct_long_wave_measurements_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
@@ -103,10 +103,8 @@ class MultipleMeasurements:
                 if obj.albedo is not None and obj.albedo < 0.35:
                     obj.sw_radiation_out = -0.35 * obj.sw_radiation_in
 
-                if not obj.total_snow_depth:
+                if not obj.total_snow_depth:  # why?
                     obj.sw_radiation_out = -0.35*obj.sw_radiation_in
-                # else:
-                #     print(obj.total_snow_depth)
 
     def correct_snow_measurements_for_scope(self):
         """
@@ -337,12 +335,16 @@ class MultipleMeasurements:
             for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
                 obj.calculate_theoretical_melt_rate()
 
-    def calculate_measured_and_theoretical_ablation_values_for_summed(self):
+    def calculate_relative_ablation_for_summed(self, set_negative_ablation_zero=True):
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            obj.calculate_relative_ablation(set_negative_ablation_zero=set_negative_ablation_zero)
+
+    def convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed(self):
         """
         Summed only, as the time frame is needed for that (start and endtime)
         """
         for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
-            obj.calculate_measured_and_theoretical_ablation_values()
+            obj.convert_measured_and_modeled_rel_ablations_in_water_equivalents()
 
     def get_all_of(self, attribute_name, use_summed_measurements=False):
         # TODO arg which scope or summed better prob
@@ -424,7 +426,7 @@ class MultipleMeasurements:
             if single_measurement.datetime - resolution_reference_time >= time_interval:
                 resolution_reference_time = single_measurement.datetime
                 summed_measurement.calculate_mean(endtime=single_measurement.datetime,
-                                                  end_ablation=single_measurement.cumulated_ablation)
+                                                  end_ablation=single_measurement.cumulated_ice_thickness)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -713,11 +715,10 @@ class MultipleMeasurements:
 
         return total_meltwater
 
-    def fix_invalid_summed_measurements_for_scope(self):
+    def fix_invalid_summed_measurements_for_scope(self, rel_ablation_as_well=False):
         """
         Scope must include several years for this to work
         """
-
         invalid_measurements_and_replacements = dict()
 
         for i in sorted(self.__current_mean_index_scope):
@@ -748,7 +749,7 @@ class MultipleMeasurements:
         i = 0
         for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
             if replacement_measurements:
-                invalid_measurement.replace_this_measurement_by_mean_of(replacement_measurements)
+                invalid_measurement.replace_this_measurement_by_mean_of(replacement_measurements, ablation_as_well=rel_ablation_as_well)
                 i += 1
             else:
                 print(invalid_measurement.datetime, "No replacement measurements found -> for every year this "

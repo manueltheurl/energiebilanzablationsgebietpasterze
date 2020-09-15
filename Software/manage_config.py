@@ -21,5 +21,8 @@ class Config:
         except ValueError:
             return configuration
 
+    def __setitem__(self, key, value):
+        self.__conf["DEFAULT"][key] = str(value)
+
 
 cfg = Config()
