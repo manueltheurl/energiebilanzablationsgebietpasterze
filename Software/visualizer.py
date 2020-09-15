@@ -26,7 +26,7 @@ import matplotlib.colors
 import matplotlib.colorbar
 from height_level import MeteorologicalYear
 from matplotlib.ticker import MaxNLocator
-from single_measurement import MeanMeasurement
+from single_measurement import MeanStationMeasurement
 import copy
 import locale
 
@@ -412,7 +412,7 @@ class Visualize:
 
         if show_estimated_measurement_areas:
             zorder = 5 if stack_fill else -1
-            for estimated_area in multiple_measurements.singleton.get_time_frames_of_valid_state_for_scope(MeanMeasurement.valid_states["estimated"]):
+            for estimated_area in multiple_measurements.singleton.get_time_frames_of_valid_state_for_scope(MeanStationMeasurement.valid_states["estimated"]):
                 rect = patches.Rectangle((estimated_area[0], self.ax.get_ylim()[0]), estimated_area[1]-estimated_area[0], self.ax.get_ylim()[1]-self.ax.get_ylim()[0],
                                          edgecolor='none', facecolor='lightgray', zorder=zorder, alpha=1)
                 self.ax.add_patch(rect)

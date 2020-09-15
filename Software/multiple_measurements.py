@@ -3,7 +3,7 @@ import functions as fc
 import os
 from manage_config import cfg
 import csv
-from single_measurement import SingleMeasurement, MeanMeasurement
+from single_measurement import SingleStationMeasurement, MeanStationMeasurement
 from snow_to_swe_model import SnowToSwe
 import numpy as np
 from height_level import HeightLevel
@@ -51,7 +51,7 @@ class MultipleMeasurements:
         # TODO double loop here could of course be prevented, but the aim was to modify the snow to swe model as little as possible
 
         for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
-            obj: MeanMeasurement
+            obj: MeanStationMeasurement
             snow_observations.append(obj.snow_depth)
 
         resolution = self.get_time_resolution(of="summed")
@@ -62,7 +62,7 @@ class MultipleMeasurements:
         """ Now update the measurements with those calculated values  """
         # resolution seems to be in minutes
         for obj, swe in zip([self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)], swe_results):
-            obj: SingleMeasurement
+            obj: SingleStationMeasurement
             obj.swe_input_from_snow = swe
 
         obs = np.array(snow_observations)
@@ -254,7 +254,7 @@ class MultipleMeasurements:
         minute_resolution = self.get_time_resolution(of="summed")
 
         first_measurement_of_scope = self.__all_mean_measurements[sorted(self.__current_mean_index_scope)[0]]
-        first_measurement_of_scope: MeanMeasurement
+        first_measurement_of_scope: MeanStationMeasurement
 
         current_height_lvl_time_of_last_snow_fall = None
 
@@ -270,7 +270,7 @@ class MultipleMeasurements:
         glacier_melt_water_equivalent_in_liters = 0
 
         for __obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
-            __obj: MeanMeasurement
+            __obj: MeanStationMeasurement
 
             """ Adapt radiation """
             day_of_year = __obj.datetime.timetuple().tm_yday if __obj.datetime.timetuple().tm_yday < 366 else 365
@@ -388,7 +388,7 @@ class MultipleMeasurements:
         # ]
 
         for i, separated_measurements in enumerate(multiple_separated_measurements):
-            summed_measurement = MeanMeasurement()
+            summed_measurement = MeanStationMeasurement()
 
             for single_measurement in separated_measurements:
                 summed_measurement += single_measurement
@@ -413,7 +413,7 @@ class MultipleMeasurements:
         self.clear_summed_measurements()
 
         resolution_reference_time = None
-        summed_measurement = MeanMeasurement()
+        summed_measurement = MeanStationMeasurement()
 
         if time_interval.total_seconds()/60 <= self.get_time_resolution(of="scope"):
             print("Warning: Summing with resolution smaller or equal to measurement resolution")
@@ -430,7 +430,7 @@ class MultipleMeasurements:
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
-                summed_measurement = MeanMeasurement()
+                summed_measurement = MeanStationMeasurement()
                 summed_measurement += single_measurement
 
             else:
@@ -440,7 +440,7 @@ class MultipleMeasurements:
         self.clear_summed_measurements()
 
         reference_month = None
-        summed_measurement = MeanMeasurement()
+        summed_measurement = MeanStationMeasurement()
 
         for single_measurement in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             if reference_month is None:  # first time .. no reference time there
@@ -457,14 +457,14 @@ class MultipleMeasurements:
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
-                summed_measurement = MeanMeasurement()
+                summed_measurement = MeanStationMeasurement()
                 summed_measurement += single_measurement
 
     def sum_measurements_by_years(self, years):
         self.clear_summed_measurements()
 
         reference_years = None
-        summed_measurement = MeanMeasurement()
+        summed_measurement = MeanStationMeasurement()
 
         for single_measurement in [self.__all_single_measurement_objects[i] for i in
                                    sorted(self.__current_single_index_scope)]:
@@ -482,7 +482,7 @@ class MultipleMeasurements:
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
-                summed_measurement = MeanMeasurement()
+                summed_measurement = MeanStationMeasurement()
                 summed_measurement += single_measurement
 
     def reset_scope_to_all(self):
@@ -707,7 +707,7 @@ class MultipleMeasurements:
         total_meltwater = 0
 
         for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
-            obj: MeanMeasurement
+            obj: MeanStationMeasurement
             try:
                 total_meltwater += obj.theoretical_melt_water_per_sqm
             except TypeError:  # skip if None
@@ -719,43 +719,47 @@ class MultipleMeasurements:
         """
         Scope must include several years for this to work
         """
-        invalid_measurements_and_replacements = dict()
 
-        for i in sorted(self.__current_mean_index_scope):
-            obj = self.__all_mean_measurements[i]
-            obj: MeanMeasurement
+        for measure_name in ["temperature", "rel_moisture", "air_pressure", "wind_speed", "sw_radiation_in", "sw_radiation_out", "lw_radiation_in",
+                             "lw_radiation_out", "snow_delta", "relative_ablation_measured"]:
+            print("Fixing", measure_name)
+            invalid_measurements_and_replacements = dict()
 
-            if obj.valid_state == MeanMeasurement.valid_states["invalid"]:
-                invalid_measurements_and_replacements[obj] = list()
+            for i in sorted(self.__current_mean_index_scope):
+                obj = self.__all_mean_measurements[i]
+                obj: MeanStationMeasurement
 
-        for i in sorted(self.__current_mean_index_scope):
-            obj = self.__all_mean_measurements[i]
-            obj: MeanMeasurement
+                if obj.measurement_validity[measure_name] == MeanStationMeasurement.valid_states["invalid"]:
+                    invalid_measurements_and_replacements[obj] = list()
 
-            if obj.valid_state == MeanMeasurement.valid_states["valid"]:
-                current_datetime = copy.deepcopy(obj.datetime)
+            for i in sorted(self.__current_mean_index_scope):
+                obj = self.__all_mean_measurements[i]
+                obj: MeanStationMeasurement
 
-                for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
-                    year_of_invalid = invalid_measurement.datetime_begin.year  # endtime is ignored here
+                if obj.measurement_validity[measure_name] == MeanStationMeasurement.valid_states["valid"]:
+                    current_datetime = copy.deepcopy(obj.datetime)
 
-                    try:
-                        current_datetime = current_datetime.replace(year=year_of_invalid)  # adapt year to compare
-                    except ValueError:
-                        current_datetime = current_datetime.replace(year=year_of_invalid, day=28)  # leap year
+                    for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
+                        year_of_invalid = invalid_measurement.datetime_begin.year  # endtime is ignored here
 
-                    if invalid_measurement.datetime_begin <= current_datetime < invalid_measurement.datetime_end:
-                        replacement_measurements.append(obj)
+                        try:
+                            current_datetime = current_datetime.replace(year=year_of_invalid)  # adapt year to compare
+                        except ValueError:
+                            current_datetime = current_datetime.replace(year=year_of_invalid, day=28)  # leap year
 
-        i = 0
-        for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
-            if replacement_measurements:
-                invalid_measurement.replace_this_measurement_by_mean_of(replacement_measurements, ablation_as_well=rel_ablation_as_well)
-                i += 1
-            else:
-                print(invalid_measurement.datetime, "No replacement measurements found -> for every year this "
-                                                    "measurement is bad")
+                        if invalid_measurement.datetime_begin <= current_datetime < invalid_measurement.datetime_end:
+                            replacement_measurements.append(obj)
 
-        print(f"{i}/{len(invalid_measurements_and_replacements)} invalid summed measurements have been replaced")
+            i = 0
+            for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
+                if replacement_measurements:
+                    invalid_measurement.replace_measure_mean_of(replacement_measurements, measure_name)
+                    i += 1
+                else:
+                    print(invalid_measurement.datetime, "No replacement measurements found -> for every year this "
+                                                        "measurement is bad")
+
+            print(f"{i}/{len(invalid_measurements_and_replacements)} invalid summed measurements have been replaced")
 
     def calculate_wetbulb_temperature_for_summed_scope(self):
         for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:

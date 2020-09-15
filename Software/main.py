@@ -334,7 +334,7 @@ class NoGuiManager:
         for rs in [(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]:
             energy_balance.singleton.set_new_roughness_parameters(rs[0], rs[1])
 
-            f_name = f"picklsave_{rs[0]}_z0snow{rs[1]}_type{type_}"
+            f_name = f"tmp/picklsave_{rs[0]}_z0snow{rs[1]}_type{type_}"
             if True:
                 reader.singleton.read_meterologic_file_to_objects()
                 multiple_measurements.singleton.correct_snow_measurements_for_scope()
@@ -351,14 +351,14 @@ class NoGuiManager:
                 elif type_ == "adapted":
                     multiple_measurements.singleton.sum_measurements_by_time_interval(
                         dt.timedelta(hours=self.hourly_resolution))
-                    multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope(rel_ablation_as_well=True)
-                    # TODO problem is, that rel ablation is None so many times, not whole measurement can be set invalid then, else there would
-                    # be just too many
-                    # solution would be to take the stuff which is good and just replace the stuff that is not .. that would be better anyways
 
+                    # TODO parse measure names to fix
+                    multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope(rel_ablation_as_well=True)
                     multiple_measurements.singleton.calculate_energy_balance_for("summed")
-                    multiple_measurements.singleton.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
+
+                    # TODO take a look on the fx names again, this is not good ..
                     multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
+                    multiple_measurements.singleton.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
 
                 with open(f_name, 'wb') as f:
                     pickle.dump(multiple_measurements.singleton, f)
@@ -381,11 +381,12 @@ class NoGuiManager:
                 multiple_measurements.singleton.reset_scope_to_all()
                 multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
 
+                # TODO get percentage of relative ablation measured which is really from oneself, and which is estimated
                 measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
                 modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
 
+                # when fixing measurements, then this should be close to zero all the time
                 amount_of_nones_in_measured_ablation = sum(x is None for x in measured_ablations)
-                print(amount_of_nones_in_measured_ablation)
 
                 for i in range(len(measured_ablations)):
                     measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]

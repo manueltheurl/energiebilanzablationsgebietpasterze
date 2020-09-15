@@ -1,4 +1,4 @@
-from single_measurement import SingleMeasurement
+from single_measurement import SingleStationMeasurement
 import datetime as dt
 from manage_config import cfg
 import multiple_measurements
@@ -153,7 +153,7 @@ class Reader:
                         air_pressure_hpa = self.convert_to_float_or_none(parts[6])
                         air_pressure_pa = None if air_pressure_hpa is None else air_pressure_hpa * 100
                         multiple_measurements.singleton.add_single_measurement(
-                            SingleMeasurement(
+                            SingleStationMeasurement(
                                 datetime=datetime,
                                 temperature=self.convert_to_float_or_none(parts[2]),
                                 rel_moisture=self.convert_to_float_or_none(parts[3]),
@@ -189,32 +189,32 @@ class Reader:
 
                             """ in measurement file negative measurements are invalid, yet they should be 0 for swi """
                             if parts[19] not in self.valid_flags:
-                                sw_in = self.convert_to_float_or_none(parts[18])
-                                if sw_in is not None and sw_in < 0:
-                                    sw_in = 0
+                                sw_radiation_in = self.convert_to_float_or_none(parts[18])
+                                if sw_radiation_in is not None and sw_radiation_in < 0:
+                                    sw_radiation_in = 0
                             else:
-                                sw_in = self.convert_to_float_or_none(parts[18])
+                                sw_radiation_in = self.convert_to_float_or_none(parts[18])
 
-                            sw_out = self.convert_to_float_or_none(parts[20], negative=True) if parts[
+                            sw_radiation_out = self.convert_to_float_or_none(parts[20], negative=True) if parts[
                                                                                                     21] in self.valid_flags else None
-                            lw_in = self.convert_to_float_or_none(parts[22]) if parts[23] in self.valid_flags else None
-                            lw_out = self.convert_to_float_or_none(parts[24], negative=True) if parts[
+                            lw_radiation_in = self.convert_to_float_or_none(parts[22]) if parts[23] in self.valid_flags else None
+                            lw_radiation_out = self.convert_to_float_or_none(parts[24], negative=True) if parts[
                                                                                                     25] in self.valid_flags else None
                             snow_depth = self.convert_to_float_or_none(parts[27]) if parts[28] in self.valid_flags else None
                             ablation = self.convert_to_float_or_none(parts[29]) if parts[30] in self.valid_flags else None
 
                             multiple_measurements.singleton.add_single_measurement(
-                                SingleMeasurement(
+                                SingleStationMeasurement(
                                     datetime=datetime,
                                     temperature=temperature,
                                     rel_moisture=rel_moist,
                                     wind_speed=windspeed,
                                     wind_direction=winddir,
                                     air_pressure=air_pressure_pa,
-                                    sw_radiation_in=sw_in,
-                                    sw_radiation_out=sw_out,
-                                    lw_radiation_in=lw_in,
-                                    lw_radiation_out=lw_out,
+                                    sw_radiation_in=sw_radiation_in,
+                                    sw_radiation_out=sw_radiation_out,
+                                    lw_radiation_in=lw_radiation_in,
+                                    lw_radiation_out=lw_radiation_out,
                                     zenith_angle=self.convert_to_float_or_none(parts[26]),  # no valid flag available
                                     tiltx=self.convert_to_float_or_none(parts[16]),  # no valid flag available
                                     tilty=self.convert_to_float_or_none(parts[17]),  # no valid flag available
@@ -229,7 +229,7 @@ class Reader:
                             # The Flags could be taken into account as well TODO
 
                             multiple_measurements.singleton.add_single_measurement(
-                                SingleMeasurement(
+                                SingleStationMeasurement(
                                     datetime=datetime,
                                     temperature=self.convert_to_float_or_none(parts[2]),
                                     rel_moisture=self.convert_to_float_or_none(parts[6]),

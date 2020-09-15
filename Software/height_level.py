@@ -1,5 +1,5 @@
 import numpy as np
-from single_measurement import MeanMeasurement
+from single_measurement import MeanStationMeasurement
 from manage_config import cfg
 from energy_balance import ONE_YEAR
 
@@ -46,7 +46,7 @@ class HeightLevel:
         overall_time_spawn = self.simulated_measurements[-1].datetime-self.simulated_measurements[0].datetime
         overall_water_consumption_of_canon = 0
         for simulated_measure in self.simulated_measurements:
-            simulated_measure: MeanMeasurement
+            simulated_measure: MeanStationMeasurement
             # conversion from m snow to liters water equivalent
             try:
                 overall_water_consumption_of_canon += simulated_measure.snow_depth_delta_artificial * 1000 * float(cfg["ARTIFICIAL_SNOW_SWE_FACTOR"])
@@ -86,7 +86,7 @@ class HeightLevel:
         Return in mm w e / liters per square meter
         """
         for measure in self.simulated_measurements:
-            measure: MeanMeasurement
+            measure: MeanStationMeasurement
             if not measure.total_snow_water_equivalent and (
                     1 <= measure.datetime.month < 10):  # or measure.datetime.month == 12 making problems
                 return 0
@@ -98,7 +98,7 @@ class HeightLevel:
         return datetime of first ice exposure
         """
         for measure in self.simulated_measurements:
-            measure: MeanMeasurement
+            measure: MeanStationMeasurement
             if not measure.total_snow_water_equivalent and (
                     1 <= measure.datetime.month < 10):  # or measure.datetime.month == 12 making problems
                 return measure.datetime
