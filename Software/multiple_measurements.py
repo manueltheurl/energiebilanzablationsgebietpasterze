@@ -70,22 +70,42 @@ class MultipleMeasurements:
 
         return swe_results  # todo delete this
 
-    def cumulate_ice_thickness_measures_for_scope(self):
-        old_ice_thickness_value = None
+    def cumulate_ice_thickness_measures_for_scope(self, method=None):
+        old_measured_ice_thickness_value = None
         current_subtractive = 0
+        ice_thickness_before_increasing_again = None
 
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
             if obj.measured_ice_thickness is not None:
-                if old_ice_thickness_value is None:
-                    old_ice_thickness_value = obj.measured_ice_thickness
+                if old_measured_ice_thickness_value is None:
+                    old_measured_ice_thickness_value = obj.measured_ice_thickness
                 else:
-                    if old_ice_thickness_value < obj.measured_ice_thickness - float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
-                        current_subtractive += obj.measured_ice_thickness - old_ice_thickness_value
-                    elif old_ice_thickness_value > obj.measured_ice_thickness + float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
+                    if old_measured_ice_thickness_value < obj.measured_ice_thickness - float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
+                        current_subtractive += obj.measured_ice_thickness - old_measured_ice_thickness_value
+                    elif old_measured_ice_thickness_value > obj.measured_ice_thickness + float(cfg["ABLATION_THRESHOLD_FOR_UNNATURALITY"]):
                         continue  # cant be either .. first drop of ablation when picking up station
 
-                    old_ice_thickness_value = obj.measured_ice_thickness
-                    obj.cumulated_ice_thickness = obj.measured_ice_thickness - current_subtractive
+                    new_ice_thickness_value = obj.measured_ice_thickness - current_subtractive
+
+                    if method == "SameLevelPositiveFix":
+                        """ If ice thickness is getting larger, wait until it is at the same level as before and then
+                         continue to get smaller again"""
+                        if ice_thickness_before_increasing_again is None:
+                            if new_ice_thickness_value > old_measured_ice_thickness_value-current_subtractive:
+                                if ice_thickness_before_increasing_again is None:
+                                    ice_thickness_before_increasing_again = old_measured_ice_thickness_value-current_subtractive
+                                new_ice_thickness_value = ice_thickness_before_increasing_again
+                            else:
+                                if ice_thickness_before_increasing_again is not None:
+                                    ice_thickness_before_increasing_again = None
+                        else:
+                            if new_ice_thickness_value < ice_thickness_before_increasing_again:
+                                ice_thickness_before_increasing_again = None
+                            else:
+                                new_ice_thickness_value = ice_thickness_before_increasing_again
+
+                    obj.cumulated_ice_thickness = new_ice_thickness_value
+                    old_measured_ice_thickness_value = obj.measured_ice_thickness
 
     def correct_long_wave_measurements_for_scope(self):
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
@@ -310,7 +330,7 @@ class MultipleMeasurements:
 
             measure_obj.calculate_energy_balance()
             measure_obj.calculate_theoretical_melt_rate()
-            measure_obj.calculate_measured_and_theoretical_ablation_values()
+            measure_obj.convert_measured_and_modeled_rel_ablations_in_water_equivalents()
 
             if total_snow_swe and measure_obj.theoretical_melt_water_per_sqm > 0:
                 snow_depth_scale_factor = (total_snow_swe-measure_obj.theoretical_melt_water_per_sqm)/total_snow_swe
@@ -715,13 +735,16 @@ class MultipleMeasurements:
 
         return total_meltwater
 
-    def fix_invalid_summed_measurements_for_scope(self, rel_ablation_as_well=False):
+    def fix_invalid_summed_measurements(self,
+                                        measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
+                                                             "wind_speed", "sw_radiation_in", "sw_radiation_out",
+                                                             "lw_radiation_in", "lw_radiation_out", "snow_delta",
+                                                             "relative_ablation_measured")):
         """
         Scope must include several years for this to work
         """
 
-        for measure_name in ["temperature", "rel_moisture", "air_pressure", "wind_speed", "sw_radiation_in", "sw_radiation_out", "lw_radiation_in",
-                             "lw_radiation_out", "snow_delta", "relative_ablation_measured"]:
+        for measure_name in measurements_to_fix:
             print("Fixing", measure_name)
             invalid_measurements_and_replacements = dict()
 

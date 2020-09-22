@@ -38,6 +38,7 @@ import frame_sum
 import visualizer
 from height_level import MeteorologicalYear
 import energy_balance
+import stats_printer
 
 
 class NoGuiManager:
@@ -66,105 +67,100 @@ class NoGuiManager:
         if self.high_res_rad_grid:  # this could be removed some day, if always the high rad grids are taken TODO
             self.subfolder_name += "_radGridHighRes"
 
-    def run_calculations(self):
+    def run_calculations_height_levels(self):
         print("STARTING WITH THE CALCULATIONS")
+        recalculate = True
+
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
 
-        reader.singleton.fetch_file_metadata()
+        if recalculate:
+            reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime, endtime=self.endTime)
 
-        if not os.path.exists(self.pickle_multiple_measurement_singleton) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
-            # reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime,
-            #                                                   endtime=self.endTime,
-            #                                                   resolution_by_percentage=None,
-            #                                                   resolution_by_time_interval=None)
-            #
-            # multiple_measurements.singleton.correct_snow_measurements_for_scope()
-            # multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-            # multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(hours=self.hourly_resolution))
-            # multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
-            #
-            # if int(cfg["ARTIFICIAL_SNOWING_USE_WET_BULB_TEMPERATURE"]):
-            #     multiple_measurements.singleton.calculate_wetbulb_temperature_for_summed_scope()
-            #
-            # with open(self.pickle_multiple_measurement_singleton, 'wb') as f:
-            #     pickle.dump(multiple_measurements.singleton, f)
+            self.combined_preparing_of_measurements(sum_hourly_resolution=24)
+            # self.combined_calculation_of_energy_balance_and_all_associated_values()
 
+            multiple_measurements.singleton.calculate_wetbulb_temperature_for_summed_scope()  # needed for the height adaptions of the meteorologic values
+
+            with open(self.pickle_multiple_measurement_singleton, 'wb') as f:
+                pickle.dump(multiple_measurements.singleton, f)
+        else:
             with open(self.pickle_multiple_measurement_singleton, 'rb') as f:
                 multiple_measurements.singleton = pickle.load(f)
 
-            radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
-            height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/{self.pickle_height_levels_objects}", "rb"))
+        radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
+        height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/{self.pickle_height_levels_objects}", "rb"))
 
-            snowings_per_day_for_height_levels_starting_value = list(
-                reversed(np.linspace(0.01, 0.1, len(height_level_objects) // 2)))
-            snowings_per_day_for_height_levels_starting_value += [0] * (
-                        len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
+        snowings_per_day_for_height_levels_starting_value = list(
+            reversed(np.linspace(0.01, 0.1, len(height_level_objects) // 2)))
+        snowings_per_day_for_height_levels_starting_value += [0] * (
+                    len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
 
-            meteorologic_years = dict()
+        meteorologic_years = dict()
 
-            for year in self.meteorologic_years_looked_at:
-                print(f"___ Looking at meteorologic year {year} ___")
-                meteorologic_years[year] = MeteorologicalYear(copy.deepcopy(height_level_objects))
-                multiple_measurements.singleton.reset_scope_to_all()
-                multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
-                    dt.datetime(year, 10, 1), dt.datetime(year+1, 9, 30))
+        for year in self.meteorologic_years_looked_at:
+            print(f"___ Looking at meteorologic year {year} ___")
+            meteorologic_years[year] = MeteorologicalYear(copy.deepcopy(height_level_objects))
+            multiple_measurements.singleton.reset_scope_to_all()
+            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
+                dt.datetime(year, 10, 1), dt.datetime(year+1, 9, 30))
 
-                for i, height_level in enumerate(meteorologic_years[year].height_level_objects):
+            for i, height_level in enumerate(meteorologic_years[year].height_level_objects):
+                """ Lets try to find the optimum amount of snowing for not loosing mass """
+                print("Doing calculations for height level", height_level)
+                current_snowing_per_day = snowings_per_day_for_height_levels_starting_value[i]
+                current_delta = None
 
-                    """ Lets try to find the optimum amount of snowing for not loosing mass """
-                    print("Doing calculations for height level", height_level)
-                    current_snowing_per_day = snowings_per_day_for_height_levels_starting_value[i]
-                    current_delta = None
+                while True:
+                    print("Snowing per day", round(current_snowing_per_day*1000, 1), "mm", current_delta)
+                    height_level.clear_simulated_measurements()
+                    height_level.artificial_snowing_per_day = current_snowing_per_day
 
-                    while True:
-                        print("Snowing per day", round(current_snowing_per_day*1000, 1), "mm", current_delta)
-                        height_level.clear_simulated_measurements()
-                        height_level.artificial_snowing_per_day = current_snowing_per_day
+                    liters_melted_anyways = multiple_measurements.singleton.simulate(height_level, radiations_at_station)
+                    swe_in_liters_at_end = height_level.get_swe_of_last_measurement_and_constantly_laying_snow()
 
-                        liters_melted_anyways = multiple_measurements.singleton.simulate(height_level, radiations_at_station)
-                        swe_in_liters_at_end = height_level.get_swe_of_last_measurement_and_constantly_laying_snow()
-
-                        if swe_in_liters_at_end > liters_melted_anyways:
-                            if current_delta is None:  # this will be true for the second iteration
-                                current_delta = -0.01
-                            else:
-                                if current_delta > 0:
-                                    current_delta /= -2
-                                else:
-                                    # reduced snowing and it is still too much -> stick with the bigger delta value
-                                    pass
-                            if abs(current_delta) < self.simulation_accuracy:
-                                print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
-                                print(f"Compensated {int(liters_melted_anyways)} liters/m^2 from beginning of meteorological year")
-                                break  # found good enough estimation
-                            elif current_snowing_per_day <= 0:
-                                print("No snowing needed at all")
-                                break
+                    if swe_in_liters_at_end > liters_melted_anyways:
+                        if current_delta is None:  # this will be true for the second iteration
+                            current_delta = -0.01
                         else:
-                            if current_delta is None:  # this will be true for the second iteration
-                                current_delta = 0.01
+                            if current_delta > 0:
+                                current_delta /= -2
                             else:
-                                if current_delta < 0:
-                                    current_delta /= -2
-                                else:
-                                    # increased snowing and it is still too little -> stick with the bigger delta value
-                                    pass
+                                # reduced snowing and it is still too much -> stick with the bigger delta value
+                                pass
+                        if abs(current_delta) < self.simulation_accuracy:
+                            print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
+                            print(f"Compensated {int(liters_melted_anyways)} liters/m^2 from beginning of meteorological year")
+                            break  # found good enough estimation
+                        elif current_snowing_per_day <= 0:
+                            print("No snowing needed at all")
+                            break
+                    else:
+                        if current_delta is None:  # this will be true for the second iteration
+                            current_delta = 0.01
+                        else:
+                            if current_delta < 0:
+                                current_delta /= -2
+                            else:
+                                # increased snowing and it is still too little -> stick with the bigger delta value
+                                pass
 
-                        current_snowing_per_day += current_delta
+                    current_snowing_per_day += current_delta
 
-                        if current_snowing_per_day < 0:
-                            current_snowing_per_day = 0
+                    if current_snowing_per_day < 0:
+                        current_snowing_per_day = 0
 
-                print("Overall water needed:", round(meteorologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
+            print("Overall water needed:", round(meteorologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
 
-            with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", "wb") as f:
-                pickle.dump(meteorologic_years, f)
+        with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", "wb") as f:
+            pickle.dump(meteorologic_years, f)
 
-            with open("multiple_measurements_singleton_filled.pkl", 'wb') as f:
-                pickle.dump(multiple_measurements.singleton, f)
+        with open("multiple_measurements_singleton_filled.pkl", 'wb') as f:
+            pickle.dump(multiple_measurements.singleton, f)
 
-    def run_visualizations(self):
+    def run_visualizations_height_levels(self):
         print("STARTING WITH THE VISUALIZATIONS")
+        visualizer.singleton.show_plots = False
+        
         visualizer.singleton.change_result_plot_subfolder(f"{self.subfolder_name}_h{self.hourly_resolution}")
 
         with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", 'rb') as f:
@@ -236,238 +232,169 @@ class NoGuiManager:
             #                                           use_summed_measurements=True, show_estimated_measurement_areas=True,
             #                                           save_name=f"albedo{year}")
 
-    def run_calculations_bachelor(self, type_, startime: dt.datetime, endtime: dt.datetime, pegel_measure):
+    def run_calculations_bachelor(self, startime: dt.datetime, endtime: dt.datetime, pegel_measure, type_="new"):
         """
         type_ either adapted or original
         """
         print(f"\nRunning bachelor calaculations {type_} for {startime.strftime('%d.%m.%Y')} till {endtime.strftime('%d.%m.%Y')}:")
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
-        # reader.singleton.fetch_file_metadata()
 
-        if not os.path.exists(self.pickle_multiple_measurement_singleton) or not cfg["USE_PICKLE_FOR_SAVING_TIME"] or True:
-            reader.singleton.read_meterologic_file_to_objects(starttime=startime,
-                                                              endtime=endtime,
-                                                              resolution_by_percentage=None,
-                                                              resolution_by_time_interval=None)
+        reader.singleton.read_meterologic_file_to_objects(starttime=startime, endtime=endtime)
 
-            multiple_measurements.singleton.correct_snow_measurements_for_scope()
-            multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-            multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope()
-            # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()  # TODO if this is used do it above as well
-            multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
+        self.combined_preparing_of_measurements(type_=type_)
+        self.combined_calculation_of_energy_balance_and_all_associated_values(type_=type_)
 
-            if type_ == "original":
-                multiple_measurements.singleton.calculate_energy_balance_for("scope")
-                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("scope")
-                multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
-                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+        measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
+        modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
 
-            elif type_ == "adapted":
-                multiple_measurements.singleton.sum_measurements_by_time_interval(
-                    dt.timedelta(hours=self.hourly_resolution))
+        print("Nones measured_ablations:", sum(x is None for x in measured_ablations))
+        print("Nones modelled_ablations:", sum(x is None for x in modelled_ablations))
 
-                # multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope()
+        for i in range(len(measured_ablations)):
+            measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
+        for i in range(len(modelled_ablations)):
+            modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
 
-                multiple_measurements.singleton.calculate_energy_balance_for("summed")
-                multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
-                multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
+        # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
+        # visualizer.singleton.plot_single_component("albedo", "", use_summed_measurements=True,
+        #                                            save_name=f"albedo_{year}_{type_}_onlysummer_{only_summer}")
 
-            measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
-            modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
+        # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("temperature",), "°C", use_summed_measurements=True,
+        #                                            save_name=f"sensible_heat_and_temperature")
+        #
+        # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("air_pressure",), "pa",
+        #                                      use_summed_measurements=True,
+        #                                      save_name=f"sensible_heat_and_air_pressure")
+        #
+        # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("wind_speed",), "m/s",
+        #                                      use_summed_measurements=True,
+        #                                      save_name=f"sensible_heat_and_wind_speed")
 
-            print("Nones measured_ablations:", sum(x is None for x in measured_ablations))
-            print("Nones modelled_ablations:", sum(x is None for x in modelled_ablations))
+        # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("albedo",), "-",
+        #                                      use_summed_measurements=True,
+        #                                      save_name=f"swinout")
 
-            for i in range(len(measured_ablations)):
-                measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
-            for i in range(len(modelled_ablations)):
-                modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+        # visualizer.singleton.plot_components(("albedo",), "-",
+        #                                      use_summed_measurements=True,
+        #                                      save_name=f"albedo_normal")
+        #
+        # visualizer.singleton.plot_components(("midday_albedo",), "-",
+        #                                      use_summed_measurements=True,
+        #                                      save_name=f"albedo_midday")
 
+        # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("total_snow_depth",), "m",
+        #                                      use_summed_measurements=True,
+        #                                      save_name=f"snow_depth")
 
+        modelled_ablation = sum(modelled_ablations)
+        measured_ablation = sum(measured_ablations)
+        reality_factor_ablation = measured_ablation / modelled_ablation
+        reality_factor_pegel = (pegel_measure/100) / modelled_ablation
+        print("Measured ablation", round(measured_ablation, 2), "Pegel measure", pegel_measure/100)
+        print("Modelled ablation",
+              round(modelled_ablation, 2))  # measured stays the same .. cause thats wont be affected
+        print("Reality factor ablation:", round(reality_factor_ablation, 2))
+        print("Reality factor pegel:", round(reality_factor_pegel, 2))
 
-            # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
-            # visualizer.singleton.plot_single_component("albedo", "", use_summed_measurements=True,
-            #                                            save_name=f"albedo_{year}_{type_}_onlysummer_{only_summer}")
+    @staticmethod
+    def combined_preparing_of_measurements(sum_hourly_resolution=24, type_="new"):
+        multiple_measurements.singleton.correct_snow_measurements_for_scope()
+        multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
+        # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()
+        multiple_measurements.singleton.correct_short_wave_measurements_for_scope()
+        multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
 
-            # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("temperature",), "°C", use_summed_measurements=True,
-            #                                            save_name=f"sensible_heat_and_temperature")
-            #
-            # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("air_pressure",), "pa",
-            #                                      use_summed_measurements=True,
-            #                                      save_name=f"sensible_heat_and_air_pressure")
-            #
-            # visualizer.singleton.plot_components(("sensible_heat",), "W/m^2", ("wind_speed",), "m/s",
-            #                                      use_summed_measurements=True,
-            #                                      save_name=f"sensible_heat_and_wind_speed")
+        if type_ == "new":
+            multiple_measurements.singleton.sum_measurements_by_time_interval(
+                dt.timedelta(hours=sum_hourly_resolution))
+            multiple_measurements.singleton.fix_invalid_summed_measurements()
 
-            # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("albedo",), "-",
-            #                                      use_summed_measurements=True,
-            #                                      save_name=f"swinout")
+    @staticmethod
+    def combined_calculation_of_energy_balance_and_all_associated_values(type_="new"):
+        # do not forget to set scope before that
+        if type_ == "new":
+            multiple_measurements.singleton.calculate_energy_balance_for("summed")
+            multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
+            multiple_measurements.singleton.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
+        elif type_ == "original":
+            multiple_measurements.singleton.calculate_energy_balance_for("scope")
+            multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("scope")
+            multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
+            multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
 
-            # visualizer.singleton.plot_components(("albedo",), "-",
-            #                                      use_summed_measurements=True,
-            #                                      save_name=f"albedo_normal")
-            #
-            # visualizer.singleton.plot_components(("midday_albedo",), "-",
-            #                                      use_summed_measurements=True,
-            #                                      save_name=f"albedo_midday")
+    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, pegel_tuples):
+        visualizer.singleton.show_plots = False
+        visualizer.singleton.change_result_plot_subfolder(f"scatter_compare")
+        recalculate = False
 
-            # visualizer.singleton.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("total_snow_depth",), "m",
-            #                                      use_summed_measurements=True,
-            #                                      save_name=f"snow_depth")
-
-            modelled_ablation = sum(modelled_ablations)
-            measured_ablation = sum(measured_ablations)
-            reality_factor_ablation = measured_ablation / modelled_ablation
-            reality_factor_pegel = (pegel_measure/100) / modelled_ablation
-            print("Measured ablation", round(measured_ablation, 2), "Pegel measure", pegel_measure/100)
-            print("Modelled ablation",
-                  round(modelled_ablation, 2))  # measured stays the same .. cause thats wont be affected
-            print("Reality factor ablation:", round(reality_factor_ablation, 2))
-            print("Reality factor pegel:", round(reality_factor_pegel, 2))
-
-    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, tups, set_neg_abl_measures_0=True):
         reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
+        reader.singleton.read_meterologic_file_to_objects()
+        self.combined_preparing_of_measurements()
 
-        cfg["SET_NEGATIVE_MEASURED_ABLATION_ZERO"] = "1" if set_neg_abl_measures_0 else "0"
-
-        for rs in [(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]:
-            energy_balance.singleton.set_new_roughness_parameters(rs[0], rs[1])
-
+        for i, rs in enumerate([(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]):
             f_name = f"tmp/picklsave_{rs[0]}_z0snow{rs[1]}_type{type_}"
-            if True:
-                reader.singleton.read_meterologic_file_to_objects()
-                multiple_measurements.singleton.correct_snow_measurements_for_scope()
-                multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
-                # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()
-                multiple_measurements.singleton.correct_short_wave_measurements_for_scope()  # TODO if this is used do it above as well, and it will be different, as artificial snowing is done
-                multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope()
-
-                if type_ == "original":
-                    multiple_measurements.singleton.calculate_energy_balance_for("scope")
-                    multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("scope")
-                    multiple_measurements.singleton.sum_measurements_by_time_interval(dt.timedelta(days=1))
-                    multiple_measurements.singleton.calculate_measured_and_theoretical_ablation_values_for_summed()
-                elif type_ == "adapted":
-                    multiple_measurements.singleton.sum_measurements_by_time_interval(
-                        dt.timedelta(hours=self.hourly_resolution))
-
-                    # TODO parse measure names to fix
-                    multiple_measurements.singleton.fix_invalid_summed_measurements_for_scope(rel_ablation_as_well=True)
-                    multiple_measurements.singleton.calculate_energy_balance_for("summed")
-
-                    # TODO take a look on the fx names again, this is not good ..
-                    multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for("summed")
-                    multiple_measurements.singleton.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
+            if recalculate:
+                energy_balance.singleton.set_new_roughness_parameters(rs[0], rs[1])
+                multiple_measurements.singleton.reset_scope_to_all()
+                self.combined_calculation_of_energy_balance_and_all_associated_values()
 
                 with open(f_name, 'wb') as f:
                     pickle.dump(multiple_measurements.singleton, f)
+            else:
+                with open(f_name, 'rb') as f:
+                    multiple_measurements.singleton = pickle.load(f)
 
-            with open(f_name, 'rb') as f:
-                multiple_measurements.singleton = pickle.load(f)
+            """ Statistics """
+            # stats_printer.singleton.compare_pegel_measured_and_modelled_for_time_intervals(pegel_tuples,
+            #                                                                                heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_})")
+            """ Plotting """
+            visualizer.singleton.plot_scatter_measured_modelled_ablation(tups, save_name=f"z0ice{rs[0]}z0 snow{rs[1]}")
 
-            appendix = "set neg abl measure to 0" if set_neg_abl_measures_0 else ""
-            print(f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]} ({appendix}, {type_})")
-            print("Time span, Modeled [m], Pegel measure [m], Diff [mm/d], Pressure transducer measure [m], Diff [mm/d]")
+            # if not i:
+            #     visualizer.singleton.plot_components(("total_snow_depth",), "m", use_summed_measurements=False,
+            #                                          save_name=f"total_snow_depth")
 
-            all_modelled_mm = []
-            all_measured_mm = []
-            all_pegel_mm = []
-            for tup in tups:
-                start_time = tup[0]
-                end_time = tup[1]
-                pegel_measure = tup[2]/100
+    def ablation_cumulation_test(self):
+        visualizer.singleton.change_result_plot_subfolder(f"ablation_cumulation")
 
-                multiple_measurements.singleton.reset_scope_to_all()
-                multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
+        # reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
+        # reader.singleton.read_meterologic_file_to_objects()
+        # multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(dt.datetime(2016, 1, 1), dt.datetime(2019, 1, 1))
+        #
+        # with open("tmp/tmpi.pkl", 'wb') as f:
+        #     pickle.dump(multiple_measurements.singleton, f)
 
-                # TODO get percentage of relative ablation measured which is really from oneself, and which is estimated
-                measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured", use_summed_measurements=True)
-                modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
+        with open("tmp/tmpi.pkl", 'rb') as f:
+            multiple_measurements.singleton = pickle.load(f)
 
-                # when fixing measurements, then this should be close to zero all the time
-                amount_of_nones_in_measured_ablation = sum(x is None for x in measured_ablations)
+        multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
 
-                for i in range(len(measured_ablations)):
-                    measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
-                for i in range(len(modelled_ablations)):
-                    modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+        visualizer.singleton.plot_components(("cumulated_ice_thickness",), "m",  use_summed_measurements=False,
+                                             save_name=f"cum_ice")
 
-                modelled_ablation = sum(modelled_ablations)
-                measured_ablation = sum(measured_ablations)
-
-                time_spawn_in_days = (end_time-start_time).total_seconds()/60/60/24
-
-                for modelled, measured in zip(modelled_ablations, measured_ablations):
-                    all_modelled_mm.append(modelled*1000)
-                    all_measured_mm.append(measured*1000)
-                    all_pegel_mm.append(pegel_measure/time_spawn_in_days*1000)
-
-                # create tabular
-                cols = []
-                cols.append(f"{start_time.strftime('%d.%m.%Y')} - {end_time.strftime('%d.%m.%Y')}")
-                cols.append(str(round(modelled_ablation, 3)))
-
-                cols.append(str(round(pegel_measure, 3)))
-                cols.append(str(round((pegel_measure-modelled_ablation) * 1000 / time_spawn_in_days, 1)))
-
-                cols.append(str(round(measured_ablation, 3)))
-                cols.append(str(round((measured_ablation-modelled_ablation) * 1000 / time_spawn_in_days, 1)))
-
-                print(",".join(cols))
-
-            # create tabular
-            cols = []
-            cols.append("")
-            all_modelled_m = sum(all_modelled_mm)/1000
-            all_pegel_m = sum(all_pegel_mm)/1000
-            all_measured_m = sum(all_measured_mm)/1000
-            cols.append(str(round(all_modelled_m, 3)))
-            cols.append(str(round(all_pegel_m, 3)))
-
-            overall_time_spawn_in_days = (tups[-1][1] - tups[0][0]).total_seconds() / 60 / 60 / 24
-
-            cols.append(str(round((all_pegel_m - all_modelled_m) * 100 / overall_time_spawn_in_days, 1)))
-            cols.append(str(round(all_measured_m, 3)))
-            cols.append(str(round((all_measured_m - all_modelled_m) * 100 / overall_time_spawn_in_days, 1)))
-            print(",".join(cols))
-
-            import matplotlib.pyplot as plt
-
-            all_measured_mm_no0 = []
-            all_modelled_mm_no0 = []
-
-            for meas, mod in zip(all_measured_mm, all_modelled_mm):
-                if meas and mod:
-                    all_measured_mm_no0.append(meas)
-                    all_modelled_mm_no0.append(mod)
-
-            plt.scatter(all_measured_mm, all_modelled_mm, s=2.5)
-
-            z = np.polyfit(all_measured_mm, all_modelled_mm, 1)
-            p = np.poly1d(z)
-            plt.plot(all_measured_mm, p(all_measured_mm), color="orange", ls="--")
-
-            z = np.polyfit(all_measured_mm_no0, all_modelled_mm_no0, 1)
-            p = np.poly1d(z)
-            plt.plot(all_measured_mm_no0, p(all_measured_mm_no0), color="red", ls="--")
-
-            plt.xlabel("Measured [mm]")
-            plt.ylabel("Modelled [mm]")
-            plt.plot([0, 300], [0, 300], color='green')
-            plt.grid()
-            plt.savefig(f"plots/scatter_compare/z0ice{rs[0]}z0 snow{rs[1]}.png",
-                        dpi=cfg["PLOT_RESOLUTION"],
-                        bbox_inches='tight')
-            plt.close()
 
 if __name__ == "__main__":
     if not cfg["GUI"]:
         no_gui_manager = NoGuiManager()
-        # no_gui_manager.run_calculations()
-        # no_gui_manager.run_visualizations()
-        # no_gui_manager.run_bachelor_stuff()
 
+        """ Height level calculations with visualizations """
+        no_gui_manager.run_calculations_height_levels()
+        no_gui_manager.run_visualizations_height_levels()
+
+        """ Single time frame comparison with measurement fixing """
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 7, 7), dt.datetime(2017, 7, 26), 132)
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 7, 26), dt.datetime(2017, 10, 14), 246)
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 10, 14), dt.datetime(2018, 6, 22), 223)
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 6, 22), dt.datetime(2018, 7, 16), 135)
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 7, 16), dt.datetime(2018, 9, 30), 393)
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 9, 30), dt.datetime(2019, 6, 24), 182)
+        # no_gui_manager.run_calculations_bachelor(dt.datetime(2019, 6, 24), dt.datetime(2019, 7, 17), 179)
+
+        """ Combined time frame comparison with measurement fixing """
+
+
+        """ Comparison of measured and modeled ablation and pegel measurement """
         tups = [
             (dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95),
             (dt.datetime(2013, 9, 25), dt.datetime(2014, 8, 6), 424),
@@ -477,8 +404,8 @@ if __name__ == "__main__":
             (dt.datetime(2015, 6, 26), dt.datetime(2015, 7, 28), 283),
             (dt.datetime(2015, 7, 28), dt.datetime(2015, 8, 2), 27),
             (dt.datetime(2015, 8, 2), dt.datetime(2015, 10, 12), 292),
-            (dt.datetime(2015, 10, 12), dt.datetime(2016, 5, 27), -5),
-            (dt.datetime(2016, 5, 27), dt.datetime(2016, 6, 30), 176),
+            # (dt.datetime(2015, 10, 12), dt.datetime(2016, 5, 27), -5),  # bad snow measurements for that frame
+            # (dt.datetime(2016, 5, 27), dt.datetime(2016, 6, 30), 176),  # bad snow measurements for that frame
             (dt.datetime(2016, 6, 30), dt.datetime(2016, 7, 21), 129),
             (dt.datetime(2016, 7, 21), dt.datetime(2016, 9, 14), 317),
             (dt.datetime(2016, 9, 14), dt.datetime(2016, 10, 17), 48),
@@ -491,9 +418,9 @@ if __name__ == "__main__":
             (dt.datetime(2018, 9, 30), dt.datetime(2019, 6, 24), 182),
             (dt.datetime(2019, 6, 24), dt.datetime(2019, 7, 17), 179),
             (dt.datetime(2019, 7, 17), dt.datetime(2019, 10, 4), 370)]
-            # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
+        # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
 
     else:
         """

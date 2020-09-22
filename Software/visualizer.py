@@ -327,6 +327,71 @@ class Visualize:
 
         self.show_save_and_close_plot(None, save_name=save_name)
 
+    def plot_scatter_measured_modelled_ablation(self, tups, save_name=None):
+        self.initialize_plot(None)
+
+        all_modelled_mm = []
+        all_measured_mm = []
+        all_total_snow_depths = []
+        all_pegel_mm = []
+        for tup in tups:
+            start_time = tup[0]
+            end_time = tup[1]
+            pegel_measure = tup[2] / 100
+
+            multiple_measurements.singleton.reset_scope_to_all()
+            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
+            measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured",
+                                                                            use_summed_measurements=True)
+            modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled",
+                                                                            use_summed_measurements=True)
+            total_snow_depths = multiple_measurements.singleton.get_all_of("total_snow_depth",
+                                                                           use_summed_measurements=True)
+
+            for i in range(len(measured_ablations)):
+                measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
+            for i in range(len(modelled_ablations)):
+                modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+
+            time_spawn_in_days = (end_time - start_time).total_seconds() / 60 / 60 / 24
+
+            for modelled, measured, total_snow_depth in zip(modelled_ablations, measured_ablations, total_snow_depths):
+                all_modelled_mm.append(modelled * 1000)
+                all_measured_mm.append(measured * 1000)
+                all_pegel_mm.append(pegel_measure / time_spawn_in_days * 1000)
+            all_total_snow_depths.extend(total_snow_depths)
+
+        all_measured_mm_no0 = []
+        all_modelled_mm_no0 = []
+
+        for meas, mod in zip(all_measured_mm, all_modelled_mm):
+            if meas and mod:
+                all_measured_mm_no0.append(meas)
+                all_modelled_mm_no0.append(mod)
+
+        for mes, mod, total_snow in zip(all_measured_mm, all_modelled_mm, all_total_snow_depths):
+            color = "blue" if not total_snow else "red"
+            self.ax.scatter(mes, mod, color=color, s=2.5)
+        self.ax.scatter(None, None, color="blue", s=2.5, label="no snow laying")
+        self.ax.scatter(None, None, color="red", s=2.5, label="snow laying")
+
+        z = np.polyfit(all_measured_mm, all_modelled_mm, 1)
+        p = np.poly1d(z)
+        self.ax.plot(all_measured_mm, p(all_measured_mm), color="orange", ls="--", label="Trendline")
+
+        z = np.polyfit(all_measured_mm_no0, all_modelled_mm_no0, 1)
+        p = np.poly1d(z)
+        self.ax.plot(all_measured_mm_no0, p(all_measured_mm_no0), color="red", ls="--", label="Trendline no 0s")
+
+        self.ax.set_xlabel("Measured [mm]")
+        self.ax.set_ylabel("Modelled [mm]")
+        self.ax.set_xlim(-3, 300)
+        self.ax.set_ylim(-3, 300)
+        self.ax.plot([0, 300], [0, 300], color='green')
+        self.ax.grid()
+        self.ax.legend()
+        self.show_save_and_close_plot(None, save_name=save_name)
+
     def plot_single_component(self, component, component_unit, use_summed_measurements=False, save_name=None):
         self.initialize_plot(None)
 
@@ -371,7 +436,7 @@ class Visualize:
                 ax2.set_ylabel(components2_unit)
 
         self.modify_axes()
-        self.ax.set_ylim([0, 1])  # del todo
+        # self.ax.set_ylim([0, 1])  # del todo
         self.show_save_and_close_plot(None, save_name=save_name)
 
     def plot_components_lvls(self, height_level_objects, components1: tuple, components1_unit, components2: tuple = None,
