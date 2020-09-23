@@ -325,9 +325,10 @@ class NoGuiManager:
         visualizer.singleton.change_result_plot_subfolder(f"scatter_compare")
         recalculate = False
 
-        reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
-        reader.singleton.read_meterologic_file_to_objects()
-        self.combined_preparing_of_measurements()
+        if recalculate:
+            reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
+            reader.singleton.read_meterologic_file_to_objects()
+            self.combined_preparing_of_measurements()
 
         for i, rs in enumerate([(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]):
             f_name = f"tmp/picklsave_{rs[0]}_z0snow{rs[1]}_type{type_}"
@@ -343,10 +344,11 @@ class NoGuiManager:
                     multiple_measurements.singleton = pickle.load(f)
 
             """ Statistics """
-            # stats_printer.singleton.compare_pegel_measured_and_modelled_for_time_intervals(pegel_tuples,
-            #                                                                                heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_})")
+            stats_printer.singleton.compare_pegel_measured_and_modelled_for_time_intervals(pegel_tuples,
+                                                                                           heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_})")
             """ Plotting """
-            visualizer.singleton.plot_scatter_measured_modelled_ablation(tups, save_name=f"z0ice{rs[0]}z0 snow{rs[1]}")
+            # visualizer.singleton.plot_scatter_measured_modelled_ablation(pegel_tuples,
+            #                                                              save_name=f"z0ice{rs[0]}z0 snow{rs[1]}")
 
             # if not i:
             #     visualizer.singleton.plot_components(("total_snow_depth",), "m", use_summed_measurements=False,
@@ -354,6 +356,7 @@ class NoGuiManager:
 
     def ablation_cumulation_test(self):
         visualizer.singleton.change_result_plot_subfolder(f"ablation_cumulation")
+        visualizer.singleton.show_plots = False
 
         # reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
         # reader.singleton.read_meterologic_file_to_objects()
@@ -377,7 +380,7 @@ if __name__ == "__main__":
 
         """ Height level calculations with visualizations """
         # no_gui_manager.run_calculations_height_levels()
-        no_gui_manager.run_visualizations_height_levels()
+        # no_gui_manager.run_visualizations_height_levels()
 
         """ Single time frame comparison with measurement fixing """
         # no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
@@ -391,6 +394,8 @@ if __name__ == "__main__":
 
         """ Combined time frame comparison with measurement fixing """
 
+        # no_gui_manager.ablation_cumulation_test()
+        # exit()
 
         """ Comparison of measured and modeled ablation and pegel measurement """
         tups = [
@@ -418,7 +423,7 @@ if __name__ == "__main__":
             (dt.datetime(2019, 7, 17), dt.datetime(2019, 10, 4), 370)]
         # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
 
     else:
         """
