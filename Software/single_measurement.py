@@ -493,6 +493,12 @@ class MeanStationMeasurement(StationMeasurement):
 
         return self  # important
 
+    def contains_one_valid_state_for_measure_types(self, valid_state, measure_types):
+        for measure_valid_state in [self.measurement_validity[x] for x in measure_types]:
+            if measure_valid_state == valid_state:
+                return True
+        return False
+
     def __ratio(self, amount_of_specific_value):
         return amount_of_specific_value/self.contains["single_measurements"]
 
@@ -619,26 +625,11 @@ class MeanStationMeasurement(StationMeasurement):
 
     def replace_measure_mean_of(self, mean_measurements, measure_name):
         measures = []
-
         for mean_measurement in mean_measurements:
             mean_measurement: MeanStationMeasurement
             measures.append(getattr(mean_measurement, measure_name))
-
-        if self.measurement_validity[measure_name] == self.valid_states["invalid"]:
-            setattr(self, measure_name, mean(measures))
-
-        # if ablation_as_well:
-        #     if self.measurement_validity["rel_ablation"] == self.valid_states["invalid"]:
-        #         """ Ablation values fixed as well if possible, else does not really matter """
-        #         rel_ablations = np.array(rel_ablations, dtype=np.float)  # for converting None's to np.nan
-        #         not_nans = ~np.isnan(rel_ablations)
-        #         if any(not_nans):
-        #             self.__relative_ablation_measured = np.nanmean(rel_ablations)
-        #             print(self.__relative_ablation_measured)
-        #         else:
-        #             print("Warning, none in ablation measurement fix!")
-        #             print(rel_ablations)
-        #         self.measurement_validity["rel_ablation"] = self.valid_states["estimated"]
+        setattr(self, measure_name, mean(measures))
+        self.measurement_validity[measure_name] = self.valid_states["estimated"]
 
     @property
     def datetime_begin(self):

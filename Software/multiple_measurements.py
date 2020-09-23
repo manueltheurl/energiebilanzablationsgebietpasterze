@@ -242,7 +242,29 @@ class MultipleMeasurements:
         first_measurement.snow_depth_delta_natural = 0
         first_measurement.snow_depth_delta_artificial = 0
 
-    def get_time_frames_of_valid_state_for_scope(self, valid_state):
+    def get_time_frames_of_measure_types_with_at_least_one_with_state(self, valid_state, measure_types):
+        """
+        @param valid_state one of MeanStationMeasurement.valid_states keys
+        @param measure_types list of strings of measure types, like [temperature, rel_moisture, ..]
+        """
+        valid_state_frame_started = False
+        valid_state_time_frames = []
+        current_state_frame = [None, None]
+        last_datetime_end = None
+        for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
+            has_valid_state = obj.contains_one_valid_state_for_measure_types(valid_state, measure_types)
+            if has_valid_state and not valid_state_frame_started:
+                current_state_frame[0] = obj.datetime_begin
+                valid_state_frame_started = True
+            elif not has_valid_state and valid_state_frame_started:
+                current_state_frame[1] = last_datetime_end
+                valid_state_time_frames.append(current_state_frame)
+                current_state_frame = [None, None]
+                valid_state_frame_started = False
+            last_datetime_end = obj.datetime_end
+        return valid_state_time_frames
+
+    def get_time_frames_of_valid_state_for_summed(self, valid_state):
         """
         valid_state: one of MeanMeasurement.valid_states values
         """

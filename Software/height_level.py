@@ -119,7 +119,7 @@ class HeightLevel:
         self.simulated_measurements = []
 
 
-class MeteorologicalYear:
+class HydrologicYear:
     def __init__(self, height_level_objects):
         self.height_level_objects = height_level_objects
         self.__overall_amount_of_water_needed_in_liters = None  # will be calculated

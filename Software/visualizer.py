@@ -24,7 +24,7 @@ import shapefile as shp
 from descartes import PolygonPatch
 import matplotlib.colors
 import matplotlib.colorbar
-from height_level import MeteorologicalYear
+from height_level import HydrologicYear
 from matplotlib.ticker import MaxNLocator
 from single_measurement import MeanStationMeasurement
 import copy
@@ -477,7 +477,12 @@ class Visualize:
 
         if show_estimated_measurement_areas:
             zorder = 5 if stack_fill else -1
-            for estimated_area in multiple_measurements.singleton.get_time_frames_of_valid_state_for_scope(MeanStationMeasurement.valid_states["estimated"]):
+            for estimated_area in multiple_measurements.singleton.get_time_frames_of_measure_types_with_at_least_one_with_state(
+                    MeanStationMeasurement.valid_states["estimated"], ["temperature", "rel_moisture", "air_pressure",
+                                                                       "wind_speed", "sw_radiation_in",
+                                                                       "sw_radiation_out", "lw_radiation_in",
+                                                                       "lw_radiation_out"]):
+
                 rect = patches.Rectangle((estimated_area[0], self.ax.get_ylim()[0]), estimated_area[1]-estimated_area[0], self.ax.get_ylim()[1]-self.ax.get_ylim()[0],
                                          edgecolor='none', facecolor='lightgray', zorder=zorder, alpha=1)
                 self.ax.add_patch(rect)
@@ -502,7 +507,7 @@ class Visualize:
             if last_year is not None and last_year + 1 != year:  # TODO rework this, this is just a dirty quick way to implement the gap year, and works only if only one year is missing
                 x_vals.append(self.met_year_str(last_year+1))
                 y_vals.append(0)
-            meteorological_year: MeteorologicalYear
+            meteorological_year: HydrologicYear
             x_vals.append(self.met_year_str(year))
             y_vals.append(meteorological_year.overall_amount_of_snow_needed_in_cubic_meters/1000000)
             print(f"{year}\t{round(meteorological_year.overall_amount_of_snow_needed_in_cubic_meters, 1)}")
@@ -526,7 +531,7 @@ class Visualize:
             x_vals = []
             y_vals = []
             for height_level in meteorological_years[year].height_level_objects:
-                meteorological_year: MeteorologicalYear
+                meteorological_year: HydrologicYear
                 x_vals.append(
                     height_level.get_mean_yearly_water_consumption_of_snow_canons_per_square_meter_in_liters()/1000)
                 y_vals.append(height_level.height)
@@ -546,7 +551,7 @@ class Visualize:
         self.initialize_plot(None)
 
         meteorological_year = copy.deepcopy(meteorological_years[year])  # to not modify the original one
-        meteorological_year: MeteorologicalYear
+        meteorological_year: HydrologicYear
 
         multiple_measurements.singleton.reset_scope_to_all()
         multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
@@ -585,7 +590,7 @@ class Visualize:
 
         for year, meteorological_year in meteorological_years.items():
             meteorological_year = copy.deepcopy(meteorological_years[year])  # to not modify the original one
-            meteorological_year: MeteorologicalYear
+            meteorological_year: HydrologicYear
 
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
@@ -662,7 +667,7 @@ class Visualize:
             cb1.set_label(r'Elevation-averaged specific ASP necessary for neutral balance [m w.e.]')
 
         for ax, year in zip(axes, years):
-            meteorological_year: MeteorologicalYear
+            meteorological_year: HydrologicYear
             meteorological_year = meteorological_years_dict[year]
 
             if only_tongue:

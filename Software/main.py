@@ -36,7 +36,7 @@ import frame_read
 import frame_energy_balance as frame_scope
 import frame_sum
 import visualizer
-from height_level import MeteorologicalYear
+from height_level import HydrologicYear
 import energy_balance
 import stats_printer
 
@@ -45,9 +45,9 @@ class NoGuiManager:
     def __init__(self):
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
         # TODO well seems like it actually is a hydrologic year .. maybe change that some time
-        self.meteorologic_years_looked_at = [2012, 2013, 2014, 2016, 2017, 2018]  # 2015 is baad
-        self.startTime = dt.datetime(self.meteorologic_years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = dt.datetime(self.meteorologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.hydrologic_years_looked_at = [2012, 2013, 2014, 2016, 2017, 2018]  # 2015 is baad
+        self.startTime = dt.datetime(self.hydrologic_years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.endTime = dt.datetime(self.hydrologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.simulation_accuracy = 0.0001
         self.use_tongue_only = True
         self.no_debris = True
@@ -75,11 +75,9 @@ class NoGuiManager:
 
         if recalculate:
             reader.singleton.read_meterologic_file_to_objects(starttime=self.startTime, endtime=self.endTime)
-
             self.combined_preparing_of_measurements(sum_hourly_resolution=24)
-            # self.combined_calculation_of_energy_balance_and_all_associated_values()
-
-            multiple_measurements.singleton.calculate_wetbulb_temperature_for_summed_scope()  # needed for the height adaptions of the meteorologic values
+            # needed for the height adaptions of the meteorologic values
+            multiple_measurements.singleton.calculate_wetbulb_temperature_for_summed_scope()
 
             with open(self.pickle_multiple_measurement_singleton, 'wb') as f:
                 pickle.dump(multiple_measurements.singleton, f)
@@ -95,16 +93,16 @@ class NoGuiManager:
         snowings_per_day_for_height_levels_starting_value += [0] * (
                     len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
 
-        meteorologic_years = dict()
+        hydrologic_years = dict()
 
-        for year in self.meteorologic_years_looked_at:
-            print(f"___ Looking at meteorologic year {year} ___")
-            meteorologic_years[year] = MeteorologicalYear(copy.deepcopy(height_level_objects))
+        for year in self.hydrologic_years_looked_at:
+            print(f"___ Looking at hydrologic year {year} ___")
+            hydrologic_years[year] = HydrologicYear(copy.deepcopy(height_level_objects))
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
                 dt.datetime(year, 10, 1), dt.datetime(year+1, 9, 30))
 
-            for i, height_level in enumerate(meteorologic_years[year].height_level_objects):
+            for i, height_level in enumerate(hydrologic_years[year].height_level_objects):
                 """ Lets try to find the optimum amount of snowing for not loosing mass """
                 print("Doing calculations for height level", height_level)
                 current_snowing_per_day = snowings_per_day_for_height_levels_starting_value[i]
@@ -149,10 +147,10 @@ class NoGuiManager:
                     if current_snowing_per_day < 0:
                         current_snowing_per_day = 0
 
-            print("Overall water needed:", round(meteorologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
+            print("Overall water needed:", round(hydrologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
 
         with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", "wb") as f:
-            pickle.dump(meteorologic_years, f)
+            pickle.dump(hydrologic_years, f)
 
         with open("multiple_measurements_singleton_filled.pkl", 'wb') as f:
             pickle.dump(multiple_measurements.singleton, f)
@@ -175,24 +173,24 @@ class NoGuiManager:
         radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
 
         visualizer.singleton.plot_comparison_of_years(meteorologic_years,
-                                                      save_name=f"req_snow_compare_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}")
+                                                      save_name=f"req_snow_compare_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
 
         visualizer.singleton.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, cfg["AWS_STATION_HEIGHT"], radiations_at_station,
-                                                                           save_name=f"day_of_ice_exposure_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
+                                                                           save_name=f"day_of_ice_exposure_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
 
         fix_lower_limit = 3 if self.use_tongue_only else 0
         fix_upper_limit = 7.5
 
         # # TODO for whole pasterze, equality_line_2018 from all hast to be taken
-        visualizer.singleton.plot_pasterze(meteorologic_years, self.meteorologic_years_looked_at, "inputData/AWS_Station.shp",
+        visualizer.singleton.plot_pasterze(meteorologic_years, self.hydrologic_years_looked_at, "inputData/AWS_Station.shp",
                                            "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
                                            fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
-                                           save_name=f"pasterze_water_needed_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}_")
+                                           save_name=f"pasterze_water_needed_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_")
 
-        visualizer.singleton.plot_compare_water_and_height(self.meteorologic_years_looked_at, meteorologic_years,
-                                                           save_name=f"water_vs_height_{self.meteorologic_years_looked_at[0]}_{self.meteorologic_years_looked_at[-1]}")
+        visualizer.singleton.plot_compare_water_and_height(self.hydrologic_years_looked_at, meteorologic_years,
+                                                           save_name=f"water_vs_height_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
 
-        for year in self.meteorologic_years_looked_at:
+        for year in self.hydrologic_years_looked_at:
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(
                 dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
@@ -378,7 +376,7 @@ if __name__ == "__main__":
         no_gui_manager = NoGuiManager()
 
         """ Height level calculations with visualizations """
-        no_gui_manager.run_calculations_height_levels()
+        # no_gui_manager.run_calculations_height_levels()
         no_gui_manager.run_visualizations_height_levels()
 
         """ Single time frame comparison with measurement fixing """
