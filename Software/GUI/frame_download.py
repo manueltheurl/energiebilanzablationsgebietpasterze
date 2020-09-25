@@ -57,7 +57,7 @@ class ModelFrame(tk.Frame):
 
     @staticmethod
     def download_cleaned_ablation():
-        multiple_measurements.singleton.download_components(["cumulated_ablation"])
+        multiple_measurements.singleton.download_components(["cumulated_ice_thickness"])
 
     @staticmethod
     def download_relative_ablation():

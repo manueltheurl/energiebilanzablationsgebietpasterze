@@ -58,15 +58,44 @@ class Visualize:
             "lw_radiation_out": "Long wave out",
             "sensible_heat": "Sensible heat",
             "latent_heat": "Latent heat",
+            "temperature": "Temperature",
             "precipitation_heat": "Precipitation heat",
             "total_energy_balance": "Total energy balance",
             "total_snow_depth": "Total Snow Height",
             "snow_depth_natural": "Natural Snow Height",
             "snow_depth_artificial": "Artificial Snow Height",
-            "theoretical_melt_water_per_sqm": "Theoretical Melt Water",
             "total_snow_water_equivalent": "Total snow water equivalent",
             "artificial_snow_water_equivalent": "Artificial snow water equivalent",
             "natural_snow_water_equivalent": "Natural snow water equivalent",
+            "rel_moisture": "Relative moisture",
+            "wind_speed": "Wind speed",
+            "air_pressure": "Air pressure",
+            "measured_ice_thickness": "Measured ice thickness",
+            "cumulated_ice_thickness": "Cumulated ice thickness",
+            "actual_melt_water_per_sqm": r"Actual melt water",
+            "theoretical_melt_water_per_sqm": r"Theoretical melt water",
+        }
+
+        self.unit_dict = {
+            "sw_radiation_in": r"$\frac{W}{m^2}$",
+            "sw_radiation_out": r"$\frac{W}{m^2}$",
+            "lw_radiation_in": r"$\frac{W}{m^2}$",
+            "lw_radiation_out": r"$\frac{W}{m^2}$",
+            "sensible_heat": r"$\frac{W}{m^2}$",
+            "latent_heat": r"$\frac{W}{m^2}$",
+            "temperature": r"$C^\circ$",
+            "precipitation_heat": r"$\frac{W}{m^2}$",
+            "total_energy_balance": r"$\frac{W}{m^2}$",
+            "total_snow_depth": r"$m$",
+            "snow_depth_natural": r"$m$",
+            "snow_depth_artificial": r"$m$",
+            "rel_moisture": r"$%$",
+            "wind_speed": r"$\frac{m}{s}$",
+            "air_pressure": r"$Pa$",
+            "measured_ice_thickness": r"$m$",
+            "cumulated_ice_thickness": r"$m$",
+            "actual_melt_water_per_sqm": r"$l$",
+            "theoretical_melt_water_per_sqm": r"$l$",
         }
 
         self.accumulate_plots = False
@@ -180,74 +209,6 @@ class Visualize:
             plt.close()
             self.plot_type_initialized = dict.fromkeys(self.plot_type_initialized, False)
 
-    def plot_total_energy_balance(self, use_summed_measurements=False, ablation_or_water_equivalent=False,
-                                  save_name=None):
-        self.initialize_plot("energy_balance")
-
-        x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
-                                                            use_summed_measurements=use_summed_measurements)
-
-        y_dates = multiple_measurements.singleton.get_all_of("datetime",
-                                                             use_summed_measurements=use_summed_measurements)
-
-        self.ax.plot(y_dates, x_vals, label="Energy Balance")
-
-        if ablation_or_water_equivalent is not False:  # is false if None of the both
-            second_ax = self.ax.twinx()
-
-            if ablation_or_water_equivalent == "show_ablation":
-                second_ax_vals = multiple_measurements.singleton.get_all_of(
-                    "cumulated_ablation", use_summed_measurements=use_summed_measurements)
-                second_ax.plot(y_dates, second_ax_vals, label="Ablation", color="red")
-                second_ax.set_ylabel("Ablation [m]")
-
-                # hack .. but will always start at the upper left, so this is legitim
-                y_lims = second_ax.get_ylim()
-                second_ax.set_ylim([y_lims[0], y_lims[1]+0.5])
-
-                main_title = "Total Energy balance with Ablation"
-
-            elif ablation_or_water_equivalent == "show_water_equivalent":
-                if use_summed_measurements:  # has to be summed here for now
-                    actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                        "actual_mm_we_per_d", use_summed_measurements=use_summed_measurements)
-
-                    theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                        "theoretical_mm_we_per_d", use_summed_measurements=use_summed_measurements)
-
-                    second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Measured Meltwater")
-                    second_ax.plot(
-                        y_dates, theoretical_melt_water_per_sqm, color="green", label="Modelled Meltwater")
-
-                    # calculate correlation coefficient
-                    if save_name is not None:
-                        actual_melt_water_per_sqm, theoretical_melt_water_per_sqm = fc.remove_none_in_lists(
-                            [actual_melt_water_per_sqm, theoretical_melt_water_per_sqm])
-
-                        print(save_name, "correlation coefficient:",
-                              round(float(np.ma.corrcoef(actual_melt_water_per_sqm, theoretical_melt_water_per_sqm)[0][1]), 2))
-
-                second_ax.set_ylabel("Water equivalent [mm/d]")
-                second_ax.set_ylim(0, second_ax.get_ylim()[1])
-                main_title = "Total Energy balance with actual and theoretical Ablation as water equivalent"
-
-            else:
-                return  # shouldnt get there
-
-            self.ax.legend(loc="upper left")
-            second_ax.legend(loc="upper right")
-        else:
-            main_title = "Total Energy balance"
-            self.ax.legend()
-
-        if int(cfg["PLOT_TITLE"]):
-            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-            self.ax.set_title(main_title + summed_title_appendix)
-        self.ax.set_ylabel("Energy [W/m^2]")
-        self.modify_axes()
-        
-        self.show_save_and_close_plot("energy_balance", save_name=save_name)
-
     @staticmethod
     def _color_generator():
         colors = ["blue", "red", "green", "dimgray", "rosybrown", "lightgray", "lightcoral", "darkorange",
@@ -327,7 +288,7 @@ class Visualize:
 
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_scatter_measured_modelled_ablation(self, tups, save_name=None):
+    def plot_scatter_measured_modelled_ablation(self, tups, save_name=None, max_estimated_ablation_measures_percent=100, measured_per_day_has_to_be_above_mm=0):
         self.initialize_plot(None)
 
         all_modelled_mm = []
@@ -341,6 +302,14 @@ class Visualize:
 
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
+
+            measurement_validities_valid = [
+                x["relative_ablation_measured"] == MeanStationMeasurement.valid_states["valid"]
+                for x in multiple_measurements.singleton.get_all_of("measurement_validity", use_summed_measurements=True)]
+            measured_percentage_estimated = (1-sum(measurement_validities_valid)/len(measurement_validities_valid))*100
+            if measured_percentage_estimated > max_estimated_ablation_measures_percent:
+                continue
+
             measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured",
                                                                             use_summed_measurements=True)
             modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled",
@@ -356,10 +325,11 @@ class Visualize:
             time_spawn_in_days = (end_time - start_time).total_seconds() / 60 / 60 / 24
 
             for modelled, measured, total_snow_depth in zip(modelled_ablations, measured_ablations, total_snow_depths):
-                all_modelled_mm.append(modelled * 1000)
-                all_measured_mm.append(measured * 1000)
-                all_pegel_mm.append(pegel_measure / time_spawn_in_days * 1000)
-            all_total_snow_depths.extend(total_snow_depths)
+                if measured * 1000 >= measured_per_day_has_to_be_above_mm:
+                    all_modelled_mm.append(modelled * 1000)
+                    all_measured_mm.append(measured * 1000)
+                    all_pegel_mm.append(pegel_measure / time_spawn_in_days * 1000)
+                    all_total_snow_depths.append(total_snow_depth)
 
         all_measured_mm_no0 = []
         all_modelled_mm_no0 = []
@@ -390,53 +360,80 @@ class Visualize:
         self.ax.plot([0, 300], [0, 300], color='green')
         self.ax.grid()
         self.ax.legend()
+        self.ax.set_title(save_name)
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_single_component(self, component, component_unit, use_summed_measurements=False, save_name=None):
-        self.initialize_plot(None)
+    def get_string_out_of_components(self, components):
+        if len(components) == 4 and "sw_radiation_in" in components and "sw_radiation_out" in components and "lw_radiation_in" in components and "lw_radiation_out" in components:
+            return "Net radiation (SW and LW)"
+        elif len(components) == 1:
+            return self.title_dict[components[0]]
+        else:
+            return ", ".join([self.title_dict[value_name] for value_name in components])
 
-        x_vals = multiple_measurements.singleton.get_all_of(component,
-                                                            use_summed_measurements=use_summed_measurements)
+    def get_unit_out_of_components(self, components):
+        units = set()
+        for component in components:
+            units.add(self.unit_dict[component])
+        if len(units) > 1:
+            return "Multiple units!"
+        elif not units:
+            return ""
+        else:
+            return list(units)[0]
 
-        y_dates = multiple_measurements.singleton.get_all_of("datetime",
-                                                             use_summed_measurements=use_summed_measurements)
-
-        self.ax.plot(y_dates, x_vals, label=component)
-
-        self.ax.legend(loc="upper left")
-
-        self.ax.set_ylabel(component_unit)
-        self.modify_axes()
-
-        self.show_save_and_close_plot(None, save_name=save_name)
-
-    def plot_components(self, components1: tuple, components1_unit, components2: tuple = None, components2_unit = None, use_summed_measurements=False, save_name=None):
+    def plot_components(self, components1: tuple, components2: tuple = None, cumulate_components1=False,
+                        cumulate_components2=False, use_summed_measurements=False, save_name=None):
         self.initialize_plot(None)
 
         color_generator = self._color_generator()
-
         y_dates = multiple_measurements.singleton.get_all_of("datetime",
                                                              use_summed_measurements=use_summed_measurements)
 
-        for component in components1:
-            x_vals = multiple_measurements.singleton.get_all_of(component,
-                                                                 use_summed_measurements=use_summed_measurements)
-            self.ax.plot(y_dates, x_vals, label=self._pretty_label(component), color=next(color_generator))
+        if cumulate_components1:
+            x_vals = multiple_measurements.singleton.get_cumulated_vals_of_components(
+                components1, use_summed_measurements)
+            self.ax.plot(y_dates, x_vals, label=self.get_string_out_of_components(components1), color=next(color_generator))
+        else:
+            for component in components1:
+                try:
+                    x_vals = multiple_measurements.singleton.get_all_of(
+                        component, use_summed_measurements=use_summed_measurements)
+                    self.ax.plot(y_dates, x_vals, label=self._pretty_label(component), color=next(color_generator))
+                except AttributeError:
+                    print(component, "does not exist")
 
         self.ax.legend(loc="upper left")
-        self.ax.set_ylabel(components1_unit)
+        self.ax.set_ylabel(self.get_unit_out_of_components(components1))
 
-        if components2 is not None:
+        if components2:
             ax2 = self.ax.twinx()
-            for component in components2:
-                x_vals = multiple_measurements.singleton.get_all_of(component,
-                                                                    use_summed_measurements=use_summed_measurements)
-                ax2.plot(y_dates, x_vals, label=self._pretty_label(component), color="orange")
-                ax2.legend(loc="upper right")
-                ax2.set_ylabel(components2_unit)
+            if cumulate_components2:
+                x_vals = multiple_measurements.singleton.get_cumulated_vals_of_components(
+                    components2, use_summed_measurements)
+                ax2.plot(y_dates, x_vals, label=self.get_string_out_of_components(components2),
+                             color=next(color_generator))
+            else:
+                for component in components2:
+                    try:
+                        x_vals = multiple_measurements.singleton.get_all_of(component,
+                                                                            use_summed_measurements=use_summed_measurements)
+                        ax2.plot(y_dates, x_vals, label=self._pretty_label(component), color="orange")
+                        ax2.legend(loc="upper right")
+                        ax2.set_ylabel(self.get_unit_out_of_components(components2))
+                    except AttributeError:
+                        print(component, "does not exist")
 
         self.modify_axes()
-        # self.ax.set_ylim([0, 1])  # del todo
+
+        if int(cfg["PLOT_TITLE"]):
+            title = self.get_string_out_of_components(components1)
+            if components2:
+                title += "\n vs \n" + self.get_string_out_of_components(components2)
+            if use_summed_measurements:
+                title += "\n Used summed measurements"
+            plt.title(title)
+
         self.show_save_and_close_plot(None, save_name=save_name)
 
     def plot_components_lvls(self, height_level_objects, components1: tuple, components1_unit, components2: tuple = None,
@@ -735,39 +732,6 @@ class Visualize:
 
         self.show_save_and_close_plot(None, save_name=save_name)
 
-    def plot_temperature_and_water_equivalent(self, use_summed_measurements=False, save_name=None):
-        self.initialize_plot("temperature")
-
-        x_vals = multiple_measurements.singleton.get_all_of("snow_depth",
-                                                            use_summed_measurements=use_summed_measurements)
-
-        y_dates = multiple_measurements.singleton.get_all_of("datetime",
-                                                             use_summed_measurements=use_summed_measurements)
-
-        self.ax.plot(y_dates, x_vals, label="Temperature")
-
-        second_ax = self.ax.twinx()
-
-        if use_summed_measurements:  # has to be summed here for now
-            actual_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                "actual_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
-
-            theoretical_melt_water_per_sqm = multiple_measurements.singleton.get_all_of(
-                "theoretical_melt_water_per_sqm", use_summed_measurements=use_summed_measurements)
-
-            second_ax.plot(y_dates, actual_melt_water_per_sqm, color="red", label="Measured Meltwater")
-            second_ax.plot(
-                y_dates, theoretical_melt_water_per_sqm, color="green", label="Modelled Meltwater")
-
-        second_ax.set_ylabel("l/m^2 per " + multiple_measurements.singleton.get_time_resolution(of="summed",
-                                                                                            as_beautiful_string=True))
-        self.ax.legend(loc="upper left")
-        second_ax.legend(loc="upper right")      
-
-        self.modify_axes()
-        self.ax.set_ylabel("Temperature [°C]")
-        self.show_save_and_close_plot("temperature", save_name=save_name)
-
     @staticmethod
     def met_year_str(year):
         """
@@ -775,29 +739,36 @@ class Visualize:
         """
         return str(year)+'/'+str(int(year)+1)[2:4]
 
-    def plot_energy_balance_components(self,
-                                       options, use_summed_measurements=False, save_name=None):
-        x_vals, y_dates = multiple_measurements.singleton.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
+    def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True,
+                                                       save_name=None):
+        x_vals = multiple_measurements.singleton.get_cumulated_vals_of_components(options, use_summed_measurements)
+        self.initialize_plot("trend")
 
-        self.initialize_plot("energy_balance")
+        days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
 
-        if len(options) == 4 and "sw_radiation_in" in options and "sw_radiation_out" in options and "lw_radiation_in" in options and "lw_radiation_out" in options:
-            title_used_options = "Net radiation (SW and LW)"
-        else:
-            title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
+        y_dates = multiple_measurements.singleton.get_all_of("datetime",
+                                                             use_summed_measurements=use_summed_measurements)
 
-        self.ax.plot(y_dates, x_vals,
-                     zorder=3, label=title_used_options, linewidth=2)
+        if not y_dates or y_dates[-1] - y_dates[0] < days_365:
+            print("Cant trend eliminate for data range less than one year")
+            return
 
-        self.ax.legend(loc="upper right")
+        diff_vals, diff_dates = self.do_periodic_trend_elimination(x_vals, y_dates, keep_trend)
 
-        if int(cfg["PLOT_TITLE"]):
-            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-            self.ax.set_title(title_used_options + " - Energy input" + summed_title_appendix)
+        z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
+        p = np.poly1d(z)
+
+        self.ax.plot(diff_dates, diff_vals)
+        self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
 
         self.ax.set_ylabel("Energy [W/m^2]")
         self.modify_axes()
-        self.show_save_and_close_plot("energy_balance", save_name=save_name)
+
+        if int(cfg["PLOT_TITLE"]):
+            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+            title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
+        # self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
+        self.show_save_and_close_plot("trend", save_name=save_name)
 
     @staticmethod
     def do_periodic_trend_elimination(x_vals, y_dates, keep_trend):
@@ -845,64 +816,6 @@ class Visualize:
 
                             reference_index_current_measurement += 1
         return diff_vals, diff_dates
-
-    def plot_periodic_trend_eliminated_total_energy_balance(self, use_summed_measurements=False, keep_trend=True,
-                                                            save_name=None):
-        x_vals = multiple_measurements.singleton.get_all_of("total_energy_balance",
-                                                            use_summed_measurements=use_summed_measurements)
-
-        y_dates = multiple_measurements.singleton.get_all_of("datetime",
-                                                             use_summed_measurements=use_summed_measurements)
-        self.initialize_plot("trend")
-
-        if y_dates[-1] - y_dates[0] < DAYS_365:
-            print("Cant trend eliminate for data range less than one year")
-            return
-
-        diff_vals, diff_dates = self.do_periodic_trend_elimination(x_vals, y_dates, keep_trend)
-
-        z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
-        p = np.poly1d(z)
-
-        self.ax.plot(diff_dates, diff_vals)
-        self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
-
-        self.ax.set_ylabel("Energy [W/m^2]")
-        self.modify_axes()
-
-        if int(cfg["PLOT_TITLE"]):
-            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-            self.ax.set_title("Total energy balance - Periodic trend eliminated" + summed_title_appendix)
-
-        self.show_save_and_close_plot("trend", save_name=save_name)
-
-    def plot_periodic_trend_eliminated_selected_option(self, options, use_summed_measurements=False, keep_trend=True,
-                                                       save_name=None):
-        x_vals, y_dates = multiple_measurements.singleton.get_vals_and_dates_of_selected_options(options, use_summed_measurements)
-        self.initialize_plot("trend")
-
-        days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
-
-        if y_dates[-1] - y_dates[0] < days_365:
-            print("Cant trend eliminate for data range less than one year")
-            return
-
-        diff_vals, diff_dates = self.do_periodic_trend_elimination(x_vals, y_dates, keep_trend)
-
-        z = np.polyfit(range(len(diff_dates)), diff_vals, 1)
-        p = np.poly1d(z)
-
-        self.ax.plot(diff_dates, diff_vals)
-        self.ax.plot(diff_dates, p(range(len(diff_dates))), "r--")
-
-        self.ax.set_ylabel("Energy [W/m^2]")
-        self.modify_axes()
-
-        if int(cfg["PLOT_TITLE"]):
-            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
-            title_used_options = ", ".join([self.title_dict[value_name] for value_name in options])
-        # self.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
-        self.show_save_and_close_plot("trend", save_name=save_name)
 
 
 singleton = Visualize()

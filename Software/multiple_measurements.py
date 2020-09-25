@@ -217,7 +217,7 @@ class MultipleMeasurements:
     def calculate_snow_height_deltas_for_scope(self):
         past_snow_depth = None
         for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-            if past_snow_depth is not None:
+            if past_snow_depth is not None and obj.snow_depth_natural is not None:
                 obj.snow_depth_delta_natural = obj.snow_depth_natural - past_snow_depth
             past_snow_depth = obj.snow_depth_natural
 
@@ -403,20 +403,18 @@ class MultipleMeasurements:
                 [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]
             ))
 
-    def get_vals_and_dates_of_selected_options(self, options, use_summed_measurements=False):
+    def get_cumulated_vals_of_components(self, components, use_summed_measurements=False):
         if use_summed_measurements:
             x_vals = [0] * self.get_measurement_amount(of="summed")
         else:
             x_vals = [0] * self.get_measurement_amount()
 
-        for option in options:
+        for component in components:
             x_vals = list(map(
                 fc.save_add, x_vals,
-                self.get_all_of(option, use_summed_measurements=use_summed_measurements)))
+                self.get_all_of(component, use_summed_measurements=use_summed_measurements)))
 
-        y_dates = self.get_all_of("datetime", use_summed_measurements=use_summed_measurements)
-
-        return x_vals, y_dates
+        return x_vals
 
     def sum_measurements_by_amount(self, amount):
         self.clear_summed_measurements()
@@ -438,12 +436,12 @@ class MultipleMeasurements:
             try:
                 summed_measurement.calculate_mean(
                     endtime=multiple_separated_measurements[i+1][0].datetime,
-                    end_ablation=multiple_separated_measurements[i+1][0].cumulated_ablation)
+                    end_ablation=multiple_separated_measurements[i+1][0].cumulated_ice_thickness)
             except IndexError:
                 # last one
                 summed_measurement.calculate_mean(
                     endtime=separated_measurements[-1].datetime,
-                    end_ablation=separated_measurements[-1].cumulated_ablation)
+                    end_ablation=separated_measurements[-1].cumulated_ice_thickness)
 
             self.add_summed_measurement(summed_measurement)
 
@@ -495,7 +493,7 @@ class MultipleMeasurements:
                 reference_month = single_measurement.datetime.month
 
                 summed_measurement.calculate_mean(endtime=single_measurement.datetime,
-                                                  end_ablation=single_measurement.cumulated_ablation)
+                                                  end_ablation=single_measurement.cumulated_ice_thickness)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -520,7 +518,7 @@ class MultipleMeasurements:
                 reference_years = single_measurement.datetime.year
 
                 summed_measurement.calculate_mean(endtime=single_measurement.datetime,
-                                                  end_ablation=single_measurement.cumulated_ablation)
+                                                  end_ablation=single_measurement.cumulated_ice_thickness)
                 self.add_summed_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
@@ -765,7 +763,7 @@ class MultipleMeasurements:
         """
         Scope must include several years for this to work
         """
-
+        percentages_replaced = []
         for measure_name in measurements_to_fix:
             print("Fixing", measure_name)
             invalid_measurements_and_replacements = dict()
@@ -801,10 +799,12 @@ class MultipleMeasurements:
                     invalid_measurement.replace_measure_mean_of(replacement_measurements, measure_name)
                     i += 1
                 else:
-                    print(invalid_measurement.datetime, "No replacement measurements found -> for every year this "
-                                                        "measurement is bad")
+                    print(invalid_measurement.datetime, "No replacement measurements found")
 
             print(f"{i}/{len(invalid_measurements_and_replacements)} invalid summed measurements have been replaced")
+            if len(invalid_measurements_and_replacements):
+                percentages_replaced.append(i/len(invalid_measurements_and_replacements)*100)
+        return np.mean(percentages_replaced)
 
     def calculate_wetbulb_temperature_for_summed_scope(self):
         for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:

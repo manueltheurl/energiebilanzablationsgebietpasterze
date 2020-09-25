@@ -33,12 +33,15 @@ import frame_plot
 import frame_energy_balance
 import frame_download
 import frame_read
-import frame_energy_balance as frame_scope
+import frame_scope
+import frame_energy_balance
+import frame_prepare_measurements
 import frame_sum
 import visualizer
 from height_level import HydrologicYear
 import energy_balance
 import stats_printer
+
 
 
 class NoGuiManager:
@@ -296,11 +299,13 @@ class NoGuiManager:
 
     @staticmethod
     def combined_preparing_of_measurements(sum_hourly_resolution=24, type_="new"):
+        # Preparations of measurements
         multiple_measurements.singleton.correct_snow_measurements_for_scope()
-        multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
         # multiple_measurements.singleton.correct_long_wave_measurements_for_scope()
         multiple_measurements.singleton.correct_short_wave_measurements_for_scope()
         multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
+
+        multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
 
         if type_ == "new":
             multiple_measurements.singleton.sum_measurements_by_time_interval(
@@ -323,12 +328,12 @@ class NoGuiManager:
     def compare_measured_ablation_measured_pegel_and_modelled(self, type_, pegel_tuples):
         visualizer.singleton.show_plots = False
         visualizer.singleton.change_result_plot_subfolder(f"scatter_compare")
-        recalculate = False
+        recalculate = True
 
         if recalculate:
             reader.singleton.add_file_path(self.path_to_meteorologic_measurements)
             reader.singleton.read_meterologic_file_to_objects()
-            self.combined_preparing_of_measurements()
+            self.combined_preparing_of_measurements(sum_hourly_resolution=24)
 
         for i, rs in enumerate([(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]):
             f_name = f"tmp/picklsave_{rs[0]}_z0snow{rs[1]}_type{type_}"
@@ -343,12 +348,17 @@ class NoGuiManager:
                 with open(f_name, 'rb') as f:
                     multiple_measurements.singleton = pickle.load(f)
 
-            """ Statistics """
-            stats_printer.singleton.compare_pegel_measured_and_modelled_for_time_intervals(pegel_tuples,
-                                                                                           heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_})")
+            max_estimated_ablation_measures_percent = 0
+
+            # """ Statistics """
+            # stats_printer.singleton.compare_pegel_measured_and_modelled_for_time_intervals(
+            #     pegel_tuples, heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_}) max est. abl. measures {max_estimated_ablation_measures_percent}",
+            #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent)
+
             """ Plotting """
-            # visualizer.singleton.plot_scatter_measured_modelled_ablation(pegel_tuples,
-            #                                                              save_name=f"z0ice{rs[0]}z0 snow{rs[1]}")
+            visualizer.singleton.plot_scatter_measured_modelled_ablation(
+                pegel_tuples, save_name=f"z0ice{rs[0]}z0 snow{rs[1]} ({max_estimated_ablation_measures_percent}% est. abl. measures)",
+                max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent, measured_per_day_has_to_be_above_mm=1)
 
             # if not i:
             #     visualizer.singleton.plot_components(("total_snow_depth",), "m", use_summed_measurements=False,
@@ -431,18 +441,26 @@ if __name__ == "__main__":
         So each singleton is saved in a singleton variable in the corresponding file. So every file can then access
         those singletons by including the module    
         """
-        # TODO albedo in gui
+        #
         gui_main.create_singleton()
         navigation_bar.create_singleton()
         info_bar.create_singleton()
         frame_scope.create_singleton()
+        frame_energy_balance.create_singleton()
+        frame_prepare_measurements.create_singleton()
         frame_plot.create_singleton()
         frame_download.create_singleton()
         frame_sum.create_singleton()
         frame_read.create_singleton()
         version_bar.create_singleton()
+        #
+        # navigation_bar.singleton.show_plot_frame()
 
-        gui_thread = threading.Thread(target=gui_main.singleton.mainloop())
-        gui_thread.start()
+        gui_main.singleton.mainloop()
+
+        # gui_thread = threading.Thread(target=)
+        # gui_thread.start()
+
+
 
         # gui_main.singleton.mainloop()

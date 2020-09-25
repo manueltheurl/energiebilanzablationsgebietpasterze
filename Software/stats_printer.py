@@ -1,5 +1,6 @@
 from manage_config import cfg
 import multiple_measurements
+from single_measurement import MeanStationMeasurement
 
 
 class Statistics:
@@ -11,14 +12,14 @@ class Statistics:
         Statistics.singleton_created = True
 
     @staticmethod
-    def compare_pegel_measured_and_modelled_for_time_intervals(tups, heading=None):
+    def compare_pegel_measured_and_modelled_for_time_intervals(tups, heading=None, max_estimated_ablation_measures_percent=100):
         """
         tups include starttime, endtime and pegel
         """
         if heading is not None:
             print(heading)
 
-        print("Time span, Modeled [m], Pegel measure [m], Diff [mm/d], Pressure transducer measure [m], Diff [mm/d]")
+        print("Time span, Modeled [m], Pegel measure [m], Diff [mm/d], Pressure transducer measure [m], Diff [mm/d], % estimated")
 
         all_modelled_mm = []
         all_measured_mm = []
@@ -33,11 +34,23 @@ class Statistics:
             multiple_measurements.singleton.reset_scope_to_all()
             multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
 
+            measurement_validities_valid = [
+                x["relative_ablation_measured"] == MeanStationMeasurement.valid_states["valid"]
+                for x in multiple_measurements.singleton.get_all_of("measurement_validity", use_summed_measurements=True)]
+
+            measured_percentage_estimated = (1-sum(measurement_validities_valid)/len(measurement_validities_valid))*100
+
+            if measured_percentage_estimated > max_estimated_ablation_measures_percent:
+                continue
+
             measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured",
                                                                             use_summed_measurements=True)
             modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled",
                                                                             use_summed_measurements=True)
             total_snow_depths = multiple_measurements.singleton.get_all_of("total_snow_depth",
+                                                                           use_summed_measurements=True)
+
+            datetimes = multiple_measurements.singleton.get_all_of("datetime",
                                                                            use_summed_measurements=True)
 
             # when fixing measurements, then this should be close to zero all the time
@@ -65,7 +78,8 @@ class Statistics:
                     str(round(pegel_measure, 3)),
                     str(round((pegel_measure - modelled_ablation) * 1000 / time_spawn_in_days, 1)),
                     str(round(measured_ablation, 3)),
-                    str(round((measured_ablation - modelled_ablation) * 1000 / time_spawn_in_days, 1))]
+                    str(round((measured_ablation - modelled_ablation) * 1000 / time_spawn_in_days, 1)),
+                    str(round(measured_percentage_estimated, 2))]
 
             print(",".join(cols))
 

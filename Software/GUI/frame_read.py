@@ -11,7 +11,8 @@ import gui_main_frame as gui_main_frame
 import frame_plot as frame_plot
 import functions as fc
 import navigation_bar as navigation_bar
-import frame_energy_balance as frame_energy_balance
+import frame_scope
+import frame_energy_balance
 from manage_config import cfg
 
 
@@ -216,8 +217,8 @@ class ReadFrame(tk.Frame):
         info_bar.singleton.change_scope_info("")
         info_bar.singleton.change_sum_info("")
 
-        frame_energy_balance.singleton.fill_fields_with_read_in_values()
-        navigation_bar.singleton.show_energy_balance_frame()
+        frame_scope.singleton.fill_fields_with_read_in_values()
+        navigation_bar.singleton.show_scope_frame()
 
 
 singleton = None

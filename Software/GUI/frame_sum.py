@@ -57,9 +57,15 @@ class SumFrame(tk.Frame):
         self.cmbobox_sumByTimeIntervalUnit.pack()
         self.ckbox_sumByTimeInterval.pack(padx=10)
 
+        self.ckbox_fixInvalid_value = tk.IntVar()
+        self.ckbox_fixInvalid = tk.Checkbutton(self, variable=self.ckbox_fixInvalid_value)
+        self.ckbox_fixInvalid.pack(pady=(45, 0))
+        self.lbl_fixInvalid = tk.Label(self, text="Fix invalid measurements by mean of other years")
+        self.lbl_fixInvalid.pack()
+
         self.btn_sumMeasurements = tk.Button(self, text="Sum measurements",
                                              command=self.create_summed_measurement, state="disabled")
-        self.btn_sumMeasurements.pack(pady=30)
+        self.btn_sumMeasurements.pack(pady=40)
 
         self.btn_sumSkip = tk.Button(self, text="Skip",
                                      command=navigation_bar.singleton.show_plot_frame)
@@ -147,6 +153,10 @@ class SumFrame(tk.Frame):
             info_bar_text += "Measurements every " + str(sum_by_years) + " years summed"
         else:
             return  # shouldnt get here
+
+        if self.ckbox_fixInvalid_value.get():
+            # todo drop down list to choose which measurements to fix .. currently just everything by default
+            info_bar_text += f"  ({multiple_measurements.singleton.fix_invalid_summed_measurements()}% invalid replaced)"
 
         info_bar.singleton.change_sum_info(info_bar_text)
         frame_plot.singleton.did_sum_measurements = True

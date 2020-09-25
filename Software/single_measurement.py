@@ -131,16 +131,18 @@ class StationMeasurement:
                                                self.latent_heat,
                                                ])
         except TypeError:
-            exit('energy balance something is none')  # Something is None
-            # print(self.sw_radiation_in,  # get it over property cause may be glob br. simul
-            #                                    self.sw_radiation_out,
-            #                                    self.lw_radiation_in,
-            #                                    self.lw_radiation_out,
-            #                                    self.sensible_heat,
-            #                                    self.latent_heat)
-            # print(self._air_pressure, self._wind_speed, self.temperature)
-            # print(self.temperature, self._rel_moisture, self._wind_speed)
-            # exit("NONE")
+            if type(self) == SingleStationMeasurement:
+                pass
+            else:
+                print(self.sw_radiation_in,  # get it over property cause may be glob br. simul
+                      self.sw_radiation_out,
+                      self.lw_radiation_in,
+                      self.lw_radiation_out,
+                      self.sensible_heat,
+                      self.latent_heat)
+                print(self.air_pressure, self.wind_speed, self.temperature)
+                print(self.temperature, self.rel_moisture, self.wind_speed)
+                exit('Calculating energy balance for mean measurement and something is none')  # Something is None
 
         if not cfg["IGNORE_PRECIPITATION_HEAT"]:
             self._total_energy_balance += self.precipitation_heat
