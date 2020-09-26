@@ -11,6 +11,7 @@ import frame_plot
 import gui_main_frame
 import frame_sum
 import frame_prepare_measurements
+import frame_conversion
 
 
 class NavigationBar(tk.Frame):
@@ -44,15 +45,19 @@ class NavigationBar(tk.Frame):
         self.btn_prepareframe.pack(side="left")
         self.__all_buttons.append(self.btn_prepareframe)
 
+        self.btn_sumframe = tk.Button(self, text="Sum", command=self.show_sum_frame,
+                                      state="disabled")
+        self.btn_sumframe.pack(side="left")
+        self.__all_buttons.append(self.btn_sumframe)
+
         self.btn_energybalanceframe = tk.Button(self, text="Energy balance",
                                                 command=self.show_energy_balance_frame, state="disabled")
         self.btn_energybalanceframe.pack(side="left")
         self.__all_buttons.append(self.btn_energybalanceframe)
 
-        self.btn_sumframe = tk.Button(self, text="Sum", command=self.show_sum_frame,
-                                      state="disabled")
-        self.btn_sumframe.pack(side="left")
-        self.__all_buttons.append(self.btn_sumframe)
+        self.btn_conversionframe = tk.Button(self, text="Conversion", command=self.show_conversion_frame, state="disabled")
+        self.btn_conversionframe.pack(side="left")
+        self.__all_buttons.append(self.btn_conversionframe)
 
         self.btn_plotframe = tk.Button(self, text="Plot", command=self.show_plot_frame, state="disabled")
         self.btn_plotframe.pack(side="left")
@@ -89,7 +94,12 @@ class NavigationBar(tk.Frame):
         self.__set_state_of_buttons_normal()
         gui_main_frame.singleton.show_main_frame(frame_sum)
         self.btn_sumframe["state"] = "active"
-        self.btn_plotframe["state"] = "normal"
+        self.btn_energybalanceframe["state"] = "normal"
+
+    def show_conversion_frame(self):
+        self.__set_state_of_buttons_normal()
+        gui_main_frame.singleton.show_main_frame(frame_conversion)
+        self.btn_conversionframe["state"] = "active"
 
     def show_plot_frame(self):
         self.__set_state_of_buttons_normal()

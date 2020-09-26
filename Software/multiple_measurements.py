@@ -39,10 +39,13 @@ class MultipleMeasurements:
     def calculate_energy_balance_for(self, which="scope", simulate_global_dimming_brightening=0):
         if which == "scope":
             for obj in [self.__all_single_measurement_objects[i] for i in sorted(self.__current_single_index_scope)]:
-                obj.calculate_energy_balance(simulate_global_dimming_brightening)
+                if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
+                    return False
         elif which == "summed":
             for obj in [self.__all_mean_measurements[i] for i in sorted(self.__current_mean_index_scope)]:
-                obj.calculate_energy_balance(simulate_global_dimming_brightening)
+                if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
+                    return False
+        return True
 
     def calculate_water_input_through_snow_for_scope(self):
         # DEPRECATED

@@ -214,7 +214,7 @@ class ScopeFrame(tk.Frame):
                                                                                       as_beautiful_string=True)
         ]
         info_bar.singleton.change_scope_info("\t".join(info_bar_text_list))
-
+        navigation_bar.singleton.show_prepare_frame()
 
 singleton = None
 

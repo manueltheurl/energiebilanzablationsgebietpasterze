@@ -15,12 +15,14 @@ import frame_plot
 import datetime as dt
 import single_measurement
 from manage_config import cfg
+import frame_energy_balance
 
 
 class SumFrame(tk.Frame):
     """
     Reserves the space for a main frame (3 in total) by creating a frame
     """
+
     def __init__(self):
         tk.Frame.__init__(self, gui_main_frame.singleton.frame)
         self.grid(row=0, column=0, sticky="nsew")
@@ -68,8 +70,10 @@ class SumFrame(tk.Frame):
         self.btn_sumMeasurements.pack(pady=40)
 
         self.btn_sumSkip = tk.Button(self, text="Skip",
-                                     command=navigation_bar.singleton.show_plot_frame)
+                                     command=navigation_bar.singleton.show_energy_balance_frame)
         self.btn_sumSkip.pack(pady=30)
+
+        self.already_summed_measurements = False  # todo currently never gets reset after getting true
 
     def toggle_sum_measurements_by_amount(self):
         widgets_to_toggle_state = [
@@ -136,7 +140,6 @@ class SumFrame(tk.Frame):
 
         if sum_by_amount is not None and sum_by_amount.isdigit():
             info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
-            frame_plot.singleton.enable_option_to_use_summed_measurements()
             multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
         elif sum_by_time_interval is not None:
             frame_plot.singleton.enable_option_to_use_summed_measurements()
@@ -145,22 +148,32 @@ class SumFrame(tk.Frame):
             multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
         elif sum_by_months is not None:
             multiple_measurements.singleton.sum_measurements_by_months(sum_by_months)
-            frame_plot.singleton.enable_option_to_use_summed_measurements()
             info_bar_text += "Measurements every " + str(sum_by_months) + " months summed"
         elif sum_by_years is not None:
             multiple_measurements.singleton.sum_measurements_by_years(sum_by_years)
-            frame_plot.singleton.enable_option_to_use_summed_measurements()
             info_bar_text += "Measurements every " + str(sum_by_years) + " years summed"
         else:
             return  # shouldnt get here
 
         if self.ckbox_fixInvalid_value.get():
             # todo drop down list to choose which measurements to fix .. currently just everything by default
-            info_bar_text += f"  ({multiple_measurements.singleton.fix_invalid_summed_measurements()}% invalid replaced)"
+            percentage_replaced = multiple_measurements.singleton.fix_invalid_summed_measurements()
+            if percentage_replaced < 100:
+                info_bar.singleton.change_error_message("Not all measurements can be fixed, can you take a longer time span?")
+            else:
+                info_bar.singleton.change_error_message("")
+            info_bar_text += f"  ({percentage_replaced}% invalid replaced)"
 
+        self.already_summed_measurements = True
         info_bar.singleton.change_sum_info(info_bar_text)
-        frame_plot.singleton.did_sum_measurements = True
-        navigation_bar.singleton.show_plot_frame()
+        frame_plot.singleton.enable_option_to_use_summed_measurements()
+        frame_energy_balance.singleton.enable_option_to_use_summed_measurements()
+
+        if frame_energy_balance.singleton.energy_balance_calculated:
+            navigation_bar.singleton.btn_conversionframe["state"] = "normal"
+            navigation_bar.singleton.show_conversion_frame()
+        else:
+            navigation_bar.singleton.show_energy_balance_frame()
 
 
 singleton = None

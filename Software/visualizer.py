@@ -416,14 +416,13 @@ class Visualize:
             else:
                 for component in components2:
                     try:
-                        x_vals = multiple_measurements.singleton.get_all_of(component,
-                                                                            use_summed_measurements=use_summed_measurements)
+                        x_vals = multiple_measurements.singleton.get_all_of(
+                            component, use_summed_measurements=use_summed_measurements)
                         ax2.plot(y_dates, x_vals, label=self._pretty_label(component), color="orange")
-                        ax2.legend(loc="upper right")
-                        ax2.set_ylabel(self.get_unit_out_of_components(components2))
                     except AttributeError:
                         print(component, "does not exist")
-
+            ax2.legend(loc="upper right")
+            ax2.set_ylabel(self.get_unit_out_of_components(components2))
         self.modify_axes()
 
         if int(cfg["PLOT_TITLE"]):

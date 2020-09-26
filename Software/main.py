@@ -30,10 +30,10 @@ import version_bar
 import info_bar
 
 import frame_plot
-import frame_energy_balance
 import frame_download
 import frame_read
 import frame_scope
+import frame_conversion
 import frame_energy_balance
 import frame_prepare_measurements
 import frame_sum
@@ -43,11 +43,9 @@ import energy_balance
 import stats_printer
 
 
-
 class NoGuiManager:
     def __init__(self):
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
-        # TODO well seems like it actually is a hydrologic year .. maybe change that some time
         self.hydrologic_years_looked_at = [2012, 2013, 2014, 2016, 2017, 2018]  # 2015 is baad
         self.startTime = dt.datetime(self.hydrologic_years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
         self.endTime = dt.datetime(self.hydrologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
@@ -448,13 +446,19 @@ if __name__ == "__main__":
         frame_scope.create_singleton()
         frame_energy_balance.create_singleton()
         frame_prepare_measurements.create_singleton()
+        frame_conversion.create_singleton()
         frame_plot.create_singleton()
         frame_download.create_singleton()
         frame_sum.create_singleton()
         frame_read.create_singleton()
         version_bar.create_singleton()
         #
+        # navigation_bar.singleton.show_sum_frame()
+        # navigation_bar.singleton.show_prepare_frame()
+        # navigation_bar.singleton.show_energy_balance_frame()
         # navigation_bar.singleton.show_plot_frame()
+        # navigation_bar.singleton.show_scope_frame()
+        # navigation_bar.singleton.show_read_frame()
 
         gui_main.singleton.mainloop()
 

@@ -142,10 +142,12 @@ class StationMeasurement:
                       self.latent_heat)
                 print(self.air_pressure, self.wind_speed, self.temperature)
                 print(self.temperature, self.rel_moisture, self.wind_speed)
-                exit('Calculating energy balance for mean measurement and something is none')  # Something is None
+                print('Calculating energy balance for mean measurement and something is none')  # Something is None
+                return False
 
         if not cfg["IGNORE_PRECIPITATION_HEAT"]:
             self._total_energy_balance += self.precipitation_heat
+        return True
 
     def calculate_theoretical_melt_rate(self):
         if None not in [self._total_energy_balance]:

@@ -77,7 +77,7 @@ class PrepareMeasurementsFrame(tk.Frame):
 
         multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
 
-        navigation_bar.singleton.show_energy_balance_frame()
+        navigation_bar.singleton.show_sum_frame()
 
 
 singleton = None
