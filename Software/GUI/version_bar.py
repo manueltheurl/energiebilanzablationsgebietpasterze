@@ -9,7 +9,7 @@ import frame_download
 import frame_plot
 import gui_main_frame
 import frame_sum
-from manage_config import cfg
+from config_handler import cfg
 
 
 class VersionBar(tk.Frame):

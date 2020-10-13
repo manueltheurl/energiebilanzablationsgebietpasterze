@@ -4,8 +4,8 @@ sys.path.append("GUI")
 
 import gui_main_frame
 import navigation_bar
-import multiple_measurements
-from manage_config import cfg
+from measurement_handler import MeasurementHandler
+from config_handler import cfg
 
 
 class ConversionFrame(tk.Frame):
@@ -27,7 +27,7 @@ class ConversionFrame(tk.Frame):
         self.btn_sumSkip.pack(pady=30)
 
     def convert(self):
-        multiple_measurements.singleton.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
+        MeasurementHandler.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
         navigation_bar.singleton.show_plot_frame()
 
 

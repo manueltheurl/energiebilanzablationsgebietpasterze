@@ -32,28 +32,29 @@ HIGH_RES_RADIATION_GRIDS = True
 
 
 class QGisHandler:
-    def __init__(self):
-        self.tmp_folder = "tmp"  # probably not even needed ..
-        self.output_folder = "outputData"
-        try:
-            shutil.rmtree(self.tmp_folder)
-            os.makedirs(self.tmp_folder)
-        except FileNotFoundError:
-            os.makedirs(self.tmp_folder)
-        except OSError:
-            print("Some file inside tmp folder seems to be open currently!")  # if file is currently in use or open in qgis e.g.
+    tmp_folder = "tmp"  # probably not even needed ..
+    output_folder = "outputData"
+    try:
+        shutil.rmtree(tmp_folder)
+        os.makedirs(tmp_folder)
+    except FileNotFoundError:
+        os.makedirs(tmp_folder)
+    except OSError:
+        print("Some file inside tmp folder seems to be open currently!")  # if file is currently in use or open in qgis e.g.
 
-        if not os.path.exists(self.output_folder):
-            os.makedirs(self.output_folder)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
 
-    def run_resample_radiation_grids(self):
+    @classmethod
+    def run_resample_radiation_grids(cls):
         for day in tqdm.tqdm(range(1, 366)):
             processing.run("grass7:r.resamp.interp", {
                 'input': f'/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/Tägliche Gitter der mittleren direkten Sonneneinstrahlung/pasterze_grid/dir{str(day).zfill(3)}24.grid',
                 'method': 1, 'output': f'/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/Tägliche Gitter der mittleren direkten Sonneneinstrahlung/pasterze_grid/dir{str(day).zfill(3)}24_high_res.grid', 'GRASS_REGION_PARAMETER': None,
                 'GRASS_REGION_CELLSIZE_PARAMETER': 5, 'GRASS_RASTER_FORMAT_OPT': '', 'GRASS_RASTER_FORMAT_META': ''})
 
-    def run_creating_height_levels(self, height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
+    @classmethod
+    def run_creating_height_levels(cls, height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
                                    path_to_directory_with_radiations):
         subfolder_name = f"height_level_step_width_{height_level_step_width}"
 
@@ -72,32 +73,32 @@ class QGisHandler:
             'OUTPUT': 'TEMPORARY_OUTPUT'
         }
 
-        dem_raster = self.warp_reproject(params_warpreproject)
+        dem_raster = cls.warp_reproject(params_warpreproject)
 
         params_rasterlayerstatistics = {
             'INPUT': dem_raster,
             "MASK": path_to_glacier_shape,
             # 'NODATA': 0,  # seems important
-            'OUTPUT': f"{self.tmp_folder}/clipped_glacier_raster.tiff"
+            'OUTPUT': f"{cls.tmp_folder}/clipped_glacier_raster.tiff"
         }
 
-        dem_raster = self.clip_raster_by_mask_layer(params_rasterlayerstatistics)
+        dem_raster = cls.clip_raster_by_mask_layer(params_rasterlayerstatistics)
 
         params_rasterlayerstatistics = {
             'INPUT': dem_raster,
             'BAND': 1,
         }
 
-        statistics = self.raster_layer_statistics(params_rasterlayerstatistics)
+        statistics = cls.raster_layer_statistics(params_rasterlayerstatistics)
 
         height_level_objects = HeightLevel.get_beautiful_height_levels_by_step(height_level_step_width, statistics["MIN"],
                                                                                statistics["MAX"])
         height_level_objects.pop(-1)
         try:
-            shutil.rmtree(f"{self.output_folder}/{subfolder_name}")
-            os.makedirs(f"{self.output_folder}/{subfolder_name}")
+            shutil.rmtree(f"{cls.output_folder}/{subfolder_name}")
+            os.makedirs(f"{cls.output_folder}/{subfolder_name}")
         except FileNotFoundError:
-            os.makedirs(f"{self.output_folder}/{subfolder_name}")
+            os.makedirs(f"{cls.output_folder}/{subfolder_name}")
         except OSError:
             exit(
                 "Some file inside tmp folder seems to be open currently!")  # if file is currently in use or open in qgis e.g.
@@ -110,26 +111,26 @@ class QGisHandler:
             params_rastercalculator = {
                 'LAYERS': [dem_raster],
                 "EXPRESSION": f'1/("clipped_glacier_raster@1">{height_level.lower_border} and "clipped_glacier_raster@1"<{height_level.upper_border})',
-                "OUTPUT": f"{self.tmp_folder}/height_level__{int(height_level.lower_border)}-{int(height_level.upper_border)}.tiff",
+                "OUTPUT": f"{cls.tmp_folder}/height_level__{int(height_level.lower_border)}-{int(height_level.upper_border)}.tiff",
             }
 
-            raster_layer = self.raster_calculator(params_rastercalculator)
+            raster_layer = cls.raster_calculator(params_rastercalculator)
 
             params_polygonize = {
                 'INPUT': raster_layer,
                 'BAND': 1,
-                'OUTPUT': f"{self.tmp_folder}/height_level_{int(height_level.lower_border)}-{int(height_level.upper_border)}.shp"
+                'OUTPUT': f"{cls.tmp_folder}/height_level_{int(height_level.lower_border)}-{int(height_level.upper_border)}.shp"
             }
-            vector_layer = self.polygonize(params_polygonize)
+            vector_layer = cls.polygonize(params_polygonize)
 
             """ Fix geometries first, else this can make problems """
 
             params_fixgeometries = {
                 'INPUT': vector_layer,
-                'OUTPUT': f"{self.output_folder}/{subfolder_name}/height_level_area_{int(height_level.lower_border)}-{int(height_level.upper_border)}.shp"
+                'OUTPUT': f"{cls.output_folder}/{subfolder_name}/height_level_area_{int(height_level.lower_border)}-{int(height_level.upper_border)}.shp"
             }
 
-            vector_layer = self.fix_geometries(params_fixgeometries)
+            vector_layer = cls.fix_geometries(params_fixgeometries)
 
             """ We have the shape now, lets clip raster again with it and get mean height (it is faster that way)"""
 
@@ -138,12 +139,12 @@ class QGisHandler:
                 "MASK": vector_layer,
                 'OUTPUT': f"TEMPORARY_OUTPUT"
             }
-            raster_dem_clip_with_height_level = self.clip_raster_by_mask_layer(params_rasterclipbyheightlevel)
+            raster_dem_clip_with_height_level = cls.clip_raster_by_mask_layer(params_rasterclipbyheightlevel)
             params_rasterlayerstatistics = {
                 'INPUT': raster_dem_clip_with_height_level,
                 'BAND': 1,
             }
-            stats_height = self.raster_layer_statistics(params_rasterlayerstatistics)
+            stats_height = cls.raster_layer_statistics(params_rasterlayerstatistics)
 
             # params_rasterclipwinterbalancebyheightlevel = {
             #     'INPUT': path_to_winter_balance,
@@ -151,12 +152,12 @@ class QGisHandler:
             #     # 'NODATA': 0,  # seems important
             #     'OUTPUT': f"TEMPORARY_OUTPUT"
             # }
-            # raster_winterbalance_clip_with_height_level = self.clip_raster_by_mask_layer(params_rasterclipwinterbalancebyheightlevel)
+            # raster_winterbalance_clip_with_height_level = cls.clip_raster_by_mask_layer(params_rasterclipwinterbalancebyheightlevel)
             # params_rasterlayerstatistics = {
             #     'INPUT': raster_winterbalance_clip_with_height_level,
             #     'BAND': 1,
             # }
-            # stats_winter_balance_mean = self.raster_layer_statistics(params_rasterlayerstatistics)
+            # stats_winter_balance_mean = cls.raster_layer_statistics(params_rasterlayerstatistics)
 
             height_level.mean_height = stats_height["MEAN"]
             # height_level.mean_winter_balance = stats_winter_balance_mean["MEAN"]
@@ -171,10 +172,10 @@ class QGisHandler:
                 "FIELD_PRECISION": 3,
                 "NEW_FIELD": True,
                 "FORMULA": "area($geometry)",
-                'OUTPUT': f"{self.tmp_folder}/height_level_with_area_{int(height_level.lower_border)}-{int(height_level.upper_border)}.shp"
+                'OUTPUT': f"{cls.tmp_folder}/height_level_with_area_{int(height_level.lower_border)}-{int(height_level.upper_border)}.shp"
             }
 
-            vector_layer = self.field_calculator(params_fieldcalculator)
+            vector_layer = cls.field_calculator(params_fieldcalculator)
             vector_layer = QgsVectorLayer(vector_layer, "", "ogr")
 
             height_level.area = 0
@@ -182,7 +183,7 @@ class QGisHandler:
                 height_level.area += feature.attributes()[1]  # index 1, cause LN and new attribute AREA
 
             # TODO TILL HERE IF THIS LINE BELOW IS WORKING AS WELL
-            height_level.area = self.get_area_of_shapes(vector_layer)
+            height_level.area = cls.get_area_of_shapes(vector_layer)
 
             print(
                 f"Area in height level {int(height_level.lower_border)}-{int(height_level.upper_border)}: {height_level.area}")
@@ -209,7 +210,7 @@ class QGisHandler:
                 'OUTPUT': 'TEMPORARY_OUTPUT'
             }
 
-            projected_radiation_grid = self.warp_reproject(params_warpreproject)
+            projected_radiation_grid = cls.warp_reproject(params_warpreproject)
 
             params_rastersampling = {
                 'INPUT': point_station,
@@ -218,7 +219,7 @@ class QGisHandler:
                 'OUTPUT': 'TEMPORARY_OUTPUT'
             }
 
-            point_station_radiation = self.raster_sampling(params_rastersampling)
+            point_station_radiation = cls.raster_sampling(params_rastersampling)
 
             radiations_at_station[day] = list(point_station_radiation.getFeatures())[0].attributes()[1]
 
@@ -231,7 +232,7 @@ class QGisHandler:
                     'OUTPUT': 'TEMPORARY_OUTPUT'
                 }
 
-                radiation_height_lvl_clip = self.clip_raster_by_mask_layer(params_rasterlayerstatistics)
+                radiation_height_lvl_clip = cls.clip_raster_by_mask_layer(params_rasterlayerstatistics)
 
 
                 params_rasterlayerstatistics = {
@@ -240,27 +241,28 @@ class QGisHandler:
                 }
 
                 try:
-                    statistics = self.raster_layer_statistics(params_rasterlayerstatistics)
+                    statistics = cls.raster_layer_statistics(params_rasterlayerstatistics)
                     height_level.mean_radiation[day] = statistics["MEAN"]
                 except:  # QgsProcessingException
                     exit(f"Could not compute mean radiation for {height_level} maybe area is just too small or "
                          f"resolution of grid file too coarse!")
 
-        with open(f"{self.output_folder}/pickle_radiations_at_station.pkl", 'wb') as f:
+        with open(f"{cls.output_folder}/pickle_radiations_at_station.pkl", 'wb') as f:
             pickle.dump(radiations_at_station, f)
 
-        with open(f"{self.output_folder}/{subfolder_name}/pickle_height_level_objects.pkl", 'wb') as f:
+        with open(f"{cls.output_folder}/{subfolder_name}/pickle_height_level_objects.pkl", 'wb') as f:
             pickle.dump(height_level_objects, f)
 
-    def run_creating_dvol_file(self, input_files_folder, years):
+    @classmethod
+    def run_creating_dvol_file(cls, input_files_folder, years):
         out_sub_folder = "/dvol"
-        if not os.path.exists(self.output_folder + out_sub_folder):
-            os.makedirs(self.output_folder + out_sub_folder)
+        if not os.path.exists(cls.output_folder + out_sub_folder):
+            os.makedirs(cls.output_folder + out_sub_folder)
 
         if not input_files_folder.endswith("/"):
             input_files_folder += "/"
 
-        with open(self.output_folder + out_sub_folder + "/dvol_pas.dat", "w") as f:
+        with open(cls.output_folder + out_sub_folder + "/dvol_pas.dat", "w") as f:
             f.write("year date area max-elev min-elev dvol(mio.m3) dhmean(m)\n")
 
             last_dhmean = 0
@@ -274,13 +276,13 @@ class QGisHandler:
                     'SOURCE_CRS': QgsCoordinateReferenceSystem('EPSG:31258'),
                     'TARGET_CRS': QgsCoordinateReferenceSystem('EPSG:31258'),
                     'NODATA': 0,  # seems important
-                    'OUTPUT': self.tmp_folder + f"/clip_dem_{years[i]}_by_shape_{years[i]}.tiff"
+                    'OUTPUT': cls.tmp_folder + f"/clip_dem_{years[i]}_by_shape_{years[i]}.tiff"
                 }
-                clip_current_dem_by_current_shape = self.clip_raster_by_mask_layer(params_clip)
+                clip_current_dem_by_current_shape = cls.clip_raster_by_mask_layer(params_clip)
 
                 """ get Area """
                 # Could be extracted like this as well, but other method matches the results better (dhmean * area)
-                # area = self.get_area_of_shapes(input_files_folder + f"pasterze_{years[i]}.shp")
+                # area = cls.get_area_of_shapes(input_files_folder + f"pasterze_{years[i]}.shp")
 
                 params_rasterlayerstatistics = {
                     'INPUT': clip_current_dem_by_current_shape,
@@ -288,13 +290,13 @@ class QGisHandler:
                     'LEVEL': 0,
                     'METHOD': 2,
                 }
-                area = self.rastersurfacevolume(params_rasterlayerstatistics)["AREA"]
+                area = cls.rastersurfacevolume(params_rasterlayerstatistics)["AREA"]
 
                 params_rasterlayerstatistics = {
                     'INPUT': clip_current_dem_by_current_shape,
                     'BAND': 1,
                 }
-                current_dem_stats = self.raster_layer_statistics(params_rasterlayerstatistics)
+                current_dem_stats = cls.raster_layer_statistics(params_rasterlayerstatistics)
 
                 if i < len(years)-1:
                     params_clip = {
@@ -303,22 +305,22 @@ class QGisHandler:
                         'SOURCE_CRS': QgsCoordinateReferenceSystem('EPSG:31258'),
                         'TARGET_CRS': QgsCoordinateReferenceSystem('EPSG:31258'),
                         'NODATA': 0,  # seems important
-                        'OUTPUT': self.tmp_folder + f"/clip_dem_{years[i+1]}_by_shape_{years[i]}.tiff"
+                        'OUTPUT': cls.tmp_folder + f"/clip_dem_{years[i+1]}_by_shape_{years[i]}.tiff"
                     }
-                    clip_next_dem_by_current_shape = self.clip_raster_by_mask_layer(params_clip)
+                    clip_next_dem_by_current_shape = cls.clip_raster_by_mask_layer(params_clip)
 
                     params_rastercalculator = {
                         'LAYERS': [clip_current_dem_by_current_shape, clip_next_dem_by_current_shape],
                         "EXPRESSION": f'"clip_dem_{years[i+1]}_by_shape_{years[i]}@1"-"clip_dem_{years[i]}_by_shape_{years[i]}@1"',
-                        "OUTPUT": self.output_folder + out_sub_folder + f'/dem_diff_{years[i+1]}_{years[i]}.tiff',
+                        "OUTPUT": cls.output_folder + out_sub_folder + f'/dem_diff_{years[i+1]}_{years[i]}.tiff',
                     }
-                    dem_diff = self.raster_calculator(params_rastercalculator)
+                    dem_diff = cls.raster_calculator(params_rastercalculator)
 
                     params_rasterlayerstatistics = {
                         'INPUT': dem_diff,
                         'BAND': 1,
                     }
-                    dem_diff_stats = self.raster_layer_statistics(params_rasterlayerstatistics)
+                    dem_diff_stats = cls.raster_layer_statistics(params_rasterlayerstatistics)
 
                     params_rasterlayerstatistics = {
                         'INPUT': dem_diff,
@@ -326,7 +328,7 @@ class QGisHandler:
                         'LEVEL': 0,
                         'METHOD': 2,
                     }
-                    volume = self.rastersurfacevolume(params_rasterlayerstatistics)["VOLUME"]
+                    volume = cls.rastersurfacevolume(params_rasterlayerstatistics)["VOLUME"]
 
                 f.write(f"{years[i]}  {years[i]}0000  {round(area/1000000, 6)}   {round(current_dem_stats['MAX'], 1)}  "
                         f"{round(current_dem_stats['MIN'], 1)}  {round(last_volume/1000000, 4)}  {last_dhmean}\n")
@@ -416,7 +418,7 @@ if __name__ == "__main__":
     # path_to_winter_balance = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/massenbilanzen/Winterbilanz_2016/wb_2016.tif"
     path_to_directory_with_radiations = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/Tägliche Gitter der mittleren direkten Sonneneinstrahlung/pasterze_grid"
     height_level_step_width = int(input("Enter height level step width: "))
-    QGisHandler().run_creating_height_levels(height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
+    QGisHandler.run_creating_height_levels(height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
                                              path_to_directory_with_radiations)
 
     # QGisHandler().run_creating_dvol_file(

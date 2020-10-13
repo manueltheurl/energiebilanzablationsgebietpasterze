@@ -3,10 +3,10 @@ import tkinter as tk
 import sys
 sys.path.append("GUI")
 import gui_main_frame
-import visualizer
+from visualizer import Visualizer
 from tkinter import ttk
 import functions as fc
-from manage_config import cfg
+from config_handler import cfg
 
 
 class PlotFrame(tk.Frame):
@@ -149,12 +149,12 @@ class PlotFrame(tk.Frame):
         fc.set_widget_state([self.lbl_use_sum, self.ckbox_use_sum], "normal")
 
     def check_accumulate_flag(self):
-        visualizer.singleton.accumulate_plots = bool(self.ckbox_accumulate_plots_value.get())
+        Visualizer.accumulate_plots = bool(self.ckbox_accumulate_plots_value.get())
 
     def plot_selected_components(self):
         self.check_accumulate_flag()
 
-        visualizer.singleton.plot_components(
+        Visualizer.plot_components(
             components1=[self.lbox_selectedComponentsAxis1.get(opt) for opt in self.lbox_selectedComponentsAxis1.curselection()],
             cumulate_components1=self.ckbox_cumulateAxis1_value.get(),
             components2=[self.lbox_selectedComponentsAxis2.get(opt) for opt in self.lbox_selectedComponentsAxis2.curselection()],
@@ -164,7 +164,7 @@ class PlotFrame(tk.Frame):
 
     def plot_trend_eliminate_selected_components(self):
         self.check_accumulate_flag()
-        visualizer.singleton.plot_periodic_trend_eliminated_selected_option(
+        Visualizer.plot_periodic_trend_eliminated_selected_option(
             [self.lbox_selectedComponentsAxis1.get(opt) for opt in self.lbox_selectedComponentsAxis1.curselection()],
             bool(self.ckbox_use_sum_value.get())
         )

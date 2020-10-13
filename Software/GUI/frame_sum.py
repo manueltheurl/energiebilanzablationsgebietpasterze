@@ -4,17 +4,17 @@ sys.path.append("GUI")
 
 import gui_main_frame
 import navigation_bar
-import visualizer
+from visualizer import Visualizer
 from tkinter import ttk
 import functions as fc
 import info_bar
 import functions
 import datetime
-import multiple_measurements
+from measurement_handler import MeasurementHandler
 import frame_plot
 import datetime as dt
-import single_measurement
-from manage_config import cfg
+import measurement
+from config_handler import cfg
 import frame_energy_balance
 
 
@@ -140,24 +140,24 @@ class SumFrame(tk.Frame):
 
         if sum_by_amount is not None and sum_by_amount.isdigit():
             info_bar_text += "One summed measurement contains: " + str(sum_by_amount)
-            multiple_measurements.singleton.sum_measurements_by_amount(int(sum_by_amount))
+            MeasurementHandler.sum_measurements_by_amount(int(sum_by_amount))
         elif sum_by_time_interval is not None:
             frame_plot.singleton.enable_option_to_use_summed_measurements()
             info_bar_text += "Measurements every " +\
                              fc.make_seconds_beautiful_string(sum_by_time_interval.total_seconds()) + " minutes summed"
-            multiple_measurements.singleton.sum_measurements_by_time_interval(sum_by_time_interval)
+            MeasurementHandler.sum_measurements_by_time_interval(sum_by_time_interval)
         elif sum_by_months is not None:
-            multiple_measurements.singleton.sum_measurements_by_months(sum_by_months)
+            MeasurementHandler.sum_measurements_by_months(sum_by_months)
             info_bar_text += "Measurements every " + str(sum_by_months) + " months summed"
         elif sum_by_years is not None:
-            multiple_measurements.singleton.sum_measurements_by_years(sum_by_years)
+            MeasurementHandler.sum_measurements_by_years(sum_by_years)
             info_bar_text += "Measurements every " + str(sum_by_years) + " years summed"
         else:
             return  # shouldnt get here
 
         if self.ckbox_fixInvalid_value.get():
             # todo drop down list to choose which measurements to fix .. currently just everything by default
-            percentage_replaced = multiple_measurements.singleton.fix_invalid_summed_measurements()
+            percentage_replaced = MeasurementHandler.fix_invalid_summed_measurements()
             if percentage_replaced < 100:
                 info_bar.singleton.change_error_message("Not all measurements can be fixed, can you take a longer time span?")
             else:

@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import filedialog
 import sys
 sys.path.append("GUI")
-import reader
-import multiple_measurements
+from reader import Reader
+from measurement_handler import MeasurementHandler
 from tkinter import ttk
 import datetime as dt
 import info_bar as info_bar
@@ -12,7 +12,7 @@ import frame_plot as frame_plot
 import functions as fc
 import navigation_bar as navigation_bar
 import frame_energy_balance as frame_energy_balance
-from manage_config import cfg
+from config_handler import cfg
 
 
 class PrepareMeasurementsFrame(tk.Frame):
@@ -64,18 +64,18 @@ class PrepareMeasurementsFrame(tk.Frame):
 
     def combined_preparing_of_measurements(self):
         if self.ckbox_correctSnowMeasures_value.get():
-            multiple_measurements.singleton.correct_snow_measurements_for_scope()
+            MeasurementHandler.correct_snow_measurements_for_scope()
         if self.ckbox_correctLW_value.get():
-            multiple_measurements.singleton.correct_long_wave_measurements_for_scope()
+            MeasurementHandler.correct_long_wave_measurements_for_scope()
         if self.ckbox_correctSW_value.get():
-            multiple_measurements.singleton.correct_short_wave_measurements_for_scope()
+            MeasurementHandler.correct_short_wave_measurements_for_scope()
 
         if self.ckbox_correctAblation_value.get():
-            multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
+            MeasurementHandler.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
         else:
-            multiple_measurements.singleton.cumulate_ice_thickness_measures_for_scope(method=None)
+            MeasurementHandler.cumulate_ice_thickness_measures_for_scope(method=None)
 
-        multiple_measurements.singleton.calculate_snow_height_deltas_for_scope()
+        MeasurementHandler.calculate_snow_height_deltas_for_scope()
 
         navigation_bar.singleton.show_sum_frame()
 

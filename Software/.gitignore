@@ -6,3 +6,5 @@ PAS_10min.csv
 downloads
 *.pkl
 tmp
+del
+not_in_use

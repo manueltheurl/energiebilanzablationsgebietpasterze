@@ -1,16 +1,9 @@
-from manage_config import cfg
-import multiple_measurements
-from single_measurement import MeanStationMeasurement
+from config_handler import cfg
+from measurement_handler import MeasurementHandler
+from measurement import MeanStationMeasurement
 
 
 class Statistics:
-    singleton_created = False
-
-    def __init__(self, statistics_save_path=cfg["RESULT_PLOT_PATH"]):
-        if Statistics.singleton_created:
-            raise Exception("Reader is a singleton")
-        Statistics.singleton_created = True
-
     @staticmethod
     def compare_pegel_measured_and_modelled_for_time_intervals(tups, heading=None, max_estimated_ablation_measures_percent=100):
         """
@@ -31,27 +24,27 @@ class Statistics:
             end_time = tup[1]
             pegel_measure = tup[2] / 100
 
-            multiple_measurements.singleton.reset_scope_to_all()
-            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(start_time, end_time)
+            MeasurementHandler.reset_scope_to_all()
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(start_time, end_time)
 
             measurement_validities_valid = [
                 x["relative_ablation_measured"] == MeanStationMeasurement.valid_states["valid"]
-                for x in multiple_measurements.singleton.get_all_of("measurement_validity", use_summed_measurements=True)]
+                for x in MeasurementHandler.get_all_of("measurement_validity", use_summed_measurements=True)]
 
             measured_percentage_estimated = (1-sum(measurement_validities_valid)/len(measurement_validities_valid))*100
 
             if measured_percentage_estimated > max_estimated_ablation_measures_percent:
                 continue
 
-            measured_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_measured",
-                                                                            use_summed_measurements=True)
-            modelled_ablations = multiple_measurements.singleton.get_all_of("relative_ablation_modelled",
-                                                                            use_summed_measurements=True)
-            total_snow_depths = multiple_measurements.singleton.get_all_of("total_snow_depth",
-                                                                           use_summed_measurements=True)
+            measured_ablations = MeasurementHandler.get_all_of("relative_ablation_measured",
+                                                               use_summed_measurements=True)
+            modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled",
+                                                               use_summed_measurements=True)
+            total_snow_depths = MeasurementHandler.get_all_of("total_snow_depth",
+                                                              use_summed_measurements=True)
 
-            datetimes = multiple_measurements.singleton.get_all_of("datetime",
-                                                                           use_summed_measurements=True)
+            datetimes = MeasurementHandler.get_all_of("datetime",
+                                                      use_summed_measurements=True)
 
             # when fixing measurements, then this should be close to zero all the time
             # amount_of_nones_in_measured_ablation = sum(x is None for x in measured_ablations)
@@ -97,6 +90,3 @@ class Statistics:
                 str(round((all_measured_m - all_modelled_m) * 100 / overall_time_spawn_in_days, 1))]
 
         print(",".join(cols))
-
-
-singleton = Statistics()

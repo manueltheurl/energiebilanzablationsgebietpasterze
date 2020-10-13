@@ -1,6 +1,6 @@
 from datetime import datetime as dt
-import energy_balance
-from manage_config import cfg
+from energy_balance import EnergyBalance
+from config_handler import cfg
 import math as m
 from natural_snow_scaler import NaturalSnowScaler
 from statistics import mean
@@ -100,7 +100,7 @@ class StationMeasurement:
 
         if None not in [self.air_pressure, self.wind_speed, self.temperature,
                         self.lw_radiation_out]:
-            self.sensible_heat = energy_balance.singleton.calculate_sensible_heat(
+            self.sensible_heat = EnergyBalance.calculate_sensible_heat(
                 self.air_pressure,
                 self.wind_speed,
                 self.temperature,
@@ -110,7 +110,7 @@ class StationMeasurement:
 
         if None not in [self.temperature, self.rel_moisture, self.wind_speed, self.air_pressure,
                         self.lw_radiation_out]:
-            self.latent_heat = energy_balance.singleton.calculate_latent_heat(
+            self.latent_heat = EnergyBalance.calculate_latent_heat(
                 self.temperature,
                 self.rel_moisture,
                 self.wind_speed,
@@ -120,7 +120,7 @@ class StationMeasurement:
             )
 
         if None not in [None]:
-            self.precipitation_heat = energy_balance.singleton.calculate_precipitation_heat()
+            self.precipitation_heat = EnergyBalance.calculate_precipitation_heat()
 
         try:
             self._total_energy_balance = sum([self.sw_radiation_in,  # get it over property cause may be glob br. simul
@@ -151,7 +151,7 @@ class StationMeasurement:
 
     def calculate_theoretical_melt_rate(self):
         if None not in [self._total_energy_balance]:
-            self._theoretical_melt_rate = energy_balance.singleton.energy_balance_to_melt_rate(
+            self._theoretical_melt_rate = EnergyBalance.energy_balance_to_melt_rate(
                 self._total_energy_balance
             )
             # TODO NO NEGATIVE MELT RATE, DOES IT AFFECT SOMETHING ELSE?
@@ -609,20 +609,20 @@ class MeanStationMeasurement(StationMeasurement):
             theoretic ablation in liters or kg of water
         """
         if self.__relative_ablation_measured is not None:
-            self.__actual_melt_water_per_sqm = energy_balance.singleton.meter_ablation_to_melt_water(
+            self.__actual_melt_water_per_sqm = EnergyBalance.meter_ablation_to_melt_water(
                 self.__relative_ablation_measured)
 
-            self.__actual_mm_we_per_d = energy_balance.singleton.melt_water_per_m2_to_mm_we_per_d(
+            self.__actual_mm_we_per_d = EnergyBalance.melt_water_per_m2_to_mm_we_per_d(
                 self.__actual_melt_water_per_sqm, self.__datetime_end - self.__datetime_begin)
 
         if self._theoretical_melt_rate is not None:
-            self.__theoretical_melt_water_per_sqm = energy_balance.singleton.meltrate_to_melt_water(
+            self.__theoretical_melt_water_per_sqm = EnergyBalance.meltrate_to_melt_water(
                 self._theoretical_melt_rate, self.__datetime_end - self.__datetime_begin)
 
-            self.__theoretical_mm_we_per_d = energy_balance.singleton.melt_rate_to_mm_we_per_d(
+            self.__theoretical_mm_we_per_d = EnergyBalance.melt_rate_to_mm_we_per_d(
                 self._theoretical_melt_rate)
             if self.total_snow_depth == 0:  # not the right place probably there for this todo, __relative_ablation_measured is set in summing process
-                self.__relative_ablation_modelled = energy_balance.singleton.melt_water_to_meter_ablation(
+                self.__relative_ablation_modelled = EnergyBalance.melt_water_to_meter_ablation(
                     self.__theoretical_melt_water_per_sqm)
             else:
                 self.__relative_ablation_modelled = 0

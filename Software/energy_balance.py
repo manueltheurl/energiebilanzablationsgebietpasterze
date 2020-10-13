@@ -1,5 +1,5 @@
 import math as m
-from manage_config import cfg
+from config_handler import cfg
 import datetime as dt
 
 
@@ -14,29 +14,23 @@ ONE_DAY = dt.timedelta(days=1)
 
 
 class EnergyBalance:
-    singleton_created = False
+    # see AWS-Pasterze-Metadata.xlsx
+    # sensor_height_temperature = 1.55  # m  .. not in use
+    sensor_height_wind = 5  # m
+    c_star = {
+        "ice": 0,  # will get set right after class definition # todo better way?
+        "snow": 0,
+    }
 
-    def __init__(self):
-        if EnergyBalance.singleton_created:
-            raise Exception("EnergyBalance is a singleton")
-        EnergyBalance.singleton_created = True
-
-        # see AWS-Pasterze-Metadata.xlsx
-        # sensor_height_temperature = 1.55  # m  .. not in use
-        self.sensor_height_wind = 5  # m
-
-        self.c_star = {
-            "ice": self.calculate_c_star(float(cfg["Z_0_ROUGHNESS_ICE"])),
-            "snow": self.calculate_c_star(float(cfg["Z_0_ROUGHNESS_SNOW"]))
+    @classmethod
+    def set_new_roughness_parameters(cls, z_0_ice, z_0_snow):
+        cls.c_star = {
+            "ice": cls.calculate_c_star(z_0_ice),
+            "snow": cls.calculate_c_star(z_0_snow),
         }
 
-    def set_new_roughness_parameters(self, z_0_ice, z_0_snow):
-        self.c_star = {
-            "ice": self.calculate_c_star(z_0_ice),
-            "snow": self.calculate_c_star(z_0_snow),
-        }
-
-    def calculate_c_star(self, z_0):
+    @classmethod
+    def calculate_c_star(cls, z_0):
         """
         C* is called the transfer coefficient
         The value of c star depends on measurement height and a bit on surface roughness
@@ -46,7 +40,7 @@ class EnergyBalance:
 
         # c - transfer coefficient
         # .. Cuffey and Paterson 2010 state that this is in the range 0.002 to 0.004
-        return KARMANS_CONSTANT**2/m.log(self.sensor_height_wind / z_0)**2
+        return KARMANS_CONSTANT**2/m.log(cls.sensor_height_wind / z_0)**2
 
     @staticmethod
     def calculate_ice_temperature(outgoing_energy):
@@ -63,20 +57,21 @@ class EnergyBalance:
 
         return temperature
 
-    def calculate_sensible_heat(self, air_pressure, wind_speed, temperature, longwave_out, snow_depth, use_bulk=True):  # E_E
+    @classmethod
+    def calculate_sensible_heat(cls, air_pressure, wind_speed, temperature, longwave_out, snow_depth, use_bulk=True):  # E_E
         # air_pressure in Pa
         # wind_speed in m/s
 
-        temperature_ice = self.calculate_ice_temperature(longwave_out)  # degree celcius
+        temperature_ice = cls.calculate_ice_temperature(longwave_out)  # degree celcius
 
         if use_bulk:
             # TODO would it be better to parse surface type already or better that way?
             surface_type = "ice" if snow_depth is None or snow_depth <= 0 else "snow"
 
-            # if 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice) > 400:
-            #     print(self.c_star[surface_type], air_pressure, wind_speed, temperature, temperature_ice)
+            # if 0.0129 * cls.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice) > 400:
+            #     print(cls.c_star[surface_type], air_pressure, wind_speed, temperature, temperature_ice)
 
-            return 0.0129 * self.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice)
+            return 0.0129 * cls.c_star[surface_type] * air_pressure * wind_speed * (temperature - temperature_ice)
         else:
             return 5.7*m.sqrt(wind_speed) * (temperature - temperature_ice)
 
@@ -109,19 +104,20 @@ class EnergyBalance:
         # -> should be enough proof
         # (0.6108 * m.e ** (17.27 * temperature / (temperature + 237.3))) * 1000  # kpa to pa
 
-    def calculate_latent_heat(self, temperature, rel_moisture, wind_speed, longwave_out, air_pressure, snow_depth,
+    @classmethod
+    def calculate_latent_heat(cls, temperature, rel_moisture, wind_speed, longwave_out, air_pressure, snow_depth,
                               use_bulk=True):
         # E_H
         # temperature in degree celsius
 
-        e_air_saturated = self.calculate_saturation_vapor_pressure_above_water(temperature)
+        e_air_saturated = cls.calculate_saturation_vapor_pressure_above_water(temperature)
         e_air = rel_moisture / 100 * e_air_saturated
 
         if True:
-            e_surface_saturated = self.calculate_saturation_vapor_pressure_above_ice(self.calculate_ice_temperature(longwave_out))
+            e_surface_saturated = cls.calculate_saturation_vapor_pressure_above_ice(cls.calculate_ice_temperature(longwave_out))
         else:
             # TODO can probably be deleted
-            e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(self.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
+            e_surface_saturated = 100 * 6.11 * m.e ** (((2.5 * 10 ** 6) / 461) * (1/273 - 1/(cls.calculate_ice_temperature(longwave_out) - ABSOLUTE_ZERO_DEGREE_CELSIUS)))
 
         u = wind_speed
         # http://www.scielo.org.mx/scielo.php?script=sci_arttext&pid=S0016-71692015000400299 PROOFS THAT ITS THE WIND SPEED INDEED
@@ -133,7 +129,7 @@ class EnergyBalance:
         surface_type = "ice" if snow_depth is None or snow_depth <= 0 else "snow"
 
         if use_bulk:
-            return 22.2 * self.c_star[surface_type] * u * (e_air - e_surface_saturated)
+            return 22.2 * cls.c_star[surface_type] * u * (e_air - e_surface_saturated)
         else:
             L_v = 2.5*10**6  # Sublimationswärme von Eis ..  verdunstungswärme
             c_p = 1005  # spezifische Wärmekapazität von Luft bei konstantem Druck
@@ -190,4 +186,4 @@ class EnergyBalance:
         return energy_balance/(WATER_DENSITY_AT_ZERO_DEG * LATENT_HEAD_OF_FUSION_AT_ZERO_DEG)
 
 
-singleton = EnergyBalance()
+EnergyBalance.set_new_roughness_parameters(cfg["Z_0_ROUGHNESS_ICE"], cfg["Z_0_ROUGHNESS_SNOW"])

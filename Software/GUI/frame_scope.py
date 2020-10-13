@@ -1,13 +1,13 @@
 import tkinter as tk
-import multiple_measurements
+from measurement_handler import MeasurementHandler
 import functions as fc
 import gui_main_frame as gui_main_frame
 import navigation_bar as navigation_bar
 import info_bar as info_bar
 from tkinter import ttk
 import datetime as dt
-import reader
-from manage_config import cfg
+from reader import Reader
+from config_handler import cfg
 
 
 class ScopeFrame(tk.Frame):
@@ -116,17 +116,17 @@ class ScopeFrame(tk.Frame):
         self.entry_timeintervalScope.delete(0, 'end')
         self.entry_timeintervalScope.insert(
             0,  # no minutes available for next line .. only seconds
-            int(reader.singleton.get_single_file_metadata("time_resolution").total_seconds() // 60))
+            int(Reader.get_single_file_metadata("time_resolution").total_seconds() // 60))
         self.entry_timeintervalScope["state"] = "disabled"
 
         self.entry_startTime["state"] = "normal"
         self.entry_startTime.delete(0, 'end')
-        self.entry_startTime.insert(0, multiple_measurements.singleton.get_date_of_first_measurement(of="scope"))
+        self.entry_startTime.insert(0, MeasurementHandler.get_date_of_first_measurement(of="scope"))
         self.entry_startTime["state"] = "disabled"
 
         self.entry_endTime["state"] = "normal"
         self.entry_endTime.delete(0, 'end')
-        self.entry_endTime.insert(0, multiple_measurements.singleton.get_date_of_last_measurement(of="scope"))
+        self.entry_endTime.insert(0, MeasurementHandler.get_date_of_last_measurement(of="scope"))
         self.entry_endTime["state"] = "disabled"
 
         self.cmbobox_timeIntervalScopeUnit.current(0)  # possible here without state normal first
@@ -154,11 +154,11 @@ class ScopeFrame(tk.Frame):
 
     @staticmethod
     def reset_scope():
-        multiple_measurements.singleton.reset_scope_to_all()
+        MeasurementHandler.reset_scope_to_all()
         info_bar.singleton.change_scope_info("")
 
     def change_current_scope(self):
-        multiple_measurements.singleton.reset_scope_to_all()
+        MeasurementHandler.reset_scope_to_all()
 
         percent_scope = None
         if self.ckbox_percentScope_value.get():
@@ -192,26 +192,26 @@ class ScopeFrame(tk.Frame):
             endttime_scope = self.entry_endTime.get()
 
         if percent_scope is not None and percent_scope.isdigit():
-            multiple_measurements.singleton.change_measurement_scope_by_percentage(int(percent_scope))
+            MeasurementHandler.change_measurement_scope_by_percentage(int(percent_scope))
 
         # Only one such event can occur
         if timeinterval_scope is not None:
-            multiple_measurements.singleton.change_measurement_scope_by_time_interval(timeinterval_scope)
+            MeasurementHandler.change_measurement_scope_by_time_interval(timeinterval_scope)
         elif months_scope is not None:
-            multiple_measurements.singleton.change_measurement_scope_by_months(months_scope)
+            MeasurementHandler.change_measurement_scope_by_months(months_scope)
         elif years_scope is not None:
-            multiple_measurements.singleton.change_measurement_scope_by_years(years_scope)
+            MeasurementHandler.change_measurement_scope_by_years(years_scope)
 
         if starttime_scope is not None or endttime_scope is not None:
-            multiple_measurements.singleton.change_measurement_resolution_by_start_end_time(starttime_scope,
-                                                                                            endttime_scope)
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(starttime_scope,
+                                                                               endttime_scope)
 
         info_bar_text_list = [
-            "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount(of="scope")),
-            "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement(of="scope")),
-            "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement(of="scope")),
-            "Time resolution: " + multiple_measurements.singleton.get_time_resolution(of="scope",
-                                                                                      as_beautiful_string=True)
+            "Measurements: " + str(MeasurementHandler.get_measurement_amount(of="scope")),
+            "First: " + str(MeasurementHandler.get_date_of_first_measurement(of="scope")),
+            "Last: " + str(MeasurementHandler.get_date_of_last_measurement(of="scope")),
+            "Time resolution: " + MeasurementHandler.get_time_resolution(of="scope",
+                                                                         as_beautiful_string=True)
         ]
         info_bar.singleton.change_scope_info("\t".join(info_bar_text_list))
         navigation_bar.singleton.show_prepare_frame()

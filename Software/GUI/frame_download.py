@@ -2,10 +2,10 @@ import tkinter as tk
 import sys
 sys.path.append("GUI")
 import gui_main_frame as gui_main_frame
-import multiple_measurements
-import visualizer
+from measurement_handler import MeasurementHandler
+from visualizer import Visualizer
 from tkinter import ttk
-from manage_config import cfg
+from config_handler import cfg
 
 
 class ModelFrame(tk.Frame):
@@ -53,26 +53,26 @@ class ModelFrame(tk.Frame):
 
     @staticmethod
     def download_total_energy_balance():
-        multiple_measurements.singleton.download_components(["total_energy_balance"])
+        MeasurementHandler.download_components(["total_energy_balance"])
 
     @staticmethod
     def download_cleaned_ablation():
-        multiple_measurements.singleton.download_components(["cumulated_ice_thickness"])
+        MeasurementHandler.download_components(["cumulated_ice_thickness"])
 
     @staticmethod
     def download_relative_ablation():
-        multiple_measurements.singleton.download_components(["relative_ablation_measured",
+        MeasurementHandler.download_components(["relative_ablation_measured",
                                                              "relative_ablation_modelled"],
-                                                            use_summed_measurements=True)
+                                               use_summed_measurements=True)
 
     @staticmethod
     def download_water_equivalent():
-        multiple_measurements.singleton.download_components(["actual_mm_we_per_d",
+        MeasurementHandler.download_components(["actual_mm_we_per_d",
                                                              "theoretical_mm_we_per_d"],
-                                                            use_summed_measurements=True)
+                                               use_summed_measurements=True)
 
     def download_selected_components(self):
-        multiple_measurements.singleton.download_components(
+        MeasurementHandler.download_components(
             [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()]
         )
 

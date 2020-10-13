@@ -1,14 +1,14 @@
 import tkinter as tk
-import multiple_measurements
+from measurement_handler import MeasurementHandler
 import functions as fc
 import gui_main_frame as gui_main_frame
 import navigation_bar as navigation_bar
 import info_bar as info_bar
 from tkinter import ttk
 import datetime as dt
-import reader
+from reader import Reader
 import frame_sum
-from manage_config import cfg
+from config_handler import cfg
 
 
 class EnergyBalanceFrame(tk.Frame):
@@ -55,7 +55,7 @@ class EnergyBalanceFrame(tk.Frame):
     def calculate_energy_balance_and_cumulate_ablation(self):
         forwhich = "summed" if self.ckbox_useSummed_value.get() else "scope"
 
-        if not multiple_measurements.singleton.calculate_energy_balance_for(
+        if not MeasurementHandler.calculate_energy_balance_for(
                 forwhich, self.scale_simulate_dimming_brightening.get()):
             info_bar.singleton.change_error_message("Some measurements are None, cannot calculate energy balance, did you fix invalid messages?")
             return
@@ -63,7 +63,7 @@ class EnergyBalanceFrame(tk.Frame):
             info_bar.singleton.change_error_message("")
 
         # todo maybe make labels that describe what will be done and the button says just process
-        multiple_measurements.singleton.convert_energy_balance_to_water_rate_equivalent_for(forwhich)
+        MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for(forwhich)
 
         self.energy_balance_calculated = True
 
