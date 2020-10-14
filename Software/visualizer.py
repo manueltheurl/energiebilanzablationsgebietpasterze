@@ -17,7 +17,7 @@ import scipy
 import scipy.stats
 import numpy as np
 from scipy import optimize
-import functions as fc
+import misc as fc
 import calendar
 from height_level import HeightLevel
 import shapefile as shp
@@ -229,13 +229,13 @@ class Visualizer:
         marker_colors = ["orange", "blue"]
 
         y_dates = MeasurementHandler.get_all_of("datetime",
-                                                use_summed_measurements=True)
+                                                use_mean_measurements=True)
 
         actual_melt_water_per_sqm = MeasurementHandler.get_all_of(
-            "actual_mm_we_per_d", use_summed_measurements=True)
+            "actual_mm_we_per_d", use_mean_measurements=True)
 
         theoretical_melt_water_per_sqm = MeasurementHandler.get_all_of(
-            component, use_summed_measurements=True)
+            component, use_mean_measurements=True)
 
         for date, actual, theoretical in zip(y_dates, actual_melt_water_per_sqm, theoretical_melt_water_per_sqm):
             if actual is not None and theoretical is not None:
@@ -305,17 +305,17 @@ class Visualizer:
 
             measurement_validities_valid = [
                 x["relative_ablation_measured"] == MeanStationMeasurement.valid_states["valid"]
-                for x in MeasurementHandler.get_all_of("measurement_validity", use_summed_measurements=True)]
+                for x in MeasurementHandler.get_all_of("measurement_validity", use_mean_measurements=True)]
             measured_percentage_estimated = (1-sum(measurement_validities_valid)/len(measurement_validities_valid))*100
             if measured_percentage_estimated > max_estimated_ablation_measures_percent:
                 continue
 
             measured_ablations = MeasurementHandler.get_all_of("relative_ablation_measured",
-                                                               use_summed_measurements=True)
+                                                               use_mean_measurements=True)
             modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled",
-                                                               use_summed_measurements=True)
+                                                               use_mean_measurements=True)
             total_snow_depths = MeasurementHandler.get_all_of("total_snow_depth",
-                                                              use_summed_measurements=True)
+                                                              use_mean_measurements=True)
 
             for i in range(len(measured_ablations)):
                 measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
@@ -391,7 +391,7 @@ class Visualizer:
 
         color_generator = cls._color_generator()
         y_dates = MeasurementHandler.get_all_of("datetime",
-                                                use_summed_measurements=use_summed_measurements)
+                                                use_mean_measurements=use_summed_measurements)
 
         if cumulate_components1:
             x_vals = MeasurementHandler.get_cumulated_vals_of_components(
@@ -401,7 +401,7 @@ class Visualizer:
             for component in components1:
                 try:
                     x_vals = MeasurementHandler.get_all_of(
-                        component, use_summed_measurements=use_summed_measurements)
+                        component, use_mean_measurements=use_summed_measurements)
                     cls.ax.plot(y_dates, x_vals, label=cls._pretty_label(component), color=next(color_generator))
                 except AttributeError:
                     print(component, "does not exist")
@@ -420,7 +420,7 @@ class Visualizer:
                 for component in components2:
                     try:
                         x_vals = MeasurementHandler.get_all_of(
-                            component, use_summed_measurements=use_summed_measurements)
+                            component, use_mean_measurements=use_summed_measurements)
                         ax2.plot(y_dates, x_vals, label=cls._pretty_label(component), color="orange")
                     except AttributeError:
                         print(component, "does not exist")
@@ -448,7 +448,7 @@ class Visualizer:
         color_generator = cls._color_generator()
 
         y_dates = MeasurementHandler.get_all_of("datetime",
-                                                use_summed_measurements=use_summed_measurements)
+                                                use_mean_measurements=use_summed_measurements)
 
         if len(height_level_objects) > 1 and len(components1) > 1:
             exit("Cannot visualize that, either one height lvl and multiple components or multiple height lvls and one"
@@ -477,7 +477,7 @@ class Visualizer:
 
         if show_estimated_measurement_areas:
             zorder = 5 if stack_fill else -1
-            for estimated_area in MeasurementHandler.get_time_frames_of_measure_types_with_at_least_one_with_state(
+            for estimated_area in MeasurementHandler.get_time_frames_of_measure_types_with_at_least_one_with_state_for_mean_measures(
                     MeanStationMeasurement.valid_states["estimated"], ["temperature", "rel_moisture", "air_pressure",
                                                                        "wind_speed", "sw_radiation_in",
                                                                        "sw_radiation_out", "lw_radiation_in",
@@ -571,7 +571,7 @@ class Visualizer:
                     current_snowing_per_day = current_amount_of_snowing_per_day
                     height_level.clear_simulated_measurements()
                     height_level.artificial_snowing_per_day = current_snowing_per_day
-                    MeasurementHandler.simulate(height_level, radiations_at_station)
+                    MeasurementHandler.overall_height_level_simulation(height_level, radiations_at_station)
 
                     day_of_ice_exposure = height_level.get_time_of_first_ice_exposure_in_new_year()
                     if day_of_ice_exposure is None:
@@ -610,7 +610,7 @@ class Visualizer:
                 current_snowing_per_day = current_amount_of_snowing_per_day
                 height_level.clear_simulated_measurements()
                 height_level.artificial_snowing_per_day = current_snowing_per_day
-                MeasurementHandler.simulate(height_level, radiations_at_station)
+                MeasurementHandler.overall_height_level_simulation(height_level, radiations_at_station)
 
                 day_of_ice_exposure = height_level.get_time_of_first_ice_exposure_in_new_year()
                 if day_of_ice_exposure is None:
@@ -756,7 +756,7 @@ class Visualizer:
         days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
 
         y_dates = MeasurementHandler.get_all_of("datetime",
-                                                use_summed_measurements=use_summed_measurements)
+                                                use_mean_measurements=use_summed_measurements)
 
         if not y_dates or y_dates[-1] - y_dates[0] < days_365:
             print("Cant trend eliminate for data range less than one year")

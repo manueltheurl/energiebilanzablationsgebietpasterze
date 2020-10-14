@@ -27,7 +27,7 @@ class ConversionFrame(tk.Frame):
         self.btn_sumSkip.pack(pady=30)
 
     def convert(self):
-        MeasurementHandler.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
+        MeasurementHandler.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_mean_measures()
         navigation_bar.singleton.show_plot_frame()
 
 

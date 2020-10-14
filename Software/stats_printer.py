@@ -29,7 +29,7 @@ class Statistics:
 
             measurement_validities_valid = [
                 x["relative_ablation_measured"] == MeanStationMeasurement.valid_states["valid"]
-                for x in MeasurementHandler.get_all_of("measurement_validity", use_summed_measurements=True)]
+                for x in MeasurementHandler.get_all_of("measurement_validity", use_mean_measurements=True)]
 
             measured_percentage_estimated = (1-sum(measurement_validities_valid)/len(measurement_validities_valid))*100
 
@@ -37,14 +37,14 @@ class Statistics:
                 continue
 
             measured_ablations = MeasurementHandler.get_all_of("relative_ablation_measured",
-                                                               use_summed_measurements=True)
+                                                               use_mean_measurements=True)
             modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled",
-                                                               use_summed_measurements=True)
+                                                               use_mean_measurements=True)
             total_snow_depths = MeasurementHandler.get_all_of("total_snow_depth",
-                                                              use_summed_measurements=True)
+                                                              use_mean_measurements=True)
 
             datetimes = MeasurementHandler.get_all_of("datetime",
-                                                      use_summed_measurements=True)
+                                                      use_mean_measurements=True)
 
             # when fixing measurements, then this should be close to zero all the time
             # amount_of_nones_in_measured_ablation = sum(x is None for x in measured_ablations)

@@ -2,7 +2,7 @@ from measurement import SingleStationMeasurement
 import datetime as dt
 from config_handler import cfg
 from measurement_handler import MeasurementHandler
-import functions as fc
+import misc as fc
 
 
 class Reader:
@@ -76,7 +76,7 @@ class Reader:
 
         MeasurementHandler.reset_scope_to_none()  # reset
         MeasurementHandler.clear_all_single_measurements()  # reset
-        MeasurementHandler.clear_summed_measurements()  # reset
+        MeasurementHandler.clear_all_mean_measurements()  # reset
         percentage_threshold = None
         reference_month = None  # used if resolution_by_months is not None
         reference_year = None  # used if resolution_by_years is not None

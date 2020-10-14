@@ -9,7 +9,7 @@ import datetime as dt
 import info_bar as info_bar
 import gui_main_frame as gui_main_frame
 import frame_plot as frame_plot
-import functions as fc
+import misc as fc
 import navigation_bar as navigation_bar
 import frame_scope
 import frame_energy_balance

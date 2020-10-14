@@ -6,9 +6,9 @@ import gui_main_frame
 import navigation_bar
 from visualizer import Visualizer
 from tkinter import ttk
-import functions as fc
+import misc as fc
 import info_bar
-import functions
+import misc
 import datetime
 from measurement_handler import MeasurementHandler
 import frame_plot
@@ -157,7 +157,7 @@ class SumFrame(tk.Frame):
 
         if self.ckbox_fixInvalid_value.get():
             # todo drop down list to choose which measurements to fix .. currently just everything by default
-            percentage_replaced = MeasurementHandler.fix_invalid_summed_measurements()
+            percentage_replaced = MeasurementHandler.fix_invalid_mean_measurements()
             if percentage_replaced < 100:
                 info_bar.singleton.change_error_message("Not all measurements can be fixed, can you take a longer time span?")
             else:

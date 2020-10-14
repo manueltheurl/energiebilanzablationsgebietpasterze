@@ -1,6 +1,6 @@
 import tkinter as tk
 from measurement_handler import MeasurementHandler
-import functions as fc
+import misc as fc
 import gui_main_frame as gui_main_frame
 import navigation_bar as navigation_bar
 import info_bar as info_bar
@@ -53,17 +53,26 @@ class EnergyBalanceFrame(tk.Frame):
         self.ckbox_useSummed_value.set(1)
 
     def calculate_energy_balance_and_cumulate_ablation(self):
-        forwhich = "summed" if self.ckbox_useSummed_value.get() else "scope"
 
-        if not MeasurementHandler.calculate_energy_balance_for(
-                forwhich, self.scale_simulate_dimming_brightening.get()):
-            info_bar.singleton.change_error_message("Some measurements are None, cannot calculate energy balance, did you fix invalid messages?")
-            return
+        if self.ckbox_useSummed_value.get():
+            if not MeasurementHandler.calculate_energy_balance_for_mean_measures(
+                    self.scale_simulate_dimming_brightening.get()):
+                info_bar.singleton.change_error_message(
+                    "Some measurements are None, cannot calculate energy balance, did you fix invalid messages?")
+                return
+            else:
+                info_bar.singleton.change_error_message("")
+            MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_mean_measures()
         else:
-            info_bar.singleton.change_error_message("")
-
+            if not MeasurementHandler.calculate_energy_balance_for_single_measures(
+                    self.scale_simulate_dimming_brightening.get()):
+                info_bar.singleton.change_error_message(
+                    "Some measurements are None, cannot calculate energy balance, did you fix invalid messages?")
+                return
+            else:
+                info_bar.singleton.change_error_message("")
+            MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_single_measures()
         # todo maybe make labels that describe what will be done and the button says just process
-        MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for(forwhich)
 
         self.energy_balance_calculated = True
 

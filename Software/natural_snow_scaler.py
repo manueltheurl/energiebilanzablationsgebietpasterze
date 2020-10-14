@@ -1,4 +1,7 @@
 class NaturalSnowScaler:
+    """
+    Reference? todo
+    """
     a_l = 0.7095
     b_l = -1044.16
 
@@ -25,4 +28,4 @@ class NaturalSnowScaler:
     @classmethod
     def fixed_percentage_per_100_meter_scale_factor(cls, new_height, reference_height, percentage):
         # percentage ranging from 0.0 to 1.0
-        return 1 + (new_height - reference_height) / 100 * (percentage)
+        return 1 + (new_height - reference_height) / 100 * percentage

@@ -1,6 +1,6 @@
 import tkinter as tk
 from measurement_handler import MeasurementHandler
-import functions as fc
+import misc as fc
 import gui_main_frame as gui_main_frame
 import navigation_bar as navigation_bar
 import info_bar as info_bar

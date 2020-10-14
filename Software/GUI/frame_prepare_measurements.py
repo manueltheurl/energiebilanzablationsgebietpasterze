@@ -9,7 +9,7 @@ import datetime as dt
 import info_bar as info_bar
 import gui_main_frame as gui_main_frame
 import frame_plot as frame_plot
-import functions as fc
+import misc as fc
 import navigation_bar as navigation_bar
 import frame_energy_balance as frame_energy_balance
 from config_handler import cfg
@@ -64,18 +64,18 @@ class PrepareMeasurementsFrame(tk.Frame):
 
     def combined_preparing_of_measurements(self):
         if self.ckbox_correctSnowMeasures_value.get():
-            MeasurementHandler.correct_snow_measurements_for_scope()
+            MeasurementHandler.correct_snow_measurements_for_single_measures()
         if self.ckbox_correctLW_value.get():
-            MeasurementHandler.correct_long_wave_measurements_for_scope()
+            MeasurementHandler.correct_long_wave_measurements_for_single_measures()
         if self.ckbox_correctSW_value.get():
-            MeasurementHandler.correct_short_wave_measurements_for_scope()
+            MeasurementHandler.correct_short_wave_measurements_for_single_measures()
 
         if self.ckbox_correctAblation_value.get():
-            MeasurementHandler.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
+            MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method="SameLevelPositiveFix")
         else:
-            MeasurementHandler.cumulate_ice_thickness_measures_for_scope(method=None)
+            MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method=None)
 
-        MeasurementHandler.calculate_snow_height_deltas_for_scope()
+        MeasurementHandler.calculate_snow_height_deltas_for_single_measures()
 
         navigation_bar.singleton.show_sum_frame()
 

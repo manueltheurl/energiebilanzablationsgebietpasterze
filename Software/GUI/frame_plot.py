@@ -5,7 +5,7 @@ sys.path.append("GUI")
 import gui_main_frame
 from visualizer import Visualizer
 from tkinter import ttk
-import functions as fc
+import misc as fc
 from config_handler import cfg
 
 

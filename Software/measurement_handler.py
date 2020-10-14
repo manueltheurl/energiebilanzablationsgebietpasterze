@@ -1,5 +1,5 @@
 import datetime as dt
-import functions as fc
+import misc as fc
 import os
 from config_handler import cfg
 import csv
@@ -10,75 +10,128 @@ from height_level import HeightLevel
 import copy
 import scipy.signal
 import dill
+import pickle
 
 
 class MeasurementHandler:
-    __all_single_measurement_objects = []
-    __current_single_index_scope = set()  # current indexes that will be used are saved in here; default: all
+    """
+    Module that handles the read in measurements. Measurements can be manipulated, filtered, summed, .. . The current
+    scope at which measurements it is currenly looked at can be changed. This can be helpful to save computation time.
 
-    __all_mean_measurements = []  # Empty in the beginning .. can later be calculated and used
-    __current_mean_index_scope = set()
+    Handles all single station measurements, and all mean station measurements that are computed out of the single
+    station measurements.
+
+    # todo any ideas on how to split this huge class into some parts?
+    maybe like here below this class. Multiple other classes like maybe singleMeasureHandler, MeanMeasureHandler,
+    combined measure handler ..  then we could get rid off the for_single, for_mean and that stuff. The overall
+    MeasurementHandler would still contain the indexes and lists of measures
+
+    but what about saving then?
+
+    """
+    all_single_measures = []
+    current_single_index_scope = set()  # current indexes that will be used are saved in here; default: all
+
+    all_mean_measures = []  # Empty in the beginning .. can later be calculated and used
+    current_mean_index_scope = set()
+
+    @classmethod
+    def reset_scope_to_all(cls):
+        """
+        Resets scope of single and mean measures to all availabe measures
+        """
+        cls.current_single_index_scope = set(range(len(cls.all_single_measures)))
+        cls.current_mean_index_scope = set(range(len(cls.all_mean_measures)))
+
+    @classmethod
+    def reset_scope_to_none(cls):
+        """
+        Resets scope of single and mean measures to empty
+        """
+        cls.current_single_index_scope = set()
+        cls.current_mean_index_scope = set()
 
     @classmethod
     def clear_all_single_measurements(cls):
-        cls.__all_single_measurement_objects = []
+        """
+        Empties all single measures.
+        """
+        cls.all_single_measures = []
 
     @classmethod
-    def add_single_measurement(cls, single_measurement_object):
-        cls.__current_single_index_scope.add(len(cls.__all_single_measurement_objects))
-        cls.__all_single_measurement_objects.append(single_measurement_object)
+    def clear_all_mean_measurements(cls):
+        """
+        Empties all mean measures.
+        """
+        cls.all_mean_measures.clear()
+        cls.current_mean_index_scope.clear()
 
     @classmethod
-    def add_summed_measurement(cls, summed_measurement_object):
-        cls.__current_mean_index_scope.add(len(cls.__all_mean_measurements))
-        cls.__all_mean_measurements.append(summed_measurement_object)
+    def add_single_measurement(cls, single_measurement_object: SingleStationMeasurement):
+        """
+        Adds one single station measure to the pool of single measures
+
+        :param single_measurement_object: SingleStationMeasurement to add to pool
+        """
+        cls.current_single_index_scope.add(len(cls.all_single_measures))
+        cls.all_single_measures.append(single_measurement_object)
 
     @classmethod
-    def calculate_energy_balance_for(cls, which="scope", simulate_global_dimming_brightening=0):
-        if which == "scope":
-            for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
-                if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
-                    return False
-        elif which == "summed":
-            for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
-                if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
-                    return False
+    def add_mean_measurement(cls, mean_measurement_object: MeanStationMeasurement):
+        """
+        Adds one mean station measure to pool of mean measures
+
+        :param mean_measurement_object: MeanStationMeasurement to add to pool
+        """
+        cls.current_mean_index_scope.add(len(cls.all_mean_measures))
+        cls.all_mean_measures.append(mean_measurement_object)
+
+    # explicit is better than implicit ..
+
+    @classmethod
+    def calculate_energy_balance_for_single_measures(cls, simulate_global_dimming_brightening=0):
+        """
+        Calculates energy balance of single measurements that are currently set for scope.
+
+        :param simulate_global_dimming_brightening: optional mean additional lwi that is caused by global dimming ..
+                in W/m2
+        :return: True in all cases, because for single measures it does not matter if one calculation fails (due to a
+                missing value for the energy balance)
+        """
+        for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
+            if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
+                return False
         return True
 
-    # @classmethod
-    # def calculate_water_input_through_snow_for_scope(cls):
-    #     # DEPRECATED
-    #     snow_observations = []  # snow observations have to be in meters
-    #
-    #     # TODO double loop here could of course be prevented, but the aim was to modify the snow to swe model as little as possible
-    #
-    #     for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
-    #         obj: MeanStationMeasurement
-    #         snow_observations.append(obj.snow_depth)
-    #
-    #     resolution = cls.get_time_resolution(of="summed")
-    #
-    #     snow_to_swe_model = SnowToSwe()
-    #     swe_results = snow_to_swe_model.convert(snow_observations, timestep=resolution/60)
-    #
-    #     """ Now update the measurements with those calculated values  """
-    #     # resolution seems to be in minutes
-    #     for obj, swe in zip([cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)], swe_results):
-    #         obj: SingleStationMeasurement
-    #         obj.swe_input_from_snow = swe
-    #
-    #     obs = np.array(snow_observations)
-    #     swe_ = np.array(swe_results)
-    #
-    #     return swe_results  # todo delete this
+    @classmethod
+    def calculate_energy_balance_for_mean_measures(cls, simulate_global_dimming_brightening=0):
+        """
+        Calculates energy balance of mean measurements that are currently set for scope.
+
+        :param simulate_global_dimming_brightening: optional mean additional lwi that is caused by global dimming ..
+                in W/m2
+        :return: True if all calculations pass, False if one or more go wrong. Goes wrong if mean measurement does not
+                contain all the necessary information for calculating the energy balance
+        """
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
+            if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
+                return False
+        return True
 
     @classmethod
-    def cumulate_ice_thickness_measures_for_scope(cls, method=None):
+    def cumulate_ice_thickness_measures_for_single_measures(cls, method=None):
+        """
+        Adds a new variable to the single measurement, that corresponds to the cumulated ice thickness that results from
+        adding up all deltas of the single measures (of scope) from before. Filters these values a bit, by a given
+        method for example.
+
+        :param method: None or "SameLevelPositiveFix"
+        """
         old_measured_ice_thickness_value = None
         current_subtractive = 0
         ice_thickness_before_increasing_again = None
 
-        for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
+        for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if obj.measured_ice_thickness is not None:
                 if old_measured_ice_thickness_value is None:
                     old_measured_ice_thickness_value = obj.measured_ice_thickness
@@ -111,16 +164,22 @@ class MeasurementHandler:
                     old_measured_ice_thickness_value = obj.measured_ice_thickness
 
     @classmethod
-    def correct_long_wave_measurements_for_scope(cls):
-        for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
+    def correct_long_wave_measurements_for_single_measures(cls):
+        """
+        todo
+        """
+        for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if None not in [obj.lw_radiation_out, obj.lw_radiation_in]:
                 if obj.lw_radiation_out < int(cfg["MIN_LWO_VALUE"]):
                     # obj.lw_radiation_in -= (int(cfg["MIN_LWO_VALUE"])-obj.lw_radiation_out)  # fix offset?
                     obj.lw_radiation_out = int(cfg["MIN_LWO_VALUE"])
 
     @classmethod
-    def correct_short_wave_measurements_for_scope(cls):
-        for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
+    def correct_short_wave_measurements_for_single_measures(cls):
+        """
+        todo
+        """
+        for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if None not in [obj.sw_radiation_out, obj.sw_radiation_in]:
                 if obj.sw_radiation_in < 0:  # cannot be negative
                     obj.sw_radiation_in = 0
@@ -132,11 +191,13 @@ class MeasurementHandler:
                     obj.sw_radiation_out = -0.35*obj.sw_radiation_in
 
     @classmethod
-    def correct_snow_measurements_for_scope(cls):
+    def correct_snow_measurements_for_single_measures(cls):
         """
         If measured snow is NULL, then take last measurement as new value
         If measured snow height is < 10cm from June till september, then set 0
         If jump from one measurement to the next is too big, then take previous measurement
+        Some additional filters are implemented here, too much to docu .. overall it can be said that the
+        snow measures of the example are really bad.
         """
 
         manual_jump_restrictions = [(dt.datetime(2017, 4, 15), dt.datetime(2017, 4, 25)),
@@ -147,7 +208,7 @@ class MeasurementHandler:
         past_snow_depth = None
         first_snow_depth = True
         last_one_not_none = None
-        for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
+        for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if obj.snow_depth_natural is None:
                 if first_snow_depth:
                     # when the first depth looking at is None, just set it to 0
@@ -185,83 +246,33 @@ class MeasurementHandler:
 
         # lets apply a median filter as well
         for filtered, obj in zip(
-                scipy.signal.medfilt([cls.__all_single_measurement_objects[i].snow_depth_natural for i in sorted(cls.__current_single_index_scope)], 501),
-                [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]):
+                scipy.signal.medfilt([cls.all_single_measures[i].snow_depth_natural for i in sorted(cls.current_single_index_scope)], 501),
+                [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]):
 
             obj.snow_depth_natural = filtered
 
     @classmethod
-    def correct_snow_measurements_for_scope_deprecated(cls):
-        """
-        If measured snow is NULL, then take last measurement as new value
-        If measured snow height is < 10cm from June till september, then set 0
-        If jump from one measurement to the next is too big, then take previous measurement
-        """
-        minute_resolution = cls.get_time_resolution()
+    def calculate_snow_height_deltas_for_single_measures(cls):
         past_snow_depth = None
-        first_snow_depth = True
-        for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
-            if obj.snow_depth_natural is None:
-                if first_snow_depth:
-                    # when the first depth looking at is None, just set it to 0
-                    obj.snow_depth_natural = 0
-                    first_snow_depth = False
-                else:
-                    obj.snow_depth_natural = past_snow_depth
-
-            if 6 <= obj.datetime.month <= 8:
-                if obj.snow_depth_natural <= 0.1:
-                    obj.snow_depth_natural = 0
-
-            if past_snow_depth is not None and abs(past_snow_depth-obj.snow_depth_natural) > 0.05*minute_resolution:
-                obj.snow_depth_natural = past_snow_depth
-
-            if past_snow_depth is not None:
-                obj.snow_depth_delta_natural = obj.snow_depth_natural - past_snow_depth
-
-            past_snow_depth = obj.snow_depth_natural
-
-    @classmethod
-    def calculate_snow_height_deltas_for_scope(cls):
-        past_snow_depth = None
-        for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
+        for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if past_snow_depth is not None and obj.snow_depth_natural is not None:
                 obj.snow_depth_delta_natural = obj.snow_depth_natural - past_snow_depth
             past_snow_depth = obj.snow_depth_natural
 
     @classmethod
-    def set_initial_snow_height_to_zero(cls, of="summed"):
-        # DEPRECATED
+    def get_time_frames_of_measure_types_with_at_least_one_with_state_for_mean_measures(cls, valid_state, measure_types):
         """
-        This is done for the snow height to swe model, cause the time series has to start with no snow
-        """
-        if of == "summed":
-            first_measurement = cls.__all_mean_measurements[sorted(cls.__current_mean_index_scope)[0]]
-            second_measurement = cls.__all_mean_measurements[sorted(cls.__current_mean_index_scope)[1]]
-        elif of == "scope":
-            first_measurement = cls.__all_single_measurement_objects[sorted(cls.__current_single_index_scope)[0]]
-            second_measurement = cls.__all_single_measurement_objects[sorted(cls.__current_single_index_scope)[1]]
-        else:
-            return False
+        todo  really bad fx name
 
-        second_measurement.snow_depth_delta_natural = first_measurement.snow_depth_natural
-        second_measurement.snow_depth_delta_artificial = first_measurement.snow_depth_artificial
-        first_measurement.snow_depth_natural = 0
-        first_measurement.snow_depth_artificial = 0
-        first_measurement.snow_depth_delta_natural = 0
-        first_measurement.snow_depth_delta_artificial = 0
-
-    @classmethod
-    def get_time_frames_of_measure_types_with_at_least_one_with_state(cls, valid_state, measure_types):
-        """
-        @param valid_state one of MeanStationMeasurement.valid_states keys
-        @param measure_types list of strings of measure types, like [temperature, rel_moisture, ..]
+        :param valid_state:  valid_state one of MeanStationMeasurement.valid_states keys
+        :param measure_types: measure_types list of strings of measure types, like [temperature, rel_moisture, ..]
+        :return:
         """
         valid_state_frame_started = False
         valid_state_time_frames = []
         current_state_frame = [None, None]
         last_datetime_end = None
-        for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             has_valid_state = obj.contains_one_valid_state_for_measure_types(valid_state, measure_types)
             if has_valid_state and not valid_state_frame_started:
                 current_state_frame[0] = obj.datetime_begin
@@ -275,16 +286,18 @@ class MeasurementHandler:
         return valid_state_time_frames
 
     @classmethod
-    def get_time_frames_of_valid_state_for_summed(cls, valid_state):
+    def get_time_frames_of_valid_state_for_mean_measures(cls, valid_state):
         """
-        valid_state: one of MeanMeasurement.valid_states values
+
+        :param valid_state: one of MeanMeasurement.valid_states values
+        :return:
         """
         # height level number does not matter for this
 
         valid_state_frame_started = False
         valid_state_time_frames = []
         current_state_frame = [None, None]
-        for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             if obj.valid_state == valid_state and not valid_state_frame_started:
                 current_state_frame[0] = obj.datetime_begin
                 valid_state_frame_started = True
@@ -296,18 +309,23 @@ class MeasurementHandler:
         return valid_state_time_frames
 
     @classmethod
-    def simulate(cls, height_level, radiations_at_station):
+    def overall_height_level_simulation(cls, height_level, radiations_at_station):
         """
+        TODO
+
         Lets do magic
         Returning the swe melted in this simulation. Cause in October, November it can happen, that there is still
         melting going on, because too little snow is laying
-        """
 
+        :param height_level:
+        :param radiations_at_station:
+        :return:
+        """
         height_level: HeightLevel
 
         minute_resolution = cls.get_time_resolution(of="summed")
 
-        first_measurement_of_scope = cls.__all_mean_measurements[sorted(cls.__current_mean_index_scope)[0]]
+        first_measurement_of_scope = cls.all_mean_measures[sorted(cls.current_mean_index_scope)[0]]
         first_measurement_of_scope: MeanStationMeasurement
 
         current_height_lvl_time_of_last_snow_fall = None
@@ -323,7 +341,7 @@ class MeasurementHandler:
         current_height_lvl_artificial_snow_height = 0
         glacier_melt_water_equivalent_in_liters = 0
 
-        for __obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
+        for __obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             __obj: MeanStationMeasurement
 
             """ Adapt radiation """
@@ -382,46 +400,68 @@ class MeasurementHandler:
         return glacier_melt_water_equivalent_in_liters
 
     @classmethod
-    def convert_energy_balance_to_water_rate_equivalent_for(cls, which="scope"):
-        if which == "scope":
-            for obj in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
-                obj.calculate_theoretical_melt_rate()
-        elif which == "summed":
-            for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
-                obj.calculate_theoretical_melt_rate()
+    def convert_energy_balance_to_water_rate_equivalent_for_single_measures(cls):
+        """
+        todo
+        """
+        for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
+            obj.calculate_theoretical_melt_rate()
 
     @classmethod
-    def calculate_relative_ablation_for_summed(cls, set_negative_ablation_zero=True):
-        for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
+    def convert_energy_balance_to_water_rate_equivalent_for_mean_measures(cls):
+        """
+        todo
+        """
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
+            obj.calculate_theoretical_melt_rate()
+
+    @classmethod
+    def calculate_relative_ablation_for_mean_measures(cls, set_negative_ablation_zero=True):
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             obj.calculate_relative_ablation(set_negative_ablation_zero=set_negative_ablation_zero)
 
     @classmethod
-    def convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed(cls):
+    def convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_mean_measures(cls):
         """
         Summed only, as the time frame is needed for that (start and endtime)
         """
-        for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             obj.convert_measured_and_modeled_rel_ablations_in_water_equivalents()
 
     @classmethod
-    def get_all_of(cls, attribute_name, use_summed_measurements=False):
-        # TODO arg which scope or summed better prob
-        if use_summed_measurements:
+    def get_all_of(cls, attribute_name, use_mean_measurements=False):
+        """
+        todo
+        Explicit is better than implicit, but for now, lets keep like this with the use_mean_measurements
+
+        :param attribute_name:
+        :param use_mean_measurements:
+        :return:
+        """
+        if use_mean_measurements:
             return list(map(
                 lambda obj: getattr(obj, attribute_name),
                 # set messes with the order, sorted creates a list of the set
-                [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]
+                [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]
             ))
         else:
             return list(map(
                 lambda obj: getattr(obj, attribute_name),
                 # set messes with the order, sorted creates a list of the set
-                [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]
+                [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]
             ))
 
     @classmethod
-    def get_cumulated_vals_of_components(cls, components, use_summed_measurements=False):
-        if use_summed_measurements:
+    def get_cumulated_vals_of_components(cls, components, use_mean_measurements=False):
+        """
+        todo
+        Explicit is better than implicit, but for now, lets keep like this with the use_mean_measurements
+
+        :param components:
+        :param use_mean_measurements:
+        :return:
+        """
+        if use_mean_measurements:
             x_vals = [0] * cls.get_measurement_amount(of="summed")
         else:
             x_vals = [0] * cls.get_measurement_amount()
@@ -429,15 +469,266 @@ class MeasurementHandler:
         for component in components:
             x_vals = list(map(
                 fc.save_add, x_vals,
-                cls.get_all_of(component, use_summed_measurements=use_summed_measurements)))
+                cls.get_all_of(component, use_mean_measurements=use_mean_measurements)))
 
         return x_vals
 
     @classmethod
-    def sum_measurements_by_amount(cls, amount):
-        cls.clear_summed_measurements()
+    def get_measurement_amount(cls, of="all"):
+        if of == "summed":
+            return len(cls.all_mean_measures)
+        elif of == "scope":
+            return len(cls.current_single_index_scope)
 
-        scoped_measurements = [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]
+        return len(cls.all_single_measures)
+
+    @classmethod
+    def get_date_of_first_measurement(cls, of="all"):
+        # this presupposes that the measurements are read in sorted ascending by date
+        if of == "summed":
+            return cls.all_mean_measures[0].datetime_begin
+        elif of == "scope":
+            return cls.all_single_measures[sorted(cls.current_single_index_scope)[0]].datetime
+
+        return cls.all_single_measures[0].datetime
+
+    @classmethod
+    def get_date_of_last_measurement(cls, of="all"):
+        # this presupposes that the measurements are read in sorted ascending by date
+        if of == "summed":
+            return cls.all_mean_measures[-1].datetime_begin
+        elif of == "scope":
+            return cls.all_single_measures[sorted(cls.current_single_index_scope)[-1]].datetime
+
+        return cls.all_single_measures[-1].datetime
+
+    @classmethod
+    def get_time_resolution(cls, of="all", as_beautiful_string=False, as_time_delta=False):
+        """
+        Gets time resolution in integer minutes
+        Based on the first two measurements!
+        """
+
+        if of == "summed":
+            time_delta = cls.all_mean_measures[1].datetime_begin - cls.all_mean_measures[0].datetime_begin
+        elif of == "scope":
+            scope_indexes = sorted(cls.current_single_index_scope)
+            time_delta = cls.all_single_measures[scope_indexes[1]].datetime - cls.all_single_measures[scope_indexes[0]].datetime
+        else:
+            time_delta = cls.all_single_measures[1].datetime - cls.all_single_measures[0].datetime
+
+        if as_beautiful_string:
+            return fc.make_seconds_beautiful_string(time_delta.total_seconds())
+
+        if as_time_delta:
+            return time_delta
+
+        return int(time_delta.total_seconds() // 60)
+
+    """ SCOPINGS """
+
+    @classmethod
+    def change_measurement_scope_by_time_interval(cls, time_interval: dt.timedelta):
+        """
+        TODO
+        :param time_interval:
+        :return:
+        """
+        indexes_to_remove = set()
+        reference_time = cls.all_single_measures[0].datetime
+
+        for index in list(cls.current_single_index_scope)[1:]:
+            current_time = cls.all_single_measures[index].datetime
+
+            if current_time - reference_time >= time_interval:
+                reference_time = current_time
+            else:
+                indexes_to_remove.add(index)
+
+        cls.current_single_index_scope.difference_update(indexes_to_remove)
+
+        if cls.all_mean_measures:
+            indexes_to_remove = set()
+            reference_time = cls.all_mean_measures[0].datetime
+
+            for index in list(cls.current_mean_index_scope)[1:]:
+                current_time = cls.all_mean_measures[index].datetime
+
+                if current_time - reference_time >= time_interval:
+                    reference_time = current_time
+                else:
+                    indexes_to_remove.add(index)
+
+            cls.current_mean_index_scope.difference_update(indexes_to_remove)
+
+    @classmethod
+    def change_measurement_scope_by_months(cls, months):
+        """
+        todo
+        Doing so for single and mean measures.
+
+        :param months:
+        :return:
+        """
+        indexes_to_remove = set()
+        reference_month = cls.all_single_measures[0].datetime.month
+
+        for index in list(cls.current_single_index_scope)[1:]:
+            current_month = cls.all_single_measures[index].datetime.month
+
+            if fc.get_difference_of_months(reference_month, current_month) < months:
+                indexes_to_remove.add(index)
+            else:
+                reference_month = current_month
+
+        cls.current_single_index_scope.difference_update(indexes_to_remove)
+
+        if cls.all_mean_measures:
+            indexes_to_remove = set()
+            reference_month = cls.all_mean_measures[0].datetime.month
+
+            for index in list(cls.current_mean_index_scope)[1:]:
+                current_month = cls.all_mean_measures[index].datetime.month
+
+                if fc.get_difference_of_months(reference_month, current_month) < months:
+                    indexes_to_remove.add(index)
+                else:
+                    reference_month = current_month
+
+            cls.current_mean_index_scope.difference_update(indexes_to_remove)
+
+    @classmethod
+    def change_measurement_scope_by_years(cls, years):
+        """
+        todo
+        Doing so for single and mean measures
+
+        :param years:
+        :return:
+        """
+        indexes_to_remove = set()
+        reference_year = cls.all_single_measures[0].datetime.year
+
+        for index in list(cls.current_single_index_scope)[1:]:
+            current_year = cls.all_single_measures[index].datetime.year
+
+            if current_year - reference_year < years:
+                indexes_to_remove.add(index)
+            else:
+                reference_year = current_year
+
+        cls.current_single_index_scope.difference_update(indexes_to_remove)
+
+        if cls.all_mean_measures:
+            indexes_to_remove = set()
+            reference_year = cls.all_mean_measures[0].datetime.year
+
+            for index in list(cls.current_mean_index_scope)[1:]:
+                current_year = cls.all_mean_measures[index].datetime.year
+
+                if current_year - reference_year < years:
+                    indexes_to_remove.add(index)
+                else:
+                    reference_year = current_year
+
+            cls.current_mean_index_scope.difference_update(indexes_to_remove)
+
+    @classmethod
+    def change_measurement_scope_by_percentage(cls, percentage: int):
+        """
+        todo
+        Doing so for single and mean measures
+
+        :param percentage: reaching from 0 to 100
+        :return:
+        """
+        threshold = 100  # so that first one is always there
+        indexes_to_remove = set()
+
+        for index in cls.current_single_index_scope:
+            threshold += percentage
+            if threshold >= 100:
+                threshold %= 100
+            else:
+                indexes_to_remove.add(index)  # if not a member, a KeyError is raised
+
+        cls.current_single_index_scope.difference_update(indexes_to_remove)
+
+        if cls.all_mean_measures:
+            threshold = 100  # so that first one is always there
+            indexes_to_remove = set()
+
+            for index in cls.current_mean_index_scope:
+                threshold += percentage
+                if threshold >= 100:
+                    threshold %= 100
+                else:
+                    indexes_to_remove.add(index)  # if not a member, a KeyError is raised
+
+            cls.current_mean_index_scope.difference_update(indexes_to_remove)
+
+    @classmethod
+    def change_measurement_resolution_by_start_end_time(cls, starttime=None, endtime=None):
+        """
+        todo
+        Doing so for single and mean measures.
+
+        WARNING: If you use this function multiple times, do not forget to reset scope before new constraint
+
+        :param starttime:
+        :param endtime:
+        :return:
+        """
+
+        if starttime is not None:
+            if type(starttime) != dt.datetime:
+                starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
+        if endtime is not None:
+            if type(endtime) != dt.datetime:
+                endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
+
+        indexes_to_remove = set()
+
+        if starttime is not None or endtime is not None:
+            for index in cls.current_single_index_scope:
+                if starttime is not None:
+                    if starttime > cls.all_single_measures[index].datetime:
+                        indexes_to_remove.add(index)
+
+                if endtime is not None:
+                    if endtime < cls.all_single_measures[index].datetime:
+                        indexes_to_remove.add(index)
+
+        cls.current_single_index_scope.difference_update(indexes_to_remove)
+
+        if cls.all_mean_measures:
+            indexes_to_remove = set()
+
+            if starttime is not None or endtime is not None:
+                for index in cls.current_mean_index_scope:
+                    if starttime is not None:
+                        if starttime > cls.all_mean_measures[index].datetime:
+                            indexes_to_remove.add(index)
+
+                    if endtime is not None:
+                        if endtime < cls.all_mean_measures[index].datetime:
+                            indexes_to_remove.add(index)
+
+            cls.current_mean_index_scope.difference_update(indexes_to_remove)
+
+    """ SUMMINGS """
+
+    @classmethod
+    def sum_measurements_by_amount(cls, amount):
+        """
+        Mean instead of sum maybe? todo  (for other sum fxs as well then)
+
+        :param amount:
+        :return:
+        """
+        cls.clear_all_mean_measurements()
+
+        scoped_measurements = [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]
         multiple_separated_measurements = [scoped_measurements[x:x + amount] for x in range(0, len(scoped_measurements), amount)]
 
         # for moving average this could be used  # TODO make another option maybe
@@ -461,16 +752,17 @@ class MeasurementHandler:
                     endtime=separated_measurements[-1].datetime,
                     end_ablation=separated_measurements[-1].cumulated_ice_thickness)
 
-            cls.add_summed_measurement(summed_measurement)
-
-    @classmethod
-    def clear_summed_measurements(cls):
-        cls.__all_mean_measurements.clear()
-        cls.__current_mean_index_scope.clear()
+            cls.add_mean_measurement(summed_measurement)
 
     @classmethod
     def sum_measurements_by_time_interval(cls, time_interval: dt.timedelta):
-        cls.clear_summed_measurements()
+        """
+        todo
+
+        :param time_interval:
+        :return:
+        """
+        cls.clear_all_mean_measurements()
 
         resolution_reference_time = None
         summed_measurement = MeanStationMeasurement()
@@ -478,7 +770,7 @@ class MeasurementHandler:
         if time_interval.total_seconds()/60 <= cls.get_time_resolution(of="scope"):
             print("Warning: Summing with resolution smaller or equal to measurement resolution")
 
-        for single_measurement in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
+        for single_measurement in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if resolution_reference_time is None:  # first time .. no reference time there
                 resolution_reference_time = single_measurement.datetime
 
@@ -487,7 +779,7 @@ class MeasurementHandler:
                 resolution_reference_time = single_measurement.datetime
                 summed_measurement.calculate_mean(endtime=single_measurement.datetime,
                                                   end_ablation=single_measurement.cumulated_ice_thickness)
-                cls.add_summed_measurement(summed_measurement)
+                cls.add_mean_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
                 summed_measurement = MeanStationMeasurement()
@@ -498,12 +790,18 @@ class MeasurementHandler:
 
     @classmethod
     def sum_measurements_by_months(cls, months):
-        cls.clear_summed_measurements()
+        """
+        todo
+
+        :param months:
+        :return:
+        """
+        cls.clear_all_mean_measurements()
 
         reference_month = None
         summed_measurement = MeanStationMeasurement()
 
-        for single_measurement in [cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]:
+        for single_measurement in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if reference_month is None:  # first time .. no reference time there
                 reference_month = single_measurement.datetime.month
 
@@ -515,7 +813,7 @@ class MeasurementHandler:
 
                 summed_measurement.calculate_mean(endtime=single_measurement.datetime,
                                                   end_ablation=single_measurement.cumulated_ice_thickness)
-                cls.add_summed_measurement(summed_measurement)
+                cls.add_mean_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
                 summed_measurement = MeanStationMeasurement()
@@ -523,13 +821,19 @@ class MeasurementHandler:
 
     @classmethod
     def sum_measurements_by_years(cls, years):
-        cls.clear_summed_measurements()
+        """
+        todo
+
+        :param years:
+        :return:
+        """
+        cls.clear_all_mean_measurements()
 
         reference_years = None
         summed_measurement = MeanStationMeasurement()
 
-        for single_measurement in [cls.__all_single_measurement_objects[i] for i in
-                                   sorted(cls.__current_single_index_scope)]:
+        for single_measurement in [cls.all_single_measures[i] for i in
+                                   sorted(cls.current_single_index_scope)]:
             if reference_years is None:  # first time .. no reference time there
                 reference_years = single_measurement.datetime.year
 
@@ -541,246 +845,21 @@ class MeasurementHandler:
 
                 summed_measurement.calculate_mean(endtime=single_measurement.datetime,
                                                   end_ablation=single_measurement.cumulated_ice_thickness)
-                cls.add_summed_measurement(summed_measurement)
+                cls.add_mean_measurement(summed_measurement)
 
                 # reset summed_measurement and add current to it
                 summed_measurement = MeanStationMeasurement()
                 summed_measurement += single_measurement
 
     @classmethod
-    def reset_scope_to_all(cls):
-        cls.__current_single_index_scope = set(range(len(cls.__all_single_measurement_objects)))
-        cls.__current_mean_index_scope = set(range(len(cls.__all_mean_measurements)))
-
-    @classmethod
-    def reset_scope_to_none(cls):
-        cls.__current_single_index_scope = set()
-        cls.__current_mean_index_scope = set()
-
-    @classmethod
-    def change_measurement_scope_by_time_interval(cls, time_interval: dt.timedelta):
-        """
-        TODO
-        :param time_interval:
-        :return:
-        """
-        indexes_to_remove = set()
-        reference_time = cls.__all_single_measurement_objects[0].datetime
-
-        for index in list(cls.__current_single_index_scope)[1:]:
-            current_time = cls.__all_single_measurement_objects[index].datetime
-
-            if current_time - reference_time >= time_interval:
-                reference_time = current_time
-            else:
-                indexes_to_remove.add(index)
-
-        cls.__current_single_index_scope.difference_update(indexes_to_remove)
-
-        if cls.__all_mean_measurements:
-            indexes_to_remove = set()
-            reference_time = cls.__all_mean_measurements[0].datetime
-
-            for index in list(cls.__current_mean_index_scope)[1:]:
-                current_time = cls.__all_mean_measurements[index].datetime
-
-                if current_time - reference_time >= time_interval:
-                    reference_time = current_time
-                else:
-                    indexes_to_remove.add(index)
-
-            cls.__current_mean_index_scope.difference_update(indexes_to_remove)
-
-    @classmethod
-    def change_measurement_scope_by_months(cls, months):
-        indexes_to_remove = set()
-        reference_month = cls.__all_single_measurement_objects[0].datetime.month
-
-        for index in list(cls.__current_single_index_scope)[1:]:
-            current_month = cls.__all_single_measurement_objects[index].datetime.month
-
-            if fc.get_difference_of_months(reference_month, current_month) < months:
-                indexes_to_remove.add(index)
-            else:
-                reference_month = current_month
-
-        cls.__current_single_index_scope.difference_update(indexes_to_remove)
-
-        if cls.__all_mean_measurements:
-            indexes_to_remove = set()
-            reference_month = cls.__all_mean_measurements[0].datetime.month
-
-            for index in list(cls.__current_mean_index_scope)[1:]:
-                current_month = cls.__all_mean_measurements[index].datetime.month
-
-                if fc.get_difference_of_months(reference_month, current_month) < months:
-                    indexes_to_remove.add(index)
-                else:
-                    reference_month = current_month
-
-            cls.__current_mean_index_scope.difference_update(indexes_to_remove)
-
-    @classmethod
-    def change_measurement_scope_by_years(cls, years):
-        indexes_to_remove = set()
-        reference_year = cls.__all_single_measurement_objects[0].datetime.year
-
-        for index in list(cls.__current_single_index_scope)[1:]:
-            current_year = cls.__all_single_measurement_objects[index].datetime.year
-
-            if current_year - reference_year < years:
-                indexes_to_remove.add(index)
-            else:
-                reference_year = current_year
-
-        cls.__current_single_index_scope.difference_update(indexes_to_remove)
-
-        if cls.__all_mean_measurements:
-            indexes_to_remove = set()
-            reference_year = cls.__all_mean_measurements[0].datetime.year
-
-            for index in list(cls.__current_mean_index_scope)[1:]:
-                current_year = cls.__all_mean_measurements[index].datetime.year
-
-                if current_year - reference_year < years:
-                    indexes_to_remove.add(index)
-                else:
-                    reference_year = current_year
-
-            cls.__current_mean_index_scope.difference_update(indexes_to_remove)
-
-    @classmethod
-    def change_measurement_scope_by_percentage(cls, percentage: int):
-        """
-
-        :param percentage: reaching from 0 to 100
-        :return:
-        """
-        threshold = 100  # so that first one is always there
-        indexes_to_remove = set()
-
-        for index in cls.__current_single_index_scope:
-            threshold += percentage
-            if threshold >= 100:
-                threshold %= 100
-            else:
-                indexes_to_remove.add(index)  # if not a member, a KeyError is raised
-
-        cls.__current_single_index_scope.difference_update(indexes_to_remove)
-
-        if cls.__all_mean_measurements:
-            threshold = 100  # so that first one is always there
-            indexes_to_remove = set()
-
-            for index in cls.__current_mean_index_scope:
-                threshold += percentage
-                if threshold >= 100:
-                    threshold %= 100
-                else:
-                    indexes_to_remove.add(index)  # if not a member, a KeyError is raised
-
-            cls.__current_mean_index_scope.difference_update(indexes_to_remove)
-
-    @classmethod
-    def change_measurement_resolution_by_start_end_time(cls, starttime=None, endtime=None):
-        """ If you use this function multiple times, do not forget to reset scope before new constraint """
-        if starttime is not None:
-            if type(starttime) != dt.datetime:
-                starttime = dt.datetime.strptime(starttime, "%Y-%m-%d %H:%M:%S")
-        if endtime is not None:
-            if type(endtime) != dt.datetime:
-                endtime = dt.datetime.strptime(endtime, "%Y-%m-%d %H:%M:%S")
-
-        indexes_to_remove = set()
-
-        if starttime is not None or endtime is not None:
-            for index in cls.__current_single_index_scope:
-                if starttime is not None:
-                    if starttime > cls.__all_single_measurement_objects[index].datetime:
-                        indexes_to_remove.add(index)
-
-                if endtime is not None:
-                    if endtime < cls.__all_single_measurement_objects[index].datetime:
-                        indexes_to_remove.add(index)
-
-        cls.__current_single_index_scope.difference_update(indexes_to_remove)
-
-        if cls.__all_mean_measurements:
-            indexes_to_remove = set()
-
-            if starttime is not None or endtime is not None:
-                for index in cls.__current_mean_index_scope:
-                    if starttime is not None:
-                        if starttime > cls.__all_mean_measurements[index].datetime:
-                            indexes_to_remove.add(index)
-
-                    if endtime is not None:
-                        if endtime < cls.__all_mean_measurements[index].datetime:
-                            indexes_to_remove.add(index)
-
-            cls.__current_mean_index_scope.difference_update(indexes_to_remove)
-
-    @classmethod
-    def get_measurement_amount(cls, of="all"):
-        if of == "summed":
-            return len(cls.__all_mean_measurements)
-        elif of == "scope":
-            return len(cls.__current_single_index_scope)
-
-        return len(cls.__all_single_measurement_objects)
-
-    @classmethod
-    def get_date_of_first_measurement(cls, of="all"):
-        # this presupposes that the measurements are read in sorted ascending by date
-        if of == "summed":
-            return cls.__all_mean_measurements[0].datetime_begin
-        elif of == "scope":
-            return cls.__all_single_measurement_objects[sorted(cls.__current_single_index_scope)[0]].datetime
-
-        return cls.__all_single_measurement_objects[0].datetime
-
-    @classmethod
-    def get_date_of_last_measurement(cls, of="all"):
-        # this presupposes that the measurements are read in sorted ascending by date
-        if of == "summed":
-            return cls.__all_mean_measurements[-1].datetime_begin
-        elif of == "scope":
-            return cls.__all_single_measurement_objects[sorted(cls.__current_single_index_scope)[-1]].datetime
-
-        return cls.__all_single_measurement_objects[-1].datetime
-
-    @classmethod
-    def get_time_resolution(cls, of="all", as_beautiful_string=False, as_time_delta=False):
-        """
-        Gets time resolution in integer minutes
-        Based on the first two measurements!
-        """
-
-        if of == "summed":
-            time_delta = cls.__all_mean_measurements[1].datetime_begin - cls.__all_mean_measurements[0].datetime_begin
-        elif of == "scope":
-            scope_indexes = sorted(cls.__current_single_index_scope)
-            time_delta = cls.__all_single_measurement_objects[scope_indexes[1]].datetime - cls.__all_single_measurement_objects[scope_indexes[0]].datetime
-        else:
-            time_delta = cls.__all_single_measurement_objects[1].datetime - cls.__all_single_measurement_objects[0].datetime
-
-        if as_beautiful_string:
-            return fc.make_seconds_beautiful_string(time_delta.total_seconds())
-
-        if as_time_delta:
-            return time_delta
-
-        return int(time_delta.total_seconds() // 60)
-
-    @classmethod
-    def get_total_theoretical_meltwater_per_square_meter_for_current_scope_with_summed_measurements(cls):
+    def get_total_theoretical_meltwater_per_square_meter_for_mean_measures(cls):
         """
         Gets the total meltwater in liters for the time frame defined in the scope
         """
 
         total_meltwater = 0
 
-        for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             obj: MeanStationMeasurement
             try:
                 total_meltwater += obj.theoretical_melt_water_per_sqm
@@ -790,28 +869,31 @@ class MeasurementHandler:
         return total_meltwater
 
     @classmethod
-    def fix_invalid_summed_measurements(cls,
-                                        measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
+    def fix_invalid_mean_measurements(cls,
+                                      measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
                                                              "wind_speed", "sw_radiation_in", "sw_radiation_out",
                                                              "lw_radiation_in", "lw_radiation_out", "snow_delta",
                                                              "relative_ablation_measured")):
         """
         Scope must include several years for this to work
+
+        :param measurements_to_fix:
+        :return:
         """
         percentages_replaced = []
         for measure_name in measurements_to_fix:
             print("Fixing", measure_name)
             invalid_measurements_and_replacements = dict()
 
-            for i in sorted(cls.__current_mean_index_scope):
-                obj = cls.__all_mean_measurements[i]
+            for i in sorted(cls.current_mean_index_scope):
+                obj = cls.all_mean_measures[i]
                 obj: MeanStationMeasurement
 
                 if obj.measurement_validity[measure_name] == MeanStationMeasurement.valid_states["invalid"]:
                     invalid_measurements_and_replacements[obj] = list()
 
-            for i in sorted(cls.__current_mean_index_scope):
-                obj = cls.__all_mean_measurements[i]
+            for i in sorted(cls.current_mean_index_scope):
+                obj = cls.all_mean_measures[i]
                 obj: MeanStationMeasurement
 
                 if obj.measurement_validity[measure_name] == MeanStationMeasurement.valid_states["valid"]:
@@ -842,12 +924,23 @@ class MeasurementHandler:
         return np.mean(percentages_replaced)
 
     @classmethod
-    def calculate_wetbulb_temperature_for_summed_scope(cls):
-        for obj in [cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]:
+    def calculate_wetbulb_temperature_for_mean_measures(cls):
+        """
+        todo
+        """
+        for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             obj.calculate_wetbulb_temperature()
 
     @classmethod
     def download_components(cls, options: list, use_summed_measurements=False):
+        """
+        Functions to download various data
+        todo can maybe be a own module, or whatever, needs to be enhanced big time
+
+        :param options:
+        :param use_summed_measurements:
+        :return:
+        """
         # currently not support for downloading summed measurements
 
         if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
@@ -859,10 +952,10 @@ class MeasurementHandler:
 
             if use_summed_measurements:
                 measures_to_take = [
-                    cls.__all_mean_measurements[i] for i in sorted(cls.__current_mean_index_scope)]
+                    cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]
             else:
                 measures_to_take = [
-                    cls.__all_single_measurement_objects[i] for i in sorted(cls.__current_single_index_scope)]
+                    cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]
 
             for obj in measures_to_take:
                 line_to_write = [obj.datetime]
@@ -874,12 +967,55 @@ class MeasurementHandler:
                         line_to_write.append("None")
                 writer.writerow(line_to_write)
 
+    @classmethod
+    def save_me(cls, save_path):
+        """
+        Class method that saves the whole class including all class variables, not only an instance.
+        A bit hacky but pretty nice.
 
-def save_measurement_handler(save_path):
-    with open(save_path, 'wb') as f:
-        dill.dump(MeasurementHandler, f)  # saving the whole class, not an instance
+        :param save_path: path to save the serialized class
+        """
+        with open(save_path, 'wb') as f:
+            dill.dump(globals()[cls.__name__], f)
+
+    @classmethod
+    def save_me2(cls, save_path):
+        """
+        Class method that saves the whole class including all class variables, not only an instance.
+        A bit hacky but pretty nice.
+
+        :param save_path: path to save the serialized class
+        """
+        with open(save_path+"1", 'wb') as f:
+            pickle.dump(cls.current_single_index_scope, f)
+        with open(save_path+"2", 'wb') as f:
+            pickle.dump(cls.all_single_measures, f)
+        with open(save_path + "3", 'wb') as f:
+            pickle.dump(cls.current_mean_index_scope, f)
+        with open(save_path + "4", 'wb') as f:
+            pickle.dump(cls.all_mean_measures, f)
+
+    @classmethod
+    def load_me(cls, load_path):
+        """
+        Class method to load the whole previously saved class. This method sets all the class variables to the values
+        which were previously saved with the class.
+        A bit hacky but pretty nice.
+
+        :param load_path: path to load the serialized class from
+        """
+        # with open(load_path+"1", 'rb') as fd:
+        #     globals()[cls.__name__] = dill.load(fd)
+
+        one = pickle.load(open(load_path+"1", "rb"))
+        two = pickle.load(open(load_path+"2", "rb"))
+        three = pickle.load(open(load_path+"3", "rb"))
+        fore = pickle.load(open(load_path+"4", "rb"))
+        return one, two, three, fore
 
 
-def load_measurement_handler(load_path):
-    with open(load_path, 'rb') as fd:  # loading the whole class, not an instance
-        globals()["MeasurementHandler"] = dill.load(fd)  # a bit hacky but whatever
+
+# class OtherOne:
+#     @classmethod
+#     def sdf(cls):
+#         MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_single_measures()

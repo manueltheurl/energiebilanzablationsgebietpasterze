@@ -18,6 +18,8 @@ import numpy as np
 from height_level import HeightLevel
 import copy
 import dill
+import shelve
+from importlib import reload
 
 sys.path.append("GUI")
 
@@ -39,7 +41,8 @@ import frame_sum
 from visualizer import Visualizer
 from hydrologic_year import HydrologicYear
 from energy_balance import EnergyBalance
-from measurement_handler import MeasurementHandler, save_measurement_handler, load_measurement_handler
+import measurement_handler
+from measurement_handler import MeasurementHandler
 
 
 class NoGuiManager:
@@ -61,7 +64,9 @@ class NoGuiManager:
         self.pickle_meteorological_years = f"pickle_meteorologic_years_h{self.hourly_resolution}.pkl"
         self.pickle_height_levels_objects = f"pickle_height_level_objects.pkl"
         self.pickle_radiations_at_station = "pickle_radiations_at_station.pkl"
+
         self.subfolder_name = f"height_level_step_width_{height_level_step_width}"
+        self.filename = 'outputData/session.out'
 
         if self.use_tongue_only:
             self.subfolder_name += "_tongue"
@@ -70,13 +75,33 @@ class NoGuiManager:
         if self.high_res_rad_grid:  # this could be removed some day, if always the high rad grids are taken TODO
             self.subfolder_name += "_radGridHighRes"
 
+    # def save_current_session(self):
+    #     self.filename = 'outputData/session.out'
+    #     my_shelf = shelve.open(self.filename, 'n')  # 'n' for new
+    #
+    #     for key in dir():
+    #         try:
+    #             my_shelf[key] = globals()[key]
+    #         except TypeError:
+    #             #
+    #             # __builtins__, my_shelf, and imported modules can not be shelved.
+    #             #
+    #             print('ERROR shelving: {0}'.format(key))
+    #     my_shelf.close()
+    #
+    # def restore_current_session(self):
+    #     my_shelf = shelve.open(self.filename)
+    #     for key in my_shelf:
+    #         globals()[key] = my_shelf[key]
+    #     my_shelf.close()
+
     def run_calculations_height_levels(self):
         """
 
         :return:
         """
         print("STARTING WITH THE CALCULATIONS")
-        recalculate = True
+        recalculate = False
 
         Reader.add_file_path(self.path_to_meteorologic_measurements)
 
@@ -84,13 +109,16 @@ class NoGuiManager:
             Reader.read_meterologic_file_to_objects(starttime=self.startTime, endtime=self.endTime)
             self.combined_preparing_of_measurements(sum_hourly_resolution=24)
             # needed for the height adaptions of the meteorologic values
-            MeasurementHandler.calculate_wetbulb_temperature_for_summed_scope()
+            MeasurementHandler.calculate_wetbulb_temperature_for_mean_measures()
+            MeasurementHandler.save_me2(self.pickle_multiple_measurement_singleton)  # its not even saving correctly
 
-            with open(self.pickle_multiple_measurement_singleton, 'wb') as f:
-                pickle.dump(MeasurementHandler, f)
         else:
-            with open(self.pickle_multiple_measurement_singleton, 'rb') as f:
-                MeasurementHandler = pickle.load(f)
+            # big todo, but this is the loading for now
+            one, two, three, fore = MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
+            MeasurementHandler.current_single_index_scope = one
+            MeasurementHandler.all_single_measures = two
+            MeasurementHandler.current_mean_index_scope = three
+            MeasurementHandler.all_mean_measures = fore
 
         radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
         height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/{self.pickle_height_levels_objects}", "rb"))
@@ -120,7 +148,7 @@ class NoGuiManager:
                     height_level.clear_simulated_measurements()
                     height_level.artificial_snowing_per_day = current_snowing_per_day
 
-                    liters_melted_anyways = MeasurementHandler.simulate(height_level, radiations_at_station)
+                    liters_melted_anyways = MeasurementHandler.overall_height_level_simulation(height_level, radiations_at_station)
                     swe_in_liters_at_end = height_level.get_swe_of_last_measurement_and_constantly_laying_snow()
 
                     if swe_in_liters_at_end > liters_melted_anyways:
@@ -178,13 +206,14 @@ class NoGuiManager:
         #     open(f"outputData/{self.subfolder_name}/pickle_height_level_objects_filled.pkl", "rb"))
         # with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
         #     MeasurementHandler = pickle.load(f)
-        with open(self.pickle_multiple_measurement_singleton, 'rb') as f:
-            MeasurementHandler = pickle.load(f)
+
+
+        MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
 
         radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
 
-        Visualizer.plot_comparison_of_years(meteorologic_years,
-                                                      save_name=f"req_snow_compare_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
+        Visualizer.plot_comparison_of_years(
+            meteorologic_years, save_name=f"req_snow_compare_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
 
         Visualizer.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, cfg["AWS_STATION_HEIGHT"], radiations_at_station,
                                                                            save_name=f"day_of_ice_exposure_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
@@ -258,8 +287,8 @@ class NoGuiManager:
         self.combined_preparing_of_measurements(type_=type_)
         self.combined_calculation_of_energy_balance_and_all_associated_values(type_=type_)
 
-        measured_ablations = MeasurementHandler.get_all_of("relative_ablation_measured", use_summed_measurements=True)
-        modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled", use_summed_measurements=True)
+        measured_ablations = MeasurementHandler.get_all_of("relative_ablation_measured", use_mean_measurements=True)
+        modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled", use_mean_measurements=True)
 
         print("Nones measured_ablations:", sum(x is None for x in measured_ablations))
         print("Nones modelled_ablations:", sum(x is None for x in modelled_ablations))
@@ -319,28 +348,28 @@ class NoGuiManager:
         :return:
         """
         # Preparations of measurements
-        MeasurementHandler.correct_snow_measurements_for_scope()
+        MeasurementHandler.correct_snow_measurements_for_single_measures()
         # MeasurementHandler.correct_long_wave_measurements_for_scope()
-        MeasurementHandler.correct_short_wave_measurements_for_scope()
-        MeasurementHandler.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
+        MeasurementHandler.correct_short_wave_measurements_for_single_measures()
+        MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method="SameLevelPositiveFix")
 
-        MeasurementHandler.calculate_snow_height_deltas_for_scope()
+        MeasurementHandler.calculate_snow_height_deltas_for_single_measures()
 
         if type_ == "new":
             MeasurementHandler.sum_measurements_by_time_interval(
                 dt.timedelta(hours=sum_hourly_resolution))
-            MeasurementHandler.fix_invalid_summed_measurements()
+            MeasurementHandler.fix_invalid_mean_measurements()
 
     @staticmethod
     def combined_calculation_of_energy_balance_and_all_associated_values(type_="new"):
         # do not forget to set scope before that
         if type_ == "new":
-            MeasurementHandler.calculate_energy_balance_for("summed")
-            MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for("summed")
-            MeasurementHandler.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_summed()
+            MeasurementHandler.calculate_energy_balance_for_mean_measures()
+            MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_mean_measures()
+            MeasurementHandler.convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_mean_measures()
         elif type_ == "original":
-            MeasurementHandler.calculate_energy_balance_for("scope")
-            MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for("scope")
+            MeasurementHandler.calculate_energy_balance_for_single_measures()
+            MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_single_measures()
             MeasurementHandler.sum_measurements_by_time_interval(dt.timedelta(days=1))
             MeasurementHandler.calculate_measured_and_theoretical_ablation_values_for_summed()
 
@@ -361,9 +390,9 @@ class NoGuiManager:
                 MeasurementHandler.reset_scope_to_all()
                 self.combined_calculation_of_energy_balance_and_all_associated_values()
 
-                save_measurement_handler(f_name)
+                MeasurementHandler.save_me(f_name)
 
-            load_measurement_handler(f_name)
+            MeasurementHandler.load_me(f_name)
 
             max_estimated_ablation_measures_percent = 0
 
@@ -395,7 +424,7 @@ class NoGuiManager:
         with open("tmp/tmpi.pkl", 'rb') as f:
             MeasurementHandler = pickle.load(f)
 
-        MeasurementHandler.cumulate_ice_thickness_measures_for_scope(method="SameLevelPositiveFix")
+        MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method="SameLevelPositiveFix")
 
         Visualizer.plot_components(("cumulated_ice_thickness",), "m",  use_summed_measurements=False,
                                              save_name=f"cum_ice")
@@ -406,8 +435,10 @@ if __name__ == "__main__":
         no_gui_manager = NoGuiManager()
 
         """ Height level calculations with visualizations """
-        # no_gui_manager.run_calculations_height_levels()
-        # no_gui_manager.run_visualizations_height_levels()
+        no_gui_manager.run_calculations_height_levels()
+        no_gui_manager.run_visualizations_height_levels()
+
+        exit()
 
         """ Single time frame comparison with measurement fixing """
         # no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
@@ -483,7 +514,4 @@ if __name__ == "__main__":
 
         # gui_thread = threading.Thread(target=)
         # gui_thread.start()
-
-
-
         # gui_main.singleton.mainloop()

@@ -1,6 +1,6 @@
 import numpy as np
 from height_level import HeightLevel
-import config_handler as cfg
+from config_handler import cfg
 
 
 class HydrologicYear:

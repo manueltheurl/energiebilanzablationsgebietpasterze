@@ -100,23 +100,25 @@ class StationMeasurement:
 
         if None not in [self.air_pressure, self.wind_speed, self.temperature,
                         self.lw_radiation_out]:
+            surface_type = "ice" if self.total_snow_depth is None or self.total_snow_depth <= 0 else "snow"
             self.sensible_heat = EnergyBalance.calculate_sensible_heat(
                 self.air_pressure,
                 self.wind_speed,
                 self.temperature,
                 self.lw_radiation_out,
-                self.total_snow_depth
+                surface_type
             )
 
         if None not in [self.temperature, self.rel_moisture, self.wind_speed, self.air_pressure,
                         self.lw_radiation_out]:
+            surface_type = "ice" if self.total_snow_depth is None or self.total_snow_depth <= 0 else "snow"
             self.latent_heat = EnergyBalance.calculate_latent_heat(
                 self.temperature,
                 self.rel_moisture,
                 self.wind_speed,
                 self.lw_radiation_out,
                 self.air_pressure,
-                self.total_snow_depth
+                surface_type
             )
 
         if None not in [None]:
@@ -151,7 +153,7 @@ class StationMeasurement:
 
     def calculate_theoretical_melt_rate(self):
         if None not in [self._total_energy_balance]:
-            self._theoretical_melt_rate = EnergyBalance.energy_balance_to_melt_rate(
+            self._theoretical_melt_rate = EnergyBalance.energyBalance_to_meltRatePerM2(
                 self._total_energy_balance
             )
             # TODO NO NEGATIVE MELT RATE, DOES IT AFFECT SOMETHING ELSE?
@@ -609,20 +611,20 @@ class MeanStationMeasurement(StationMeasurement):
             theoretic ablation in liters or kg of water
         """
         if self.__relative_ablation_measured is not None:
-            self.__actual_melt_water_per_sqm = EnergyBalance.meter_ablation_to_melt_water(
+            self.__actual_melt_water_per_sqm = EnergyBalance.ablation_to_meltWaterPerM2(
                 self.__relative_ablation_measured)
 
-            self.__actual_mm_we_per_d = EnergyBalance.melt_water_per_m2_to_mm_we_per_d(
+            self.__actual_mm_we_per_d = EnergyBalance.meltWaterPerM2_to_mmWePerDay(
                 self.__actual_melt_water_per_sqm, self.__datetime_end - self.__datetime_begin)
 
         if self._theoretical_melt_rate is not None:
-            self.__theoretical_melt_water_per_sqm = EnergyBalance.meltrate_to_melt_water(
+            self.__theoretical_melt_water_per_sqm = EnergyBalance.meltRatePerM2_to_meltWaterPerM2(
                 self._theoretical_melt_rate, self.__datetime_end - self.__datetime_begin)
 
-            self.__theoretical_mm_we_per_d = EnergyBalance.melt_rate_to_mm_we_per_d(
+            self.__theoretical_mm_we_per_d = EnergyBalance.meltRatePerM2_to_mmWePerDay(
                 self._theoretical_melt_rate)
             if self.total_snow_depth == 0:  # not the right place probably there for this todo, __relative_ablation_measured is set in summing process
-                self.__relative_ablation_modelled = EnergyBalance.melt_water_to_meter_ablation(
+                self.__relative_ablation_modelled = EnergyBalance.meltWaterPerM2_to_Ablation(
                     self.__theoretical_melt_water_per_sqm)
             else:
                 self.__relative_ablation_modelled = 0

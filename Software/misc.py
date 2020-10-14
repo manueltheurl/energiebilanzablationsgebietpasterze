@@ -2,6 +2,12 @@ import datetime as dt
 import numpy as np
 
 
+"""
+Misc module, could of course be another class with static and classmethods as well. But as there are no module
+variables, it does not really make any difference. Various functions for various things are inside of here.
+"""
+
+
 def set_widget_state(widgets: list, state):
     if state == 1 or state == "normal":  # actually check if its 1 or 0, cause else "disabled" string is True also
         for widget in widgets:
