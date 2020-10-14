@@ -61,6 +61,8 @@ class NoGuiManager:
         height_level_step_width = 25
         self.hourly_resolution = 24
         self.pickle_multiple_measurement_singleton = f"outputData/pickle_multiple_measurements_singleton_h{self.hourly_resolution}.pkl"
+        self.pickle_multiple_measurement_singleton_filled = f"outputData/pickle_multiple_measurements_singleton_filled_h{self.hourly_resolution}.pkl"
+
         self.pickle_meteorological_years = f"pickle_meteorologic_years_h{self.hourly_resolution}.pkl"
         self.pickle_height_levels_objects = f"pickle_height_level_objects.pkl"
         self.pickle_radiations_at_station = "pickle_radiations_at_station.pkl"
@@ -95,13 +97,25 @@ class NoGuiManager:
     #         globals()[key] = my_shelf[key]
     #     my_shelf.close()
 
+    @staticmethod
+    def save_handler(fname):
+        MeasurementHandler.save_me2(fname)  # its not even saving correctly
+
+    @staticmethod
+    def load_handler( fname):
+        one, two, three, fore = MeasurementHandler.load_me(fname)
+        MeasurementHandler.current_single_index_scope = one
+        MeasurementHandler.all_single_measures = two
+        MeasurementHandler.current_mean_index_scope = three
+        MeasurementHandler.all_mean_measures = fore
+
     def run_calculations_height_levels(self):
         """
 
         :return:
         """
         print("STARTING WITH THE CALCULATIONS")
-        recalculate = False
+        recalculate = True
 
         Reader.add_file_path(self.path_to_meteorologic_measurements)
 
@@ -110,15 +124,9 @@ class NoGuiManager:
             self.combined_preparing_of_measurements(sum_hourly_resolution=24)
             # needed for the height adaptions of the meteorologic values
             MeasurementHandler.calculate_wetbulb_temperature_for_mean_measures()
-            MeasurementHandler.save_me2(self.pickle_multiple_measurement_singleton)  # its not even saving correctly
-
+            self.save_handler(self.pickle_multiple_measurement_singleton)
         else:
-            # big todo, but this is the loading for now
-            one, two, three, fore = MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
-            MeasurementHandler.current_single_index_scope = one
-            MeasurementHandler.all_single_measures = two
-            MeasurementHandler.current_mean_index_scope = three
-            MeasurementHandler.all_mean_measures = fore
+            self.load_handler(self.pickle_multiple_measurement_singleton)
 
         radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
         height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/{self.pickle_height_levels_objects}", "rb"))
@@ -187,8 +195,7 @@ class NoGuiManager:
         with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", "wb") as f:
             pickle.dump(hydrologic_years, f)
 
-        with open("multiple_measurements_singleton_filled.pkl", 'wb') as f:
-            pickle.dump(MeasurementHandler, f)
+        self.save_handler(self.pickle_multiple_measurement_singleton_filled)
 
     def run_visualizations_height_levels(self):
         """
@@ -207,13 +214,15 @@ class NoGuiManager:
         # with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
         #     MeasurementHandler = pickle.load(f)
 
-
-        MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
+        self.load_handler(self.pickle_multiple_measurement_singleton_filled)
 
         radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
 
-        Visualizer.plot_comparison_of_years(
-            meteorologic_years, save_name=f"req_snow_compare_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
+        try:
+            Visualizer.plot_comparison_of_years(
+                meteorologic_years, save_name=f"req_snow_compare_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
+        except TypeError:
+            print("bar plot not working here, this is a todo still")
 
         Visualizer.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, cfg["AWS_STATION_HEIGHT"], radiations_at_station,
                                                                            save_name=f"day_of_ice_exposure_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
@@ -390,9 +399,9 @@ class NoGuiManager:
                 MeasurementHandler.reset_scope_to_all()
                 self.combined_calculation_of_energy_balance_and_all_associated_values()
 
-                MeasurementHandler.save_me(f_name)
+                self.save_handler(f_name)
 
-            MeasurementHandler.load_me(f_name)
+            self.load_handler(f_name)
 
             max_estimated_ablation_measures_percent = 0
 
@@ -435,10 +444,10 @@ if __name__ == "__main__":
         no_gui_manager = NoGuiManager()
 
         """ Height level calculations with visualizations """
-        no_gui_manager.run_calculations_height_levels()
-        no_gui_manager.run_visualizations_height_levels()
+        # no_gui_manager.run_calculations_height_levels()
+        # no_gui_manager.run_visualizations_height_levels()
 
-        exit()
+        # exit()
 
         """ Single time frame comparison with measurement fixing """
         # no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
