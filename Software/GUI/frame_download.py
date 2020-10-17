@@ -63,13 +63,13 @@ class ModelFrame(tk.Frame):
     def download_relative_ablation():
         MeasurementHandler.download_components(["relative_ablation_measured",
                                                              "relative_ablation_modelled"],
-                                               use_summed_measurements=True)
+                                               use_mean_measures=True)
 
     @staticmethod
     def download_water_equivalent():
         MeasurementHandler.download_components(["actual_mm_we_per_d",
                                                              "theoretical_mm_we_per_d"],
-                                               use_summed_measurements=True)
+                                               use_mean_measures=True)
 
     def download_selected_components(self):
         MeasurementHandler.download_components(

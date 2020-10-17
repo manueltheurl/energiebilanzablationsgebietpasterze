@@ -9,13 +9,12 @@ import numpy as np
 from height_level import HeightLevel
 import copy
 import scipy.signal
-import dill
 import pickle
 
 
 class MeasurementHandler:
     """
-    Module that handles the read in measurements. Measurements can be manipulated, filtered, summed, .. . The current
+    Module that handles the read in measurements. Measurements can be manipulated, filtered, averaged, .. . The current
     scope at which measurements it is currenly looked at can be changed. This can be helpful to save computation time.
 
     Handles all single station measurements, and all mean station measurements that are computed out of the single
@@ -91,32 +90,36 @@ class MeasurementHandler:
     @classmethod
     def calculate_energy_balance_for_single_measures(cls, simulate_global_dimming_brightening=0):
         """
-        Calculates energy balance of single measurements that are currently set for scope.
+        Calculates energy balance of single measurements that are currently set for scope. Continues with remaining
+        measures if one calculation should fail.
 
         :param simulate_global_dimming_brightening: optional mean additional lwi that is caused by global dimming ..
                 in W/m2
-        :return: True in all cases, because for single measures it does not matter if one calculation fails (due to a
-                missing value for the energy balance)
+        :return: True if all calculations are successful, False if one or more fails. Fails when mean measurement does
+                not contain all the necessary information for calculating the energy balance
         """
+        all_successful = True
         for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
-                return False
-        return True
+                all_successful = False
+        return all_successful
 
     @classmethod
     def calculate_energy_balance_for_mean_measures(cls, simulate_global_dimming_brightening=0):
         """
-        Calculates energy balance of mean measurements that are currently set for scope.
+        Calculates energy balance of mean measurements that are currently set for scope. Continues with remaining
+        measures if one calculation should fail.
 
         :param simulate_global_dimming_brightening: optional mean additional lwi that is caused by global dimming ..
                 in W/m2
-        :return: True if all calculations pass, False if one or more go wrong. Goes wrong if mean measurement does not
-                contain all the necessary information for calculating the energy balance
+        :return: True if all calculations are successful, False if one or more fails. Fails when mean measurement does
+                not contain all the necessary information for calculating the energy balance
         """
+        all_successful = True
         for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             if not obj.calculate_energy_balance(simulate_global_dimming_brightening):
-                return False
-        return True
+                all_successful = False
+        return all_successful
 
     @classmethod
     def cumulate_ice_thickness_measures_for_single_measures(cls, method=None):
@@ -323,7 +326,7 @@ class MeasurementHandler:
         """
         height_level: HeightLevel
 
-        minute_resolution = cls.get_time_resolution(of="summed")
+        minute_resolution = cls.get_time_resolution(of="averaged")
 
         first_measurement_of_scope = cls.all_mean_measures[sorted(cls.current_mean_index_scope)[0]]
         first_measurement_of_scope: MeanStationMeasurement
@@ -423,7 +426,7 @@ class MeasurementHandler:
     @classmethod
     def convert_measured_and_modeled_rel_ablations_in_water_equivalents_for_mean_measures(cls):
         """
-        Summed only, as the time frame is needed for that (start and endtime)
+        Averaged only, as the time frame is needed for that (start and endtime)
         """
         for obj in [cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]:
             obj.convert_measured_and_modeled_rel_ablations_in_water_equivalents()
@@ -462,7 +465,7 @@ class MeasurementHandler:
         :return:
         """
         if use_mean_measurements:
-            x_vals = [0] * cls.get_measurement_amount(of="summed")
+            x_vals = [0] * cls.get_measurement_amount(of="averaged")
         else:
             x_vals = [0] * cls.get_measurement_amount()
 
@@ -475,7 +478,7 @@ class MeasurementHandler:
 
     @classmethod
     def get_measurement_amount(cls, of="all"):
-        if of == "summed":
+        if of == "averaged":
             return len(cls.all_mean_measures)
         elif of == "scope":
             return len(cls.current_single_index_scope)
@@ -485,7 +488,7 @@ class MeasurementHandler:
     @classmethod
     def get_date_of_first_measurement(cls, of="all"):
         # this presupposes that the measurements are read in sorted ascending by date
-        if of == "summed":
+        if of == "averaged":
             return cls.all_mean_measures[0].datetime_begin
         elif of == "scope":
             return cls.all_single_measures[sorted(cls.current_single_index_scope)[0]].datetime
@@ -495,7 +498,7 @@ class MeasurementHandler:
     @classmethod
     def get_date_of_last_measurement(cls, of="all"):
         # this presupposes that the measurements are read in sorted ascending by date
-        if of == "summed":
+        if of == "averaged":
             return cls.all_mean_measures[-1].datetime_begin
         elif of == "scope":
             return cls.all_single_measures[sorted(cls.current_single_index_scope)[-1]].datetime
@@ -509,7 +512,7 @@ class MeasurementHandler:
         Based on the first two measurements!
         """
 
-        if of == "summed":
+        if of == "averaged":
             time_delta = cls.all_mean_measures[1].datetime_begin - cls.all_mean_measures[0].datetime_begin
         elif of == "scope":
             scope_indexes = sorted(cls.current_single_index_scope)
@@ -716,12 +719,12 @@ class MeasurementHandler:
 
             cls.current_mean_index_scope.difference_update(indexes_to_remove)
 
-    """ SUMMINGS """
+    """ Creation of mean measurements """
 
     @classmethod
-    def sum_measurements_by_amount(cls, amount):
+    def mean_measurements_by_amount(cls, amount):
         """
-        Mean instead of sum maybe? todo  (for other sum fxs as well then)
+        Mean instead of mean maybe? todo  (for other mean fxs as well then)
 
         :param amount:
         :return:
@@ -737,25 +740,25 @@ class MeasurementHandler:
         # ]
 
         for i, separated_measurements in enumerate(multiple_separated_measurements):
-            summed_measurement = MeanStationMeasurement()
+            averaged_measurement = MeanStationMeasurement()
 
             for single_measurement in separated_measurements:
-                summed_measurement += single_measurement
+                averaged_measurement += single_measurement
 
             try:
-                summed_measurement.calculate_mean(
+                averaged_measurement.calculate_mean(
                     endtime=multiple_separated_measurements[i+1][0].datetime,
                     end_ablation=multiple_separated_measurements[i+1][0].cumulated_ice_thickness)
             except IndexError:
                 # last one
-                summed_measurement.calculate_mean(
+                averaged_measurement.calculate_mean(
                     endtime=separated_measurements[-1].datetime,
                     end_ablation=separated_measurements[-1].cumulated_ice_thickness)
 
-            cls.add_mean_measurement(summed_measurement)
+            cls.add_mean_measurement(averaged_measurement)
 
     @classmethod
-    def sum_measurements_by_time_interval(cls, time_interval: dt.timedelta):
+    def mean_measurements_by_time_interval(cls, time_interval: dt.timedelta):
         """
         todo
 
@@ -765,10 +768,10 @@ class MeasurementHandler:
         cls.clear_all_mean_measurements()
 
         resolution_reference_time = None
-        summed_measurement = MeanStationMeasurement()
+        averaged_measurement = MeanStationMeasurement()
 
         if time_interval.total_seconds()/60 <= cls.get_time_resolution(of="scope"):
-            print("Warning: Summing with resolution smaller or equal to measurement resolution")
+            print("Warning: meanming with resolution smaller or equal to measurement resolution")
 
         for single_measurement in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if resolution_reference_time is None:  # first time .. no reference time there
@@ -777,19 +780,19 @@ class MeasurementHandler:
             # all the following times
             if single_measurement.datetime - resolution_reference_time >= time_interval:
                 resolution_reference_time = single_measurement.datetime
-                summed_measurement.calculate_mean(endtime=single_measurement.datetime,
+                averaged_measurement.calculate_mean(endtime=single_measurement.datetime,
                                                   end_ablation=single_measurement.cumulated_ice_thickness)
-                cls.add_mean_measurement(summed_measurement)
+                cls.add_mean_measurement(averaged_measurement)
 
-                # reset summed_measurement and add current to it
-                summed_measurement = MeanStationMeasurement()
-                summed_measurement += single_measurement
+                # reset averaged_measurement and add current to it
+                averaged_measurement = MeanStationMeasurement()
+                averaged_measurement += single_measurement
 
             else:
-                summed_measurement += single_measurement
+                averaged_measurement += single_measurement
 
     @classmethod
-    def sum_measurements_by_months(cls, months):
+    def mean_measurements_by_months(cls, months):
         """
         todo
 
@@ -799,7 +802,7 @@ class MeasurementHandler:
         cls.clear_all_mean_measurements()
 
         reference_month = None
-        summed_measurement = MeanStationMeasurement()
+        averaged_measurement = MeanStationMeasurement()
 
         for single_measurement in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if reference_month is None:  # first time .. no reference time there
@@ -807,20 +810,20 @@ class MeasurementHandler:
 
             # all the following times
             if fc.get_difference_of_months(reference_month, single_measurement.datetime.month) < months:
-                summed_measurement += single_measurement
+                averaged_measurement += single_measurement
             else:
                 reference_month = single_measurement.datetime.month
 
-                summed_measurement.calculate_mean(endtime=single_measurement.datetime,
+                averaged_measurement.calculate_mean(endtime=single_measurement.datetime,
                                                   end_ablation=single_measurement.cumulated_ice_thickness)
-                cls.add_mean_measurement(summed_measurement)
+                cls.add_mean_measurement(averaged_measurement)
 
-                # reset summed_measurement and add current to it
-                summed_measurement = MeanStationMeasurement()
-                summed_measurement += single_measurement
+                # reset averaged_measurement and add current to it
+                averaged_measurement = MeanStationMeasurement()
+                averaged_measurement += single_measurement
 
     @classmethod
-    def sum_measurements_by_years(cls, years):
+    def mean_measurements_by_years(cls, years):
         """
         todo
 
@@ -830,7 +833,7 @@ class MeasurementHandler:
         cls.clear_all_mean_measurements()
 
         reference_years = None
-        summed_measurement = MeanStationMeasurement()
+        averaged_measurement = MeanStationMeasurement()
 
         for single_measurement in [cls.all_single_measures[i] for i in
                                    sorted(cls.current_single_index_scope)]:
@@ -839,17 +842,17 @@ class MeasurementHandler:
 
             # all the following times
             if fc.get_difference_of_months(reference_years, single_measurement.datetime.year) < years:
-                summed_measurement += single_measurement
+                averaged_measurement += single_measurement
             else:
                 reference_years = single_measurement.datetime.year
 
-                summed_measurement.calculate_mean(endtime=single_measurement.datetime,
+                averaged_measurement.calculate_mean(endtime=single_measurement.datetime,
                                                   end_ablation=single_measurement.cumulated_ice_thickness)
-                cls.add_mean_measurement(summed_measurement)
+                cls.add_mean_measurement(averaged_measurement)
 
-                # reset summed_measurement and add current to it
-                summed_measurement = MeanStationMeasurement()
-                summed_measurement += single_measurement
+                # reset averaged_measurement and add current to it
+                averaged_measurement = MeanStationMeasurement()
+                averaged_measurement += single_measurement
 
     @classmethod
     def get_total_theoretical_meltwater_per_square_meter_for_mean_measures(cls):
@@ -902,12 +905,34 @@ class MeasurementHandler:
                     for invalid_measurement, replacement_measurements in invalid_measurements_and_replacements.items():
                         year_of_invalid = invalid_measurement.datetime_begin.year  # endtime is ignored here
 
+                        """ Handling of february the 29th, is there a more elegant solution? """
+
+                        """ So that a valid measurement on 29th of february can be used for replacing an invalid on
+                         28th """
                         try:
                             current_datetime = current_datetime.replace(year=year_of_invalid)  # adapt year to compare
                         except ValueError:
                             current_datetime = current_datetime.replace(year=year_of_invalid, day=28)  # leap year
 
-                        if invalid_measurement.datetime_begin <= current_datetime < invalid_measurement.datetime_end:
+                        invalid_datetime_begin_copy = None  # only create deepcopy if necessary, else much longer computation time
+                        invalid_datetime_end_copy = None
+
+                        """ For making it possible to replace and invalid measurement on 29th of february with measures
+                         from 28th of February"""
+                        if invalid_measurement.datetime_begin.day == 29 and invalid_measurement.datetime_begin.month == 2:
+                            invalid_datetime_begin_copy = copy.deepcopy(invalid_measurement.datetime_begin)
+                            invalid_datetime_begin_copy = invalid_datetime_begin_copy.replace(day=28)
+
+                            """ When replacing it for end time, it must have been replaced for start time as well,
+                             else the end time can be before the start time, which does not make sense"""
+                            if invalid_measurement.datetime_end.day == 29 and invalid_measurement.datetime_end.month == 2:
+                                invalid_datetime_end_copy = copy.deepcopy(invalid_measurement.datetime_end)
+                                invalid_datetime_end_copy = invalid_datetime_end_copy.replace(day=28)
+
+                        date_ref_begin = invalid_measurement.datetime_begin if invalid_datetime_begin_copy is None else invalid_datetime_begin_copy
+                        date_ref_end = invalid_measurement.datetime_end if invalid_datetime_end_copy is None else invalid_datetime_end_copy
+
+                        if date_ref_begin <= current_datetime < date_ref_end:
                             replacement_measurements.append(obj)
 
             i = 0
@@ -918,7 +943,7 @@ class MeasurementHandler:
                 else:
                     print(invalid_measurement.datetime, "No replacement measurements found")
 
-            print(f"{i}/{len(invalid_measurements_and_replacements)} invalid summed measurements have been replaced")
+            print(f"{i}/{len(invalid_measurements_and_replacements)} invalid averaged measurements have been replaced")
             if len(invalid_measurements_and_replacements):
                 percentages_replaced.append(i/len(invalid_measurements_and_replacements)*100)
         return np.mean(percentages_replaced)
@@ -932,16 +957,16 @@ class MeasurementHandler:
             obj.calculate_wetbulb_temperature()
 
     @classmethod
-    def download_components(cls, options: list, use_summed_measurements=False):
+    def download_components(cls, options: list, use_mean_measures=False):
         """
         Functions to download various data
         todo can maybe be a own module, or whatever, needs to be enhanced big time
 
         :param options:
-        :param use_summed_measurements:
+        :param use_mean_measures:
         :return:
         """
-        # currently not support for downloading summed measurements
+        # currently not support for downloading averaged measurements
 
         if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
             os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
@@ -950,7 +975,7 @@ class MeasurementHandler:
             writer = csv.writer(f)
             writer.writerow(["Date"] + options)
 
-            if use_summed_measurements:
+            if use_mean_measures:
                 measures_to_take = [
                     cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]
             else:

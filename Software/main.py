@@ -17,8 +17,6 @@ import pickle
 import numpy as np
 from height_level import HeightLevel
 import copy
-import dill
-import shelve
 from importlib import reload
 
 sys.path.append("GUI")
@@ -37,11 +35,11 @@ import frame_scope
 import frame_conversion
 import frame_energy_balance
 import frame_prepare_measurements
-import frame_sum
+import frame_mean
 from visualizer import Visualizer
 from hydrologic_year import HydrologicYear
 from energy_balance import EnergyBalance
-import measurement_handler
+from stats_printer import Statistics
 from measurement_handler import MeasurementHandler
 
 
@@ -216,25 +214,26 @@ class NoGuiManager:
 
         self.load_handler(self.pickle_multiple_measurement_singleton_filled)
 
-        radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
-
-        try:
-            Visualizer.plot_comparison_of_years(
-                meteorologic_years, save_name=f"req_snow_compare_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
-        except TypeError:
-            print("bar plot not working here, this is a todo still")
-
-        Visualizer.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, cfg["AWS_STATION_HEIGHT"], radiations_at_station,
-                                                                           save_name=f"day_of_ice_exposure_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
+        # radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
+        #
+        # try:
+        #     Visualizer.plot_comparison_of_years(
+        #         meteorologic_years, save_name=f"req_snow_compare_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
+        # except TypeError:
+        #     print("bar plot not working here, this is a todo still")
+        #
+        # Visualizer.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, cfg["AWS_STATION_HEIGHT"], radiations_at_station,
+        #                                                                    save_name=f"day_of_ice_exposure_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
 
         fix_lower_limit = 3 if self.use_tongue_only else 0
         fix_upper_limit = 7.5
-
         # # TODO for whole pasterze, equality_line_2018 from all hast to be taken
         Visualizer.plot_pasterze(meteorologic_years, self.hydrologic_years_looked_at, "inputData/AWS_Station.shp",
                                            "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
                                            fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
                                            save_name=f"pasterze_water_needed_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_")
+
+        exit()
 
         Visualizer.plot_compare_water_and_height(self.hydrologic_years_looked_at, meteorologic_years,
                                                            save_name=f"water_vs_height_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
@@ -248,7 +247,7 @@ class NoGuiManager:
                 meteorologic_years[year].get_height_level_close_to_height(cfg["AWS_STATION_HEIGHT"])],
                 ("total_snow_water_equivalent", "artificial_snow_water_equivalent", "natural_snow_water_equivalent"),
                 "m w. e.", factor=1/1000, stack_fill=True,
-                use_summed_measurements=True, show_estimated_measurement_areas=True,
+                use_mean_measures=True, show_estimated_measurement_areas=True,
                 save_name=f"all_snow_water_equivalents_{year}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
 
             Visualizer.plot_compare_water_and_height([year], meteorologic_years,
@@ -263,20 +262,20 @@ class NoGuiManager:
                                                save_name=f"pasterze_water_needed_{year}")
 
             Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("natural_snow_water_equivalent",), "m w. e.",
-                                                      use_summed_measurements=True, show_estimated_measurement_areas=True, factor=1/1000,
+                                                      use_mean_measures=True, show_estimated_measurement_areas=True, factor=1/1000,
                                                       save_name=f"natural_snow_water_equivalent_{year}")
 
             Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("artificial_snow_water_equivalent",), "m w. e.",
-                                                      use_summed_measurements=True, show_estimated_measurement_areas=True, factor=1/1000,
+                                                      use_mean_measures=True, show_estimated_measurement_areas=True, factor=1/1000,
                                                       save_name=f"artificial_snow_water_equivalent_{year}")
 
             Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("total_snow_water_equivalent",), "m w. e.",
-                                                      use_summed_measurements=True, show_estimated_measurement_areas=True, factor=1/1000,
+                                                      use_mean_measures=True, show_estimated_measurement_areas=True, factor=1/1000,
                                                       save_name=f"total_snow_water_equivalent_{year}")
 
             # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
             # Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("albedo",), "",
-            #                                           use_summed_measurements=True, show_estimated_measurement_areas=True,
+            #                                           use_mean_measures=True, show_estimated_measurement_areas=True,
             #                                           save_name=f"albedo{year}")
 
     def run_calculations_bachelor(self, startime: dt.datetime, endtime: dt.datetime, pegel_measure, type_="new"):
@@ -308,34 +307,34 @@ class NoGuiManager:
             modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
 
         # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
-        # Visualizer.plot_single_component("albedo", "", use_summed_measurements=True,
+        # Visualizer.plot_single_component("albedo", "", use_mean_measures=True,
         #                                            save_name=f"albedo_{year}_{type_}_onlysummer_{only_summer}")
 
-        # Visualizer.plot_components(("sensible_heat",), "W/m^2", ("temperature",), "°C", use_summed_measurements=True,
+        # Visualizer.plot_components(("sensible_heat",), "W/m^2", ("temperature",), "°C", use_mean_measures=True,
         #                                            save_name=f"sensible_heat_and_temperature")
         #
         # Visualizer.plot_components(("sensible_heat",), "W/m^2", ("air_pressure",), "pa",
-        #                                      use_summed_measurements=True,
+        #                                      use_mean_measures=True,
         #                                      save_name=f"sensible_heat_and_air_pressure")
         #
         # Visualizer.plot_components(("sensible_heat",), "W/m^2", ("wind_speed",), "m/s",
-        #                                      use_summed_measurements=True,
+        #                                      use_mean_measures=True,
         #                                      save_name=f"sensible_heat_and_wind_speed")
 
         # Visualizer.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("albedo",), "-",
-        #                                      use_summed_measurements=True,
+        #                                      use_mean_measures=True,
         #                                      save_name=f"swinout")
 
         # Visualizer.plot_components(("albedo",), "-",
-        #                                      use_summed_measurements=True,
+        #                                      use_mean_measures=True,
         #                                      save_name=f"albedo_normal")
         #
         # Visualizer.plot_components(("midday_albedo",), "-",
-        #                                      use_summed_measurements=True,
+        #                                      use_mean_measures=True,
         #                                      save_name=f"albedo_midday")
 
         # Visualizer.plot_components(("sw_radiation_in", "sw_radiation_out"), "W/m^2", ("total_snow_depth",), "m",
-        #                                      use_summed_measurements=True,
+        #                                      use_mean_measures=True,
         #                                      save_name=f"snow_depth")
 
         modelled_ablation = sum(modelled_ablations)
@@ -365,7 +364,7 @@ class NoGuiManager:
         MeasurementHandler.calculate_snow_height_deltas_for_single_measures()
 
         if type_ == "new":
-            MeasurementHandler.sum_measurements_by_time_interval(
+            MeasurementHandler.mean_measurements_by_time_interval(
                 dt.timedelta(hours=sum_hourly_resolution))
             MeasurementHandler.fix_invalid_mean_measurements()
 
@@ -379,13 +378,12 @@ class NoGuiManager:
         elif type_ == "original":
             MeasurementHandler.calculate_energy_balance_for_single_measures()
             MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_single_measures()
-            MeasurementHandler.sum_measurements_by_time_interval(dt.timedelta(days=1))
+            MeasurementHandler.mean_measurements_by_time_interval(dt.timedelta(days=1))
             MeasurementHandler.calculate_measured_and_theoretical_ablation_values_for_summed()
 
-    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, pegel_tuples):
+    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, pegel_tuples, max_est_measures=0):
         Visualizer.show_plots = False
-        Visualizer.change_result_plot_subfolder(f"scatter_compare")
-        recalculate = True
+        recalculate = False
 
         if recalculate:
             Reader.add_file_path(self.path_to_meteorologic_measurements)
@@ -403,20 +401,23 @@ class NoGuiManager:
 
             self.load_handler(f_name)
 
-            max_estimated_ablation_measures_percent = 0
-
             # """ Statistics """
-            # StatsPrinter.compare_pegel_measured_and_modelled_for_time_intervals(
+            # Statistics.compare_pegel_measured_and_modelled_for_time_intervals(
             #     pegel_tuples, heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_}) max est. abl. measures {max_estimated_ablation_measures_percent}",
             #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent)
 
             """ Plotting """
-            Visualizer.plot_scatter_measured_modelled_ablation(
-                pegel_tuples, save_name=f"z0ice{rs[0]}z0 snow{rs[1]} ({max_estimated_ablation_measures_percent}% est. abl. measures)",
-                max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent, measured_per_day_has_to_be_above_mm=1)
+            # Visualizer.plot_scatter_measured_modelled_ablation(
+            #     pegel_tuples, save_name=f"z0ice{rs[0]}z0 snow{rs[1]} ({max_estimated_ablation_measures_percent}% est. abl. measures)",
+            #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent, measured_per_day_has_to_be_above_mm=1)
+
+            """ Plotting """
+            Visualizer.plot_scatter_pegel_modelled_ablation(
+                pegel_tuples, save_name=f"pegel_vs_modeled_z0-ice={rs[0]}_z0-snow={rs[1]} (allow {max_est_measures}% est. measures)",
+                max_estimated_ablation_measures_percent=max_est_measures)
 
             # if not i:
-            #     Visualizer.plot_components(("total_snow_depth",), "m", use_summed_measurements=False,
+            #     Visualizer.plot_components(("total_snow_depth",), "m", use_mean_measures=False,
             #                                          save_name=f"total_snow_depth")
 
     def ablation_cumulation_test(self):
@@ -435,7 +436,7 @@ class NoGuiManager:
 
         MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method="SameLevelPositiveFix")
 
-        Visualizer.plot_components(("cumulated_ice_thickness",), "m",  use_summed_measurements=False,
+        Visualizer.plot_components(("cumulated_ice_thickness",), "m",  use_mean_measures=False,
                                              save_name=f"cum_ice")
 
 
@@ -444,10 +445,10 @@ if __name__ == "__main__":
         no_gui_manager = NoGuiManager()
 
         """ Height level calculations with visualizations """
-        # no_gui_manager.run_calculations_height_levels()
-        # no_gui_manager.run_visualizations_height_levels()
+        no_gui_manager.run_calculations_height_levels()
+        no_gui_manager.run_visualizations_height_levels()
 
-        # exit()
+        exit()
 
         """ Single time frame comparison with measurement fixing """
         # no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
@@ -490,7 +491,10 @@ if __name__ == "__main__":
             (dt.datetime(2019, 7, 17), dt.datetime(2019, 10, 4), 370)]
         # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
+        Visualizer.change_result_plot_subfolder(f"scatter_compare")
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=0)
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=75)
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=100)
 
     else:
         """
@@ -508,7 +512,7 @@ if __name__ == "__main__":
         frame_conversion.create_singleton()
         frame_plot.create_singleton()
         frame_download.create_singleton()
-        frame_sum.create_singleton()
+        frame_mean.create_singleton()
         frame_read.create_singleton()
         version_bar.create_singleton()
         #

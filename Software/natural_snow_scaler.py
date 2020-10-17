@@ -1,6 +1,8 @@
 class NaturalSnowScaler:
     """
-    Reference? todo
+    Reference:
+    Analyse der zeitlichen und räumlichen Variabilität des Niederschlags im Gebiet des Hohen Sonnblicks
+    Leidinger David 2013
     """
     a_l = 0.7095
     b_l = -1044.16
