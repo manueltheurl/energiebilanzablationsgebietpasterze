@@ -54,7 +54,7 @@ class NoGuiManager:
         self.endTime = dt.datetime(self.hydrologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.simulation_accuracy = 0.0001
         self.use_tongue_only = True
-        self.no_debris = True
+        self.no_debris = False
         self.high_res_rad_grid = True
         height_level_step_width = 25
         self.hourly_resolution = 24
@@ -381,6 +381,24 @@ class NoGuiManager:
             MeasurementHandler.mean_measurements_by_time_interval(dt.timedelta(days=1))
             MeasurementHandler.calculate_measured_and_theoretical_ablation_values_for_summed()
 
+    def compare_measured_ablation_measured_pegel_and_measured(self, pegel_tuples, max_est_measures=0):
+        Visualizer.show_plots = False
+        recalculate = False
+        fname = f"outputData/scatter_compare_measured_pegel.pkl"
+
+        if recalculate:
+            Reader.add_file_path(self.path_to_meteorologic_measurements)
+            Reader.read_meterologic_file_to_objects()
+            self.combined_preparing_of_measurements(sum_hourly_resolution=24)
+            self.save_handler(fname)
+        else:
+            self.load_handler(fname)
+
+        Visualizer.plot_scatter_pegel_vs_X(
+            pegel_tuples, vs="relative_ablation_measured",
+            save_name=f"pegel_vs_measured (allow {max_est_measures}% est. measures)",
+            max_estimated_ablation_measures_percent=max_est_measures)
+
     def compare_measured_ablation_measured_pegel_and_modelled(self, type_, pegel_tuples, max_est_measures=0):
         Visualizer.show_plots = False
         recalculate = False
@@ -396,9 +414,7 @@ class NoGuiManager:
                 EnergyBalance.set_new_roughness_parameters(rs[0], rs[1])
                 MeasurementHandler.reset_scope_to_all()
                 self.combined_calculation_of_energy_balance_and_all_associated_values()
-
                 self.save_handler(f_name)
-
             self.load_handler(f_name)
 
             # """ Statistics """
@@ -412,7 +428,7 @@ class NoGuiManager:
             #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent, measured_per_day_has_to_be_above_mm=1)
 
             """ Plotting """
-            Visualizer.plot_scatter_pegel_modelled_ablation(
+            Visualizer.plot_scatter_pegel_vs_X(
                 pegel_tuples, save_name=f"pegel_vs_modeled_z0-ice={rs[0]}_z0-snow={rs[1]} (allow {max_est_measures}% est. measures)",
                 max_estimated_ablation_measures_percent=max_est_measures)
 
@@ -445,7 +461,7 @@ if __name__ == "__main__":
         no_gui_manager = NoGuiManager()
 
         """ Height level calculations with visualizations """
-        no_gui_manager.run_calculations_height_levels()
+        # no_gui_manager.run_calculations_height_levels()
         no_gui_manager.run_visualizations_height_levels()
 
         exit()
@@ -492,9 +508,11 @@ if __name__ == "__main__":
         # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
         Visualizer.change_result_plot_subfolder(f"scatter_compare")
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=0)
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=75)
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=100)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=0)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=100)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=0)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=75)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=100)
 
     else:
         """

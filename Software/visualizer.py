@@ -350,7 +350,7 @@ class Visualizer:
         cls.show_save_and_close_plot(None, save_name=save_name)
 
     @classmethod
-    def plot_scatter_pegel_modelled_ablation(cls, tups, save_name=None, max_estimated_ablation_measures_percent=100, ax_range=100):
+    def plot_scatter_pegel_vs_X(cls, tups, vs="relative_ablation_modelled", save_name=None, max_estimated_ablation_measures_percent=100, ax_range=100):
         cls.initialize_plot(None)
 
         all_modelled_mm = []
@@ -363,14 +363,15 @@ class Visualizer:
             MeasurementHandler.change_measurement_resolution_by_start_end_time(start_time, end_time)
 
             measurement_validities_valid = [
-                x["relative_ablation_measured"] == MeanStationMeasurement.valid_states["valid"]
+                x[vs] == MeanStationMeasurement.valid_states["valid"]
                 for x in MeasurementHandler.get_all_of("measurement_validity", use_mean_measurements=True)]
+
             measured_percentage_estimated = (1 - sum(measurement_validities_valid) / len(
                 measurement_validities_valid)) * 100
             if measured_percentage_estimated > max_estimated_ablation_measures_percent:
                 continue
 
-            modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled",
+            modelled_ablations = MeasurementHandler.get_all_of(vs,
                                                                use_mean_measurements=True)
 
             pegel_time_frame = tup[2] / 100  # in cm
@@ -392,7 +393,11 @@ class Visualizer:
         cls.ax.plot(all_pegel_mm, p(all_pegel_mm), color="orange", ls="--", label="Trendline")
 
         cls.ax.set_xlabel("Pegel measure [mm/d]")
-        cls.ax.set_ylabel("Modelled [mm/d]")
+        if vs == "relative_ablation_measured":
+            cls.ax.set_ylabel("Modelled [mm/d]")
+        else:
+            cls.ax.set_ylabel("Measured [mm/d]")
+
         cls.ax.set_xlim(-3, ax_range)
         cls.ax.set_ylim(-3, ax_range)
         cls.ax.plot([0, ax_range], [0, ax_range], color='green')
@@ -784,7 +789,10 @@ class Visualizer:
                                        fill_bar=True,
                                        sep=5,
                                        )
-            ax.add_artist(scalebar)
+
+            # axPlotSpec = ax.get_subplotspec()
+            if ax.get_subplotspec().rowspan.start == ax.numRows-1 and ax.get_subplotspec().colspan.start == 0:
+                ax.add_artist(scalebar)
 
             if only_one_ax:
                 if any([aws_station, equality_line]):
