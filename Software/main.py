@@ -371,7 +371,7 @@ class NoGuiManager:
         if type_ == "new":
             MeasurementHandler.mean_measurements_by_time_interval(
                 dt.timedelta(hours=sum_hourly_resolution))
-            MeasurementHandler.fix_invalid_mean_measurements()
+            MeasurementHandler.fix_invalid_mean_measurements(measurements_to_fix)
 
     @staticmethod
     def combined_calculation_of_energy_balance_and_all_associated_values(type_="new"):
@@ -405,9 +405,9 @@ class NoGuiManager:
             save_name=f"pegel_vs_measured (allow {max_est_measures}% est. measures)",
             max_estimated_ablation_measures_percent=max_est_measures)
 
-    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, pegel_tuples, max_est_measures=0):
+    def compare_measured_ablation_measured_pegel_and_modeled(self, type_, pegel_tuples, max_est_measures=0):
         Visualizer.show_plots = False
-        recalculate = False
+        recalculate = True
 
         if recalculate:
             Reader.add_file_path(self.path_to_meteorologic_measurements)
@@ -431,7 +431,7 @@ class NoGuiManager:
             #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent)
 
             """ Plotting """
-            # Visualizer.plot_scatter_measured_modelled_ablation(
+            # Visualizer.plot_scatter_measured_modeled_ablation(
             #     pegel_tuples, save_name=f"z0ice{rs[0]}z0 snow{rs[1]} ({max_estimated_ablation_measures_percent}% est. abl. measures)",
             #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent, measured_per_day_has_to_be_above_mm=1)
 
@@ -464,6 +464,66 @@ class NoGuiManager:
         Visualizer.plot_components(("cumulated_ice_thickness",), "m",  use_mean_measures=False,
                                              save_name=f"cum_ice")
 
+    def cosipy_compare_mass_bilance_plot(self):
+        f_name = f"tmp/picklsave_cosipy_prep"
+
+        # TODO put this into cosipy verification project
+
+        self.load_handler(f_name)
+        import xarray as xr
+
+        for year in (2014, 2015, 2016, 2017, 2018):
+            try:
+                netcad_file = xr.open_dataset(f"../../cosipy_verification/output/Pasterze{year}1001-{year + 1}0930.nc")
+            except FileNotFoundError:
+                print("No file for", year)
+                continue
+
+            cosipy_data = []
+
+            MeasurementHandler.reset_scope_to_all()
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(
+                dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
+
+            modeled_data = MeasurementHandler.get_all_of("relative_ablation_modeled", use_mean_measurements=True)
+
+            for dat in netcad_file.MB.data:
+                # print(dat[0][0], end=', ', sep=', ')
+                cosipy_data.append(-dat[0][0])
+
+            cosipy_cumulated = []
+            modeled_cumulated = []
+
+            cur_cos = 0
+            for cos in cosipy_data:
+                cur_cos += cos
+                cosipy_cumulated.append(cur_cos)
+
+            cur_modeled = 0
+            for mod in modeled_data:
+                cur_modeled += mod
+                modeled_cumulated.append(cur_modeled)
+
+            import matplotlib.pyplot as plt
+
+            # plt.plot(cosipy_data, label="cosipy")
+            # plt.plot(modeled_data, label="modeled")
+
+            plt.plot(cosipy_cumulated, label="cosipy")
+            plt.plot(modeled_cumulated, label="modeled")
+
+            plt.grid()
+
+            plt.xlabel("Time [s]")
+            plt.ylabel("Ice level drop [m]")
+
+            plt.title(f"Comparison Cosipy and Bulk mass bilance for hyd. year {year}")
+
+            plt.legend()
+            plt.show()
+
+
+
     def demo_cosipy_data_format_downloader(self):
         recalculate = True
         f_name = f"tmp/picklsave_cosipy_prep"
@@ -478,22 +538,17 @@ class NoGuiManager:
                                                              "wind_speed", "sw_radiation_in",
                                                              "lw_radiation_in", "snow_delta"))
 
-            MeasurementHandler.save_me2(f_name)
+            self.combined_calculation_of_energy_balance_and_all_associated_values()
+            self.save_handler(f_name)
         else:
-            # TODO probably not the right one
-            MeasurementHandler.load_me(f_name)
+            self.load_handler(f_name)
 
         MeasurementHandler.download_in_cosipy_format()
 
     def verify_with_cosipy(self):
         f_name = f"tmp/picklsave_cosipy_prep"
-        one, two, three, fore = MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
-        MeasurementHandler.current_single_index_scope = one
-        MeasurementHandler.all_single_measures = two
-        MeasurementHandler.current_mean_index_scope = three
-        MeasurementHandler.all_mean_measures = fore
 
-        self.combined_calculation_of_energy_balance_and_all_associated_values()
+        self.load_handler(f_name)
 
         for year in self.hydrologic_years_looked_at:
             print(f"___ Looking at hydrologic year {year} ___")
@@ -506,10 +561,6 @@ class NoGuiManager:
             rel_ablations_measured = MeasurementHandler.get_all_of("relative_ablation_measured",
                                                                    use_mean_measurements=True)
 
-            print(rel_ablations_modeled)
-            exit()
-
-
             print("Ablation modeled:", sum(rel_ablations_modeled))
             print("Ablation measured:", sum(rel_ablations_measured))
 
@@ -517,17 +568,22 @@ class NoGuiManager:
 if __name__ == "__main__":
     if not cfg["GUI"]:
         no_gui_manager = NoGuiManager()
+        # no_gui_manager.verify_with_cosipy()
+        # exit()
 
-        no_gui_manager.verify_with_cosipy()
+        no_gui_manager.cosipy_compare_mass_bilance_plot()
+
         exit()
+
         no_gui_manager.demo_cosipy_data_format_downloader()
-        exit()
-
-        """ Height level calculations with visualizations """
-        # no_gui_manager.run_calculations_height_levels()
-        no_gui_manager.run_visualizations_height_levels()
-
-        exit()
+        # exit()
+        # exit()
+        #
+        # """ Height level calculations with visualizations """
+        # # no_gui_manager.run_calculations_height_levels()
+        # no_gui_manager.run_visualizations_height_levels()
+        #
+        # exit()
 
         """ Single time frame comparison with measurement fixing """
         # no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
@@ -571,11 +627,15 @@ if __name__ == "__main__":
         # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
         Visualizer.change_result_plot_subfolder(f"scatter_compare")
+
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=0)
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=100)
+
         # no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=0)
         # no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=100)
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=0)
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=75)
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups, max_est_measures=100)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled("adapted", tups, max_est_measures=0)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled("adapted", tups, max_est_measures=75)
+        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled("adapted", tups, max_est_measures=100)
 
     else:
         """

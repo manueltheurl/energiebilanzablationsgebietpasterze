@@ -350,11 +350,21 @@ class Visualizer:
         cls.show_save_and_close_plot(None, save_name=save_name)
 
     @classmethod
-    def plot_scatter_pegel_vs_X(cls, tups, vs="relative_ablation_modelled", save_name=None, max_estimated_ablation_measures_percent=100, ax_range=100):
+    def plot_scatter_pegel_vs_X(cls, tups, vs="relative_ablation_modeled", save_name=None, max_estimated_ablation_measures_percent=100, ax_range=100):
         cls.initialize_plot(None)
 
-        all_modelled_mm = []
+        all_modeled_mm = []
         all_pegel_mm = []
+
+        snr_cmap = matplotlib.cm.get_cmap('winter_r')
+
+        norm = matplotlib.colors.Normalize(vmin=0, vmax=dt.timedelta(days=30*6).total_seconds()/60/60/24)
+
+        ax_colorbar = cls.fig.add_axes([0.8, 0.11, 0.02, 0.76])  # left, bottom, width, height
+        cb = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
+                                               norm=norm,
+                                               orientation='vertical', extend="max")
+        cb.set_label(r'Period length [d]')
 
         for tup in tups:
             start_time = tup[0]
@@ -371,30 +381,32 @@ class Visualizer:
             if measured_percentage_estimated > max_estimated_ablation_measures_percent:
                 continue
 
-            modelled_ablations = MeasurementHandler.get_all_of(vs,
+            modeled_ablations = MeasurementHandler.get_all_of(vs,
                                                                use_mean_measurements=True)
 
             pegel_time_frame = tup[2] / 100  # in cm
-            # for i in range(len(modelled_ablations)):
-            #     modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+            # for i in range(len(modeled_ablations)):
+            #     modeled_ablations[i] = 0 if modeled_ablations[i] is None else modeled_ablations[i]
             time_spawn_in_days = (end_time - start_time).total_seconds() / 60 / 60 / 24
 
-            all_pegel_mm.append(pegel_time_frame / time_spawn_in_days * 1000)
-            all_modelled_mm.append(sum(modelled_ablations) / time_spawn_in_days * 1000)
+            pgel_mm = pegel_time_frame / time_spawn_in_days * 1000
+            modeled_mm = sum(modeled_ablations) / time_spawn_in_days * 1000
 
-        for mes, mod, in zip(all_pegel_mm, all_modelled_mm):
-            cls.ax.scatter(mes, mod, color="blue", s=5)
+            all_pegel_mm.append(pgel_mm)
+            all_modeled_mm.append(modeled_mm)
+
+            cls.ax.scatter(pgel_mm, modeled_mm, color=snr_cmap(norm((end_time-start_time).total_seconds()/60/60/24)), s=10, zorder=10)
 
         # cls.ax.scatter(None, None, color="blue", s=2.5, label="no snow laying")
         # cls.ax.scatter(None, None, color="red", s=2.5, label="snow laying")
 
-        z = np.polyfit(all_pegel_mm, all_modelled_mm, 1)
+        z = np.polyfit(all_pegel_mm, all_modeled_mm, 1)
         p = np.poly1d(z)
         cls.ax.plot(all_pegel_mm, p(all_pegel_mm), color="orange", ls="--", label="Trendline")
 
         cls.ax.set_xlabel("Pegel measure [mm/d]")
         if vs == "relative_ablation_measured":
-            cls.ax.set_ylabel("Modelled [mm/d]")
+            cls.ax.set_ylabel("modeled [mm/d]")
         else:
             cls.ax.set_ylabel("Measured [mm/d]")
 
