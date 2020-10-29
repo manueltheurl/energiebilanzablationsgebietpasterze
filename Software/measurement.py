@@ -321,7 +321,7 @@ class MeanStationMeasurement(StationMeasurement):
         self.__theoretical_melt_water_per_sqm = None  # in liters - derived from the energy balance
 
         self.__relative_ablation_measured = None  # in meter ice - directly from the ablation measurement (current - last one), gets set when summing measurement
-        self.__relative_ablation_modelled = None  # in meter ice - derived from the energy balance, only if no snow is laying
+        self.__relative_ablation_modeled = None  # in meter ice - derived from the energy balance, only if no snow is laying
 
         self.midday_albedo = None
 
@@ -624,10 +624,10 @@ class MeanStationMeasurement(StationMeasurement):
             self.__theoretical_mm_we_per_d = EnergyBalance.meltRatePerM2_to_mmWePerDay(
                 self._theoretical_melt_rate)
             if self.total_snow_depth == 0:  # not the right place probably there for this todo, __relative_ablation_measured is set in summing process
-                self.__relative_ablation_modelled = EnergyBalance.meltWaterPerM2_to_Ablation(
+                self.__relative_ablation_modeled = EnergyBalance.meltWaterPerM2_to_Ablation(
                     self.__theoretical_melt_water_per_sqm)
             else:
-                self.__relative_ablation_modelled = 0
+                self.__relative_ablation_modeled = 0
 
     def replace_measure_mean_of(self, mean_measurements, measure_name):
         measures = []
@@ -654,8 +654,8 @@ class MeanStationMeasurement(StationMeasurement):
         self.__relative_ablation_measured = val
 
     @property
-    def relative_ablation_modelled(self):
-        return self.__relative_ablation_modelled
+    def relative_ablation_modeled(self):
+        return self.__relative_ablation_modeled
 
     @property
     def actual_mm_we_per_d(self):

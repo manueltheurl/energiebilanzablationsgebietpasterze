@@ -180,15 +180,16 @@ class MeasurementHandler:
         todo
         """
         for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
-            if None not in [obj.sw_radiation_out, obj.sw_radiation_in]:
+            if obj.sw_radiation_in is not None:
                 if obj.sw_radiation_in < 0:  # cannot be negative
                     obj.sw_radiation_in = 0
 
-                if obj.albedo is not None and obj.albedo < 0.35:
-                    obj.sw_radiation_out = -0.35 * obj.sw_radiation_in
+                if obj.sw_radiation_out is not None:
+                    if obj.albedo is not None and obj.albedo < 0.35:
+                        obj.sw_radiation_out = -0.35 * obj.sw_radiation_in
 
-                if not obj.total_snow_depth:  # why?
-                    obj.sw_radiation_out = -0.35*obj.sw_radiation_in
+                    if not obj.total_snow_depth:  # why?
+                        obj.sw_radiation_out = -0.35*obj.sw_radiation_in
 
     @classmethod
     def correct_snow_measurements_for_single_measures(cls):
@@ -966,6 +967,47 @@ class MeasurementHandler:
                     else:
                         line_to_write.append("None")
                 writer.writerow(line_to_write)
+
+    @classmethod
+    def download_in_cosipy_format(cls):
+        """
+        Functions to download various data
+        todo can maybe be a own module, or whatever, needs to be enhanced big time
+        TODO yes and comment this as well
+
+
+        PRES        ::   Air Pressure [hPa]
+        N           ::   Cloud cover  [fraction][%/100]
+        RH2         ::   Relative humidity (2m over ground)[%]
+        RRR         ::   Precipitation per time step [mm]
+        SNOWFALL    ::   Snowfall per time step [m]
+        G           ::   Solar radiation at each time step [W m-2]
+        T2          ::   Air temperature (2m over ground) [K]
+        U2          ::   Wind speed (magnitude) [m/s]
+        HGT         ::   Elevation [m]
+
+        :return:
+        """
+        # currently not support for downloading summed measurements
+
+        if not os.path.exists(cfg["RESULT_DATA_DOWNLOAD_PATH"]):
+            os.makedirs(cfg["RESULT_DATA_DOWNLOAD_PATH"])
+
+        with open(cfg["RESULT_DATA_DOWNLOAD_PATH"] + "/data_download_for_cosipy.csv", "w") as f:
+            writer = csv.writer(f)
+            writer.writerow(["TIMESTAMP", "T2", "PRES", "N", "U2", "RH2", "RRR", "SNOWFALL", "G", "LWin"])
+
+            measures_to_take = [
+                cls.all_mean_measures[i] for i in sorted(cls.current_mean_index_scope)]
+
+            for obj in measures_to_take:
+                obj: MeanStationMeasurement
+
+                snow = obj.snow_depth_delta_natural if obj.snow_depth_delta_natural > 0 else 0
+
+                writer.writerow(
+                    [obj.datetime, obj.temperature+273.15, obj.air_pressure/100, "", obj.wind_speed, obj.rel_moisture, 0,
+                     snow, obj.sw_radiation_in, obj.lw_radiation_in])
 
     @classmethod
     def save_me(cls, save_path):

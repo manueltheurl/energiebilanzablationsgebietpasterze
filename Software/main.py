@@ -207,8 +207,14 @@ class NoGuiManager:
         # with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
         #     MeasurementHandler = pickle.load(f)
 
+        one, two, three, fore = MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
+        MeasurementHandler.current_single_index_scope = one
+        MeasurementHandler.all_single_measures = two
+        MeasurementHandler.current_mean_index_scope = three
+        MeasurementHandler.all_mean_measures = fore
 
-        MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
+
+        # MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
 
         radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
 
@@ -288,15 +294,15 @@ class NoGuiManager:
         self.combined_calculation_of_energy_balance_and_all_associated_values(type_=type_)
 
         measured_ablations = MeasurementHandler.get_all_of("relative_ablation_measured", use_mean_measurements=True)
-        modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled", use_mean_measurements=True)
+        modeled_ablations = MeasurementHandler.get_all_of("relative_ablation_modeled", use_mean_measurements=True)
 
         print("Nones measured_ablations:", sum(x is None for x in measured_ablations))
-        print("Nones modelled_ablations:", sum(x is None for x in modelled_ablations))
+        print("Nones modeled_ablations:", sum(x is None for x in modeled_ablations))
 
         for i in range(len(measured_ablations)):
             measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
-        for i in range(len(modelled_ablations)):
-            modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+        for i in range(len(modeled_ablations)):
+            modeled_ablations[i] = 0 if modeled_ablations[i] is None else modeled_ablations[i]
 
         # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
         # Visualizer.plot_single_component("albedo", "", use_summed_measurements=True,
@@ -329,18 +335,22 @@ class NoGuiManager:
         #                                      use_summed_measurements=True,
         #                                      save_name=f"snow_depth")
 
-        modelled_ablation = sum(modelled_ablations)
+        modeled_ablation = sum(modeled_ablations)
         measured_ablation = sum(measured_ablations)
-        reality_factor_ablation = measured_ablation / modelled_ablation
-        reality_factor_pegel = (pegel_measure/100) / modelled_ablation
+        reality_factor_ablation = measured_ablation / modeled_ablation
+        reality_factor_pegel = (pegel_measure/100) / modeled_ablation
         print("Measured ablation", round(measured_ablation, 2), "Pegel measure", pegel_measure/100)
-        print("Modelled ablation",
-              round(modelled_ablation, 2))  # measured stays the same .. cause thats wont be affected
+        print("modeled ablation",
+              round(modeled_ablation, 2))  # measured stays the same .. cause thats wont be affected
         print("Reality factor ablation:", round(reality_factor_ablation, 2))
         print("Reality factor pegel:", round(reality_factor_pegel, 2))
 
     @staticmethod
-    def combined_preparing_of_measurements(sum_hourly_resolution=24, type_="new"):
+    def combined_preparing_of_measurements(sum_hourly_resolution=24, type_="new",
+                                           measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
+                                                             "wind_speed", "sw_radiation_in", "sw_radiation_out",
+                                                             "lw_radiation_in", "lw_radiation_out", "snow_delta",
+                                                             "relative_ablation_measured")):
         """
         Basic steps that are used to prepare the measurements.
         :param sum_hourly_resolution:
@@ -373,7 +383,7 @@ class NoGuiManager:
             MeasurementHandler.sum_measurements_by_time_interval(dt.timedelta(days=1))
             MeasurementHandler.calculate_measured_and_theoretical_ablation_values_for_summed()
 
-    def compare_measured_ablation_measured_pegel_and_modelled(self, type_, pegel_tuples):
+    def compare_measured_ablation_measured_pegel_and_modeled(self, type_, pegel_tuples):
         Visualizer.show_plots = False
         Visualizer.change_result_plot_subfolder(f"scatter_compare")
         recalculate = True
@@ -397,12 +407,12 @@ class NoGuiManager:
             max_estimated_ablation_measures_percent = 0
 
             # """ Statistics """
-            # StatsPrinter.compare_pegel_measured_and_modelled_for_time_intervals(
+            # StatsPrinter.compare_pegel_measured_and_modeled_for_time_intervals(
             #     pegel_tuples, heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_}) max est. abl. measures {max_estimated_ablation_measures_percent}",
             #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent)
 
             """ Plotting """
-            Visualizer.plot_scatter_measured_modelled_ablation(
+            Visualizer.plot_scatter_measured_modeled_ablation(
                 pegel_tuples, save_name=f"z0ice{rs[0]}z0 snow{rs[1]} ({max_estimated_ablation_measures_percent}% est. abl. measures)",
                 max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent, measured_per_day_has_to_be_above_mm=1)
 
@@ -429,10 +439,64 @@ class NoGuiManager:
         Visualizer.plot_components(("cumulated_ice_thickness",), "m",  use_summed_measurements=False,
                                              save_name=f"cum_ice")
 
+    def demo_cosipy_data_format_downloader(self):
+        recalculate = True
+        f_name = f"tmp/picklsave_cosipy_prep"
+
+        # WARNING! Please check the data, its seems they are out of a reasonable range G MAX: 1199.98 MIN: -0.94
+
+        if recalculate:
+            Reader.add_file_path(self.path_to_meteorologic_measurements)
+            Reader.read_meterologic_file_to_objects()
+            self.combined_preparing_of_measurements(sum_hourly_resolution=1,
+                                                    measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
+                                                             "wind_speed", "sw_radiation_in",
+                                                             "lw_radiation_in", "snow_delta"))
+
+            MeasurementHandler.save_me2(f_name)
+        else:
+            # TODO probably not the right one
+            MeasurementHandler.load_me(f_name)
+
+        MeasurementHandler.download_in_cosipy_format()
+
+    def verify_with_cosipy(self):
+        f_name = f"tmp/picklsave_cosipy_prep"
+        one, two, three, fore = MeasurementHandler.load_me(self.pickle_multiple_measurement_singleton)
+        MeasurementHandler.current_single_index_scope = one
+        MeasurementHandler.all_single_measures = two
+        MeasurementHandler.current_mean_index_scope = three
+        MeasurementHandler.all_mean_measures = fore
+
+        self.combined_calculation_of_energy_balance_and_all_associated_values()
+
+        for year in self.hydrologic_years_looked_at:
+            print(f"___ Looking at hydrologic year {year} ___")
+            MeasurementHandler.reset_scope_to_all()
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(
+                dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
+
+            rel_ablations_modeled = MeasurementHandler.get_all_of("relative_ablation_modeled",
+                                                                  use_mean_measurements=True)
+            rel_ablations_measured = MeasurementHandler.get_all_of("relative_ablation_measured",
+                                                                   use_mean_measurements=True)
+
+            print(rel_ablations_modeled)
+            exit()
+
+
+            print("Ablation modeled:", sum(rel_ablations_modeled))
+            print("Ablation measured:", sum(rel_ablations_measured))
+
 
 if __name__ == "__main__":
     if not cfg["GUI"]:
         no_gui_manager = NoGuiManager()
+
+        no_gui_manager.verify_with_cosipy()
+        exit()
+        no_gui_manager.demo_cosipy_data_format_downloader()
+        exit()
 
         """ Height level calculations with visualizations """
         no_gui_manager.run_calculations_height_levels()
@@ -481,7 +545,7 @@ if __name__ == "__main__":
             (dt.datetime(2019, 7, 17), dt.datetime(2019, 10, 4), 370)]
         # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_modelled("adapted", tups)
+        no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled("adapted", tups)
 
     else:
         """

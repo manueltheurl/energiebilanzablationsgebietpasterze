@@ -28,7 +28,7 @@ class ModelFrame(tk.Frame):
                                                 command=self.download_cleaned_ablation)
         self.btn_cleanedAblation.pack(pady=(40, 0))
 
-        self.btn_relativeAblation = tk.Button(self, text="Relative Ablation (incl. modelled Ablation)",
+        self.btn_relativeAblation = tk.Button(self, text="Relative Ablation (incl. modeled Ablation)",
                                              command=self.download_relative_ablation)
         self.btn_relativeAblation.pack(pady=(40, 0))
 
@@ -62,7 +62,7 @@ class ModelFrame(tk.Frame):
     @staticmethod
     def download_relative_ablation():
         MeasurementHandler.download_components(["relative_ablation_measured",
-                                                             "relative_ablation_modelled"],
+                                                             "relative_ablation_modeled"],
                                                use_summed_measurements=True)
 
     @staticmethod

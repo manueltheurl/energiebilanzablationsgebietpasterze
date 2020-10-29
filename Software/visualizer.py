@@ -257,7 +257,7 @@ class Visualizer:
 
         poly1d_fn = np.poly1d([slope, intercept])
 
-        print("Scatter measured and modelled w.e. slope:", round(slope, 2), "intercept", round(intercept, 2))
+        print("Scatter measured and modeled w.e. slope:", round(slope, 2), "intercept", round(intercept, 2))
 
         # poly1d_fn is now a function which takes in x and returns an estimate for y
 
@@ -269,7 +269,7 @@ class Visualizer:
             cls.ax.plot([0, max_value], [0, max_value], linestyle="--", label="Line of unity")
 
             cls.ax.set_aspect("equal")
-            cls.ax.set_ylabel("Modelled ablation [mm w.e./d]")
+            cls.ax.set_ylabel("modeled ablation [mm w.e./d]")
         elif component == "temperature":
             cls.ax.set_ylabel("Temperature [°C]")
 
@@ -288,10 +288,10 @@ class Visualizer:
         cls.show_save_and_close_plot(None, save_name=save_name)
 
     @classmethod
-    def plot_scatter_measured_modelled_ablation(cls, tups, save_name=None, max_estimated_ablation_measures_percent=100, measured_per_day_has_to_be_above_mm=0):
+    def plot_scatter_measured_modeled_ablation(cls, tups, save_name=None, max_estimated_ablation_measures_percent=100, measured_per_day_has_to_be_above_mm=0):
         cls.initialize_plot(None)
 
-        all_modelled_mm = []
+        all_modeled_mm = []
         all_measured_mm = []
         all_total_snow_depths = []
         all_pegel_mm = []
@@ -312,49 +312,49 @@ class Visualizer:
 
             measured_ablations = MeasurementHandler.get_all_of("relative_ablation_measured",
                                                                use_mean_measurements=True)
-            modelled_ablations = MeasurementHandler.get_all_of("relative_ablation_modelled",
+            modeled_ablations = MeasurementHandler.get_all_of("relative_ablation_modeled",
                                                                use_mean_measurements=True)
             total_snow_depths = MeasurementHandler.get_all_of("total_snow_depth",
                                                               use_mean_measurements=True)
 
             for i in range(len(measured_ablations)):
                 measured_ablations[i] = 0 if measured_ablations[i] is None else measured_ablations[i]
-            for i in range(len(modelled_ablations)):
-                modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+            for i in range(len(modeled_ablations)):
+                modeled_ablations[i] = 0 if modeled_ablations[i] is None else modeled_ablations[i]
 
             time_spawn_in_days = (end_time - start_time).total_seconds() / 60 / 60 / 24
 
-            for modelled, measured, total_snow_depth in zip(modelled_ablations, measured_ablations, total_snow_depths):
+            for modeled, measured, total_snow_depth in zip(modeled_ablations, measured_ablations, total_snow_depths):
                 if measured * 1000 >= measured_per_day_has_to_be_above_mm:
-                    all_modelled_mm.append(modelled * 1000)
+                    all_modeled_mm.append(modeled * 1000)
                     all_measured_mm.append(measured * 1000)
                     all_pegel_mm.append(pegel_measure / time_spawn_in_days * 1000)
                     all_total_snow_depths.append(total_snow_depth)
 
         all_measured_mm_no0 = []
-        all_modelled_mm_no0 = []
+        all_modeled_mm_no0 = []
 
-        for meas, mod in zip(all_measured_mm, all_modelled_mm):
+        for meas, mod in zip(all_measured_mm, all_modeled_mm):
             if meas and mod:
                 all_measured_mm_no0.append(meas)
-                all_modelled_mm_no0.append(mod)
+                all_modeled_mm_no0.append(mod)
 
-        for mes, mod, total_snow in zip(all_measured_mm, all_modelled_mm, all_total_snow_depths):
+        for mes, mod, total_snow in zip(all_measured_mm, all_modeled_mm, all_total_snow_depths):
             color = "blue" if not total_snow else "red"
             cls.ax.scatter(mes, mod, color=color, s=2.5)
         cls.ax.scatter(None, None, color="blue", s=2.5, label="no snow laying")
         cls.ax.scatter(None, None, color="red", s=2.5, label="snow laying")
 
-        z = np.polyfit(all_measured_mm, all_modelled_mm, 1)
+        z = np.polyfit(all_measured_mm, all_modeled_mm, 1)
         p = np.poly1d(z)
         cls.ax.plot(all_measured_mm, p(all_measured_mm), color="orange", ls="--", label="Trendline")
 
-        z = np.polyfit(all_measured_mm_no0, all_modelled_mm_no0, 1)
+        z = np.polyfit(all_measured_mm_no0, all_modeled_mm_no0, 1)
         p = np.poly1d(z)
         cls.ax.plot(all_measured_mm_no0, p(all_measured_mm_no0), color="red", ls="--", label="Trendline no 0s")
 
         cls.ax.set_xlabel("Measured [mm]")
-        cls.ax.set_ylabel("Modelled [mm]")
+        cls.ax.set_ylabel("modeled [mm]")
         cls.ax.set_xlim(-3, 300)
         cls.ax.set_ylim(-3, 300)
         cls.ax.plot([0, 300], [0, 300], color='green')
