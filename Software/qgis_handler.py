@@ -23,7 +23,7 @@ from height_level import HeightLevel
 
 
 ONLY_TONGUE = True
-NO_DEBRIS = True
+NO_DEBRIS = False
 HIGH_RES_RADIATION_GRIDS = True
 
 # TODO DOC in qgis hover toolbox plugin and id is displayed

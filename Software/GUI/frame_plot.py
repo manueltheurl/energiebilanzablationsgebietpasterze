@@ -28,20 +28,13 @@ class PlotFrame(tk.Frame):
         self.heading_general_settings = tk.Label(frame_general_settings, text="General settings", font=cfg["HEADING_FONT"])
         self.heading_general_settings.pack(pady=(25, 0))
 
-        self.lbl_use_sum = tk.Label(frame_general_settings, text="Use summed measurement", state="disabled")
-        self.lbl_use_sum.pack(pady=(10, 0))
+        self.lbl_use_mean = tk.Label(frame_general_settings, text="Use mean measurements", state="disabled")
+        self.lbl_use_mean.pack(pady=(10, 0))
 
         self.ckbox_use_sum_value = tk.IntVar()
         self.ckbox_use_sum = tk.Checkbutton(frame_general_settings, variable=self.ckbox_use_sum_value, state="disabled",
-                                            command=self.use_summed_measurements_callback)
+                                            command=self.use_mean_measures_callback)
         self.ckbox_use_sum.pack()
-
-        self.lbl_accumulate_plots = tk.Label(frame_general_settings, text="Accumulate Plots")
-        self.lbl_accumulate_plots.pack(pady=(10, 0))
-
-        self.ckbox_accumulate_plots_value = tk.IntVar()
-        self.ckbox_accumulate_plots = tk.Checkbutton(frame_general_settings, variable=self.ckbox_accumulate_plots_value)
-        self.ckbox_accumulate_plots.pack()
 
         # # ------------------ ENERGY BALANCE -------------------
 
@@ -121,7 +114,7 @@ class PlotFrame(tk.Frame):
             command=self.plot_trend_eliminate_selected_components)
         self.btn_trendEliminateSelectedComponents.pack()
 
-    def use_summed_measurements_callback(self):
+    def use_mean_measures_callback(self):
         current_selectionsAxis1 = [self.lbox_selectedComponentsAxis1.get(opt) for opt in self.lbox_selectedComponentsAxis1.curselection()]
         current_selectionsAxis2 = [self.lbox_selectedComponentsAxis2.get(opt) for opt in self.lbox_selectedComponentsAxis2.curselection()]
 
@@ -145,25 +138,20 @@ class PlotFrame(tk.Frame):
                 if option in current_selectionsAxis2:
                     self.lbox_selectedComponentsAxis2.selection_set(first=i)
 
-    def enable_option_to_use_summed_measurements(self):
-        fc.set_widget_state([self.lbl_use_sum, self.ckbox_use_sum], "normal")
-
-    def check_accumulate_flag(self):
-        Visualizer.accumulate_plots = bool(self.ckbox_accumulate_plots_value.get())
+    def enable_option_to_use_mean_measures(self):
+        fc.set_widget_state([self.lbl_use_mean, self.ckbox_use_sum], "normal")
 
     def plot_selected_components(self):
-        self.check_accumulate_flag()
 
         Visualizer.plot_components(
             components1=[self.lbox_selectedComponentsAxis1.get(opt) for opt in self.lbox_selectedComponentsAxis1.curselection()],
             cumulate_components1=self.ckbox_cumulateAxis1_value.get(),
             components2=[self.lbox_selectedComponentsAxis2.get(opt) for opt in self.lbox_selectedComponentsAxis2.curselection()],
             cumulate_components2=self.ckbox_cumulateAxis2_value.get(),
-            use_summed_measurements=bool(self.ckbox_use_sum_value.get()),
+            use_mean_measures=bool(self.ckbox_use_sum_value.get()),
         )
 
     def plot_trend_eliminate_selected_components(self):
-        self.check_accumulate_flag()
         Visualizer.plot_periodic_trend_eliminated_selected_option(
             [self.lbox_selectedComponentsAxis1.get(opt) for opt in self.lbox_selectedComponentsAxis1.curselection()],
             bool(self.ckbox_use_sum_value.get())

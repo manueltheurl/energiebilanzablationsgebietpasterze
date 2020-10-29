@@ -215,7 +215,7 @@ class ReadFrame(tk.Frame):
 
         info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
         info_bar.singleton.change_scope_info("")
-        info_bar.singleton.change_sum_info("")
+        info_bar.singleton.change_mean_info("")
 
         frame_scope.singleton.fill_fields_with_read_in_values()
         navigation_bar.singleton.show_scope_frame()

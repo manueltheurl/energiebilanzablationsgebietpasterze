@@ -9,7 +9,7 @@ import frame_energy_balance
 import frame_download
 import frame_plot
 import gui_main_frame
-import frame_sum
+import frame_mean
 import frame_prepare_measurements
 import frame_conversion
 
@@ -92,7 +92,7 @@ class NavigationBar(tk.Frame):
 
     def show_sum_frame(self):
         self.__set_state_of_buttons_normal()
-        gui_main_frame.singleton.show_main_frame(frame_sum)
+        gui_main_frame.singleton.show_main_frame(frame_mean)
         self.btn_sumframe["state"] = "active"
         self.btn_energybalanceframe["state"] = "normal"
 

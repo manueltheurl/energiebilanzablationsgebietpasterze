@@ -7,7 +7,7 @@ import info_bar as info_bar
 from tkinter import ttk
 import datetime as dt
 from reader import Reader
-import frame_sum
+import frame_mean
 from config_handler import cfg
 
 
@@ -48,27 +48,23 @@ class EnergyBalanceFrame(tk.Frame):
 
         self.energy_balance_calculated = False  # todo currently never gets reset after getting true
 
-    def enable_option_to_use_summed_measurements(self):
+    def enable_option_to_use_mean_measures(self):
         fc.set_widget_state([self.lbl_useSummed, self.ckbox_useSummed], "normal")
         self.ckbox_useSummed_value.set(1)
 
     def calculate_energy_balance_and_cumulate_ablation(self):
-
         if self.ckbox_useSummed_value.get():
             if not MeasurementHandler.calculate_energy_balance_for_mean_measures(
                     self.scale_simulate_dimming_brightening.get()):
-                info_bar.singleton.change_error_message(
-                    "Some measurements are None, cannot calculate energy balance, did you fix invalid messages?")
-                return
+                info_bar.singleton.change_error_message("Cannot compute energy balance for all measures, did you "
+                                                        "consider fixing invalid measures?")
             else:
                 info_bar.singleton.change_error_message("")
             MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_mean_measures()
         else:
             if not MeasurementHandler.calculate_energy_balance_for_single_measures(
                     self.scale_simulate_dimming_brightening.get()):
-                info_bar.singleton.change_error_message(
-                    "Some measurements are None, cannot calculate energy balance, did you fix invalid messages?")
-                return
+                info_bar.singleton.change_error_message("Cannot compute energy balance for all measures")
             else:
                 info_bar.singleton.change_error_message("")
             MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_single_measures()
@@ -79,7 +75,7 @@ class EnergyBalanceFrame(tk.Frame):
         navigation_bar.singleton.btn_downloadframe["state"] = "normal"
         navigation_bar.singleton.btn_plotframe["state"] = "normal"
 
-        if frame_sum.singleton.already_summed_measurements:
+        if frame_mean.singleton.already_averaged_measurements:
             navigation_bar.singleton.btn_conversionframe["state"] = "normal"
             navigation_bar.singleton.show_conversion_frame()
         else:

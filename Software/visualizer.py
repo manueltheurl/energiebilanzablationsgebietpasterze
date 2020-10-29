@@ -29,6 +29,8 @@ from matplotlib.ticker import MaxNLocator
 from measurement import MeanStationMeasurement
 import copy
 import locale
+from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
+import matplotlib.font_manager as fm
 
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
@@ -90,8 +92,6 @@ class Visualizer:
         "actual_melt_water_per_sqm": r"$l$",
         "theoretical_melt_water_per_sqm": r"$l$",
     }
-
-    accumulate_plots = False
     show_plots = True
 
     fig = None
@@ -125,21 +125,7 @@ class Visualizer:
         yet_to_initialize = True
 
         if type_ is not None:
-            if cls.accumulate_plots:
-                # close other plot types that are open
-                for plot_type in cls.plot_type_initialized:
-                    if type_ != plot_type:
-                        if cls.plot_type_initialized[plot_type]:
-                            cls.plot_type_initialized[plot_type] = False
-                            plt.close()
-                            break
-
-                if cls.plot_type_initialized[type_]:
-                    yet_to_initialize = False
-                else:
-                    cls.plot_type_initialized[type_] = True
-            else:
-                plt.close()  # should one be open
+            plt.close()  # should one be open
 
         if yet_to_initialize or not bool(cfg["PRO_VERSION"]):
             cls.fig = plt.figure(figsize=figsize)
@@ -203,9 +189,8 @@ class Visualizer:
                         bbox_inches='tight')
             cls.plot_type_initialized = dict.fromkeys(cls.plot_type_initialized, False)
 
-        if not cls.accumulate_plots or not bool(cfg["PRO_VERSION"]):
-            plt.close()
-            cls.plot_type_initialized = dict.fromkeys(cls.plot_type_initialized, False)
+        plt.close()
+        cls.plot_type_initialized = dict.fromkeys(cls.plot_type_initialized, False)
 
     @staticmethod
     def _color_generator():
@@ -360,6 +345,65 @@ class Visualizer:
         cls.ax.plot([0, 300], [0, 300], color='green')
         cls.ax.grid()
         cls.ax.legend()
+        cls.ax.set_aspect("equal")
+        cls.ax.set_title(save_name)
+        cls.show_save_and_close_plot(None, save_name=save_name)
+
+    @classmethod
+    def plot_scatter_pegel_vs_X(cls, tups, vs="relative_ablation_modelled", save_name=None, max_estimated_ablation_measures_percent=100, ax_range=100):
+        cls.initialize_plot(None)
+
+        all_modelled_mm = []
+        all_pegel_mm = []
+
+        for tup in tups:
+            start_time = tup[0]
+            end_time = tup[1]
+            MeasurementHandler.reset_scope_to_all()
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(start_time, end_time)
+
+            measurement_validities_valid = [
+                x[vs] == MeanStationMeasurement.valid_states["valid"]
+                for x in MeasurementHandler.get_all_of("measurement_validity", use_mean_measurements=True)]
+
+            measured_percentage_estimated = (1 - sum(measurement_validities_valid) / len(
+                measurement_validities_valid)) * 100
+            if measured_percentage_estimated > max_estimated_ablation_measures_percent:
+                continue
+
+            modelled_ablations = MeasurementHandler.get_all_of(vs,
+                                                               use_mean_measurements=True)
+
+            pegel_time_frame = tup[2] / 100  # in cm
+            # for i in range(len(modelled_ablations)):
+            #     modelled_ablations[i] = 0 if modelled_ablations[i] is None else modelled_ablations[i]
+            time_spawn_in_days = (end_time - start_time).total_seconds() / 60 / 60 / 24
+
+            all_pegel_mm.append(pegel_time_frame / time_spawn_in_days * 1000)
+            all_modelled_mm.append(sum(modelled_ablations) / time_spawn_in_days * 1000)
+
+        for mes, mod, in zip(all_pegel_mm, all_modelled_mm):
+            cls.ax.scatter(mes, mod, color="blue", s=5)
+
+        # cls.ax.scatter(None, None, color="blue", s=2.5, label="no snow laying")
+        # cls.ax.scatter(None, None, color="red", s=2.5, label="snow laying")
+
+        z = np.polyfit(all_pegel_mm, all_modelled_mm, 1)
+        p = np.poly1d(z)
+        cls.ax.plot(all_pegel_mm, p(all_pegel_mm), color="orange", ls="--", label="Trendline")
+
+        cls.ax.set_xlabel("Pegel measure [mm/d]")
+        if vs == "relative_ablation_measured":
+            cls.ax.set_ylabel("Modelled [mm/d]")
+        else:
+            cls.ax.set_ylabel("Measured [mm/d]")
+
+        cls.ax.set_xlim(-3, ax_range)
+        cls.ax.set_ylim(-3, ax_range)
+        cls.ax.plot([0, ax_range], [0, ax_range], color='green')
+        cls.ax.grid()
+        cls.ax.legend()
+        cls.ax.set_aspect("equal")
         cls.ax.set_title(save_name)
         cls.show_save_and_close_plot(None, save_name=save_name)
 
@@ -386,22 +430,22 @@ class Visualizer:
 
     @classmethod
     def plot_components(cls, components1: tuple, components2: tuple = None, cumulate_components1=False,
-                        cumulate_components2=False, use_summed_measurements=False, save_name=None):
+                        cumulate_components2=False, use_mean_measures=False, save_name=None):
         cls.initialize_plot(None)
 
         color_generator = cls._color_generator()
         y_dates = MeasurementHandler.get_all_of("datetime",
-                                                use_mean_measurements=use_summed_measurements)
+                                                use_mean_measurements=use_mean_measures)
 
         if cumulate_components1:
             x_vals = MeasurementHandler.get_cumulated_vals_of_components(
-                components1, use_summed_measurements)
+                components1, use_mean_measures)
             cls.ax.plot(y_dates, x_vals, label=cls.get_string_out_of_components(components1), color=next(color_generator))
         else:
             for component in components1:
                 try:
                     x_vals = MeasurementHandler.get_all_of(
-                        component, use_mean_measurements=use_summed_measurements)
+                        component, use_mean_measurements=use_mean_measures)
                     cls.ax.plot(y_dates, x_vals, label=cls._pretty_label(component), color=next(color_generator))
                 except AttributeError:
                     print(component, "does not exist")
@@ -413,14 +457,14 @@ class Visualizer:
             ax2 = cls.ax.twinx()
             if cumulate_components2:
                 x_vals = MeasurementHandler.get_cumulated_vals_of_components(
-                    components2, use_summed_measurements)
+                    components2, use_mean_measures)
                 ax2.plot(y_dates, x_vals, label=cls.get_string_out_of_components(components2),
                              color=next(color_generator))
             else:
                 for component in components2:
                     try:
                         x_vals = MeasurementHandler.get_all_of(
-                            component, use_mean_measurements=use_summed_measurements)
+                            component, use_mean_measurements=use_mean_measures)
                         ax2.plot(y_dates, x_vals, label=cls._pretty_label(component), color="orange")
                     except AttributeError:
                         print(component, "does not exist")
@@ -432,7 +476,7 @@ class Visualizer:
             title = cls.get_string_out_of_components(components1)
             if components2:
                 title += "\n vs \n" + cls.get_string_out_of_components(components2)
-            if use_summed_measurements:
+            if use_mean_measures:
                 title += "\n Used summed measurements"
             plt.title(title)
 
@@ -440,7 +484,7 @@ class Visualizer:
 
     @classmethod
     def plot_components_lvls(cls, height_level_objects, components1: tuple, components1_unit, components2: tuple = None,
-                             components2_unit=None, factor=1, stack_fill=False, use_summed_measurements=True,
+                             components2_unit=None, factor=1, stack_fill=False, use_mean_measures=True,
                              show_estimated_measurement_areas=False, save_name=None):
 
         cls.initialize_plot(None)
@@ -448,7 +492,7 @@ class Visualizer:
         color_generator = cls._color_generator()
 
         y_dates = MeasurementHandler.get_all_of("datetime",
-                                                use_mean_measurements=use_summed_measurements)
+                                                use_mean_measurements=use_mean_measures)
 
         if len(height_level_objects) > 1 and len(components1) > 1:
             exit("Cannot visualize that, either one height lvl and multiple components or multiple height lvls and one"
@@ -734,6 +778,22 @@ class Visualizer:
                     ax.add_patch(PolygonPatch(shape.__geo_interface__,
                                                    fc=color,
                                                    ec="gray"))
+
+            # Todo plot only once?
+            scalebar = AnchoredSizeBar(ax.transData,
+                                       1000, '1 km', 'lower left',
+                                       pad=0.3,
+                                       color='black',
+                                       frameon=False,
+                                       size_vertical=60,
+                                       fill_bar=True,
+                                       sep=5,
+                                       )
+
+            # axPlotSpec = ax.get_subplotspec()
+            if ax.get_subplotspec().rowspan.start == ax.numRows-1 and ax.get_subplotspec().colspan.start == 0:
+                ax.add_artist(scalebar)
+
             if only_one_ax:
                 if any([aws_station, equality_line]):
                     ax.legend()
@@ -748,15 +808,15 @@ class Visualizer:
         return str(year)+'/'+str(int(year)+1)[2:4]
 
     @classmethod
-    def plot_periodic_trend_eliminated_selected_option(cls, options, use_summed_measurements=False, keep_trend=True,
+    def plot_periodic_trend_eliminated_selected_option(cls, options, use_mean_measures=False, keep_trend=True,
                                                        save_name=None):
-        x_vals = MeasurementHandler.get_cumulated_vals_of_components(options, use_summed_measurements)
+        x_vals = MeasurementHandler.get_cumulated_vals_of_components(options, use_mean_measures)
         cls.initialize_plot("trend")
 
         days_365 = dt.timedelta(days=365)  # 365.2422 days in year approximately
 
         y_dates = MeasurementHandler.get_all_of("datetime",
-                                                use_mean_measurements=use_summed_measurements)
+                                                use_mean_measurements=use_mean_measures)
 
         if not y_dates or y_dates[-1] - y_dates[0] < days_365:
             print("Cant trend eliminate for data range less than one year")
@@ -774,7 +834,7 @@ class Visualizer:
         cls.modify_axes()
 
         if int(cfg["PLOT_TITLE"]):
-            summed_title_appendix = "" if not use_summed_measurements else "\n Used summed measurements"
+            summed_title_appendix = "" if not use_mean_measures else "\n Used summed measurements"
             title_used_options = ", ".join([cls.title_dict[value_name] for value_name in options])
         # cls.ax.set_title(title_used_options + " - Periodic trend eliminated" + summed_title_appendix)
         cls.show_save_and_close_plot("trend", save_name=save_name)

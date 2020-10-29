@@ -8,7 +8,7 @@ import frame_energy_balance
 import frame_download
 import frame_plot
 import gui_main_frame
-import frame_sum
+import frame_mean
 from config_handler import cfg
 
 
