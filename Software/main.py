@@ -486,10 +486,15 @@ class NoGuiManager:
                 dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
 
             modeled_data = MeasurementHandler.get_all_of("relative_ablation_modeled", use_mean_measurements=True)
+            # compare_data = MeasurementHandler.get_all_of("lw_radiation_out", use_mean_measurements=True)
+
+            # modeled_data = MeasurementHandler.get_all_of("total_energy_balance", use_mean_measurements=True)
 
             for dat in netcad_file.MB.data:
-                # print(dat[0][0], end=', ', sep=', ')
                 cosipy_data.append(-dat[0][0])
+
+            # for dat in netcad_file.ME.data:
+            #     cosipy_data.append(dat[0][0])
 
             cosipy_cumulated = []
             modeled_cumulated = []
@@ -509,19 +514,170 @@ class NoGuiManager:
             # plt.plot(cosipy_data, label="cosipy")
             # plt.plot(modeled_data, label="modeled")
 
+            # plt.plot(cosipy_cumulated, label="cosipy")
+            # plt.plot(modeled_cumulated, label="modeled")
+
+            diff = []
+            for i in range(len(cosipy_cumulated)):
+                diff.append(modeled_cumulated[i]-cosipy_cumulated[i])
+
+            for compare_value in ("sw_radiation_in", "sw_radiation_out", "lw_radiation_in", "lw_radiation_out",
+                                  "total_snow_depth", "rel_moisture", "wind_speed", "air_pressure", "sensible_heat",
+                                  "latent_heat"):
+
+                plt.figure(figsize=(10, 6))
+                ax1 = plt.subplot()
+                ax2 = ax1.twinx()
+
+                compare_data = MeasurementHandler.get_all_of(compare_value, use_mean_measurements=True)
+
+                ax1.plot(compare_data, color="blue", zorder=2, label=compare_value)
+                ax2.plot(diff, color="orange", zorder=1, label="Ablation diff [m]")
+                ax2.set_ylim(-2, 2)
+
+                ax1.grid()
+
+                ax1.set_xlabel("Time [s]")
+                # ax1.set_ylabel("Ice level drop [m]")
+                ax2.set_ylabel("Ablation diff [m]")
+                ax1.set_ylabel(compare_value)
+
+                # plt.title(f"Comparison Cosipy and Bulk mass bilance for hyd. year {year}")
+                plt.title(f"Comparison Cosipy and Bulk mass bilance for hyd. year {year}")
+                plt.savefig(f"plots/cosipy_verification/diff_compared_with_{compare_value}.png")
+
+                ax1.legend()
+                ax2.legend()
+
+                # plt.legend()
+                # plt.show()
+                plt.close()
+
+            exit()
+
+
+    def cosipy_compare_mass_bilance_plot_snow_height(self):
+        f_name = f"tmp/picklsave_cosipy_prep"
+
+        # TODO put this into cosipy verification project
+
+        self.load_handler(f_name)
+        import xarray as xr
+
+        for year in (2014, 2015, 2016, 2017, 2018):
+            try:
+                netcad_file = xr.open_dataset(f"../../cosipy_verification/output/Pasterze{year}1001-{year + 1}0930.nc")
+            except FileNotFoundError:
+                print("No file for", year)
+                continue
+
+            cosipy_data = []
+
+            MeasurementHandler.reset_scope_to_all()
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(
+                dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
+
+            modeled_data = MeasurementHandler.get_all_of("total_snow_depth", use_mean_measurements=True)
+
+            for dat in netcad_file.SNOWHEIGHT.data:
+                cosipy_data.append(dat[0][0])
+
+            cosipy_cumulated = []
+            modeled_cumulated = []
+
+            cur_cos = 0
+            for cos in cosipy_data:
+                cur_cos += cos
+                cosipy_cumulated.append(cur_cos)
+
+            modeled_data_no_neg = []
+
+            for x in modeled_data:
+                if x < 0:
+                    modeled_data_no_neg.append(0)
+                else:
+                    modeled_data_no_neg.append(x)
+
+
+            cur_modeled = 0
+            for mod in modeled_data_no_neg:
+                cur_modeled += mod
+                modeled_cumulated.append(cur_modeled)
+
+            import matplotlib.pyplot as plt
+
+            plt.plot(cosipy_data, label="cosipy")
+            plt.plot(modeled_data_no_neg, label="modeled")
+
+            plt.xlabel("Time [s]")
+            plt.ylabel("Snow height [m]")
+
+            plt.legend()
+
+            plt.savefig(f"plots/cosipy_verification/snow_{year}")
+
+            # plt.plot(cosipy_cumulated, label="cosipy")
+            # plt.plot(modeled_cumulated, label="modeled")
+
+            # plt.show()
+
+    def cosipy_compare_mass_bilance_plot_energy(self):
+        f_name = f"tmp/picklsave_cosipy_prep"
+
+        # TODO put this into cosipy verification project
+
+        self.load_handler(f_name)
+        import xarray as xr
+
+        for year in (2014, 2015, 2016, 2017, 2018):
+            try:
+                netcad_file = xr.open_dataset(f"../../cosipy_verification/output/Pasterze{year}1001-{year + 1}0930.nc")
+            except FileNotFoundError:
+                print("No file for", year)
+                continue
+
+            cosipy_data = []
+
+            MeasurementHandler.reset_scope_to_all()
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(
+                dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
+
+            modeled_data = MeasurementHandler.get_all_of("total_energy_balance", use_mean_measurements=True)
+
+            for dat in netcad_file.ME.data:
+                cosipy_data.append(dat[0][0])
+
+            cosipy_cumulated = []
+            modeled_cumulated = []
+
+            cur_cos = 0
+            for cos in cosipy_data:
+                cur_cos += cos
+                cosipy_cumulated.append(cur_cos)
+
+            modeled_data_no_neg = []
+
+            for x in modeled_data:
+                if x < 0:
+                    modeled_data_no_neg.append(0)
+                else:
+                    modeled_data_no_neg.append(x)
+
+
+            cur_modeled = 0
+            for mod in modeled_data_no_neg:
+                cur_modeled += mod
+                modeled_cumulated.append(cur_modeled)
+
+            import matplotlib.pyplot as plt
+
+            # plt.plot(cosipy_data, label="cosipy")
+            # plt.plot(modeled_data_no_neg, label="modeled")
+
             plt.plot(cosipy_cumulated, label="cosipy")
             plt.plot(modeled_cumulated, label="modeled")
 
-            plt.grid()
-
-            plt.xlabel("Time [s]")
-            plt.ylabel("Ice level drop [m]")
-
-            plt.title(f"Comparison Cosipy and Bulk mass bilance for hyd. year {year}")
-
-            plt.legend()
             plt.show()
-
 
 
     def demo_cosipy_data_format_downloader(self):
@@ -571,6 +727,8 @@ if __name__ == "__main__":
         # no_gui_manager.verify_with_cosipy()
         # exit()
 
+        # no_gui_manager.cosipy_compare_mass_bilance_plot_energy()
+        no_gui_manager.cosipy_compare_mass_bilance_plot_snow_height()
         no_gui_manager.cosipy_compare_mass_bilance_plot()
 
         exit()
@@ -656,7 +814,24 @@ if __name__ == "__main__":
         frame_mean.create_singleton()
         frame_read.create_singleton()
         version_bar.create_singleton()
-        #
+
+        if False:
+            recalculate = False
+            no_gui_manager = NoGuiManager()
+            fname = "tmp/download_test"
+            if recalculate:
+                Reader.add_file_path(no_gui_manager.path_to_meteorologic_measurements)
+                Reader.read_meterologic_file_to_objects()
+                MeasurementHandler.change_measurement_resolution_by_start_end_time(
+                    dt.datetime(2017, 10, 1), dt.datetime(2018 + 1, 9, 30))
+                no_gui_manager.combined_preparing_of_measurements(sum_hourly_resolution=24)
+                no_gui_manager.combined_calculation_of_energy_balance_and_all_associated_values()
+                no_gui_manager.save_handler(fname)
+            else:
+                no_gui_manager.load_handler(fname)
+            navigation_bar.singleton.show_plot_frame()
+            navigation_bar.singleton.show_download_frame()
+
         # navigation_bar.singleton.show_sum_frame()
         # navigation_bar.singleton.show_prepare_frame()
         # navigation_bar.singleton.show_energy_balance_frame()

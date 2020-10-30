@@ -1,14 +1,18 @@
 import tkinter as tk
 import sys
+from tkinter import filedialog
+
 sys.path.append("GUI")
 import gui_main_frame as gui_main_frame
 from measurement_handler import MeasurementHandler
 from visualizer import Visualizer
 from tkinter import ttk
 from config_handler import cfg
+from downloader import Downloader
+import misc as fc
 
 
-class ModelFrame(tk.Frame):
+class DownloadFrame(tk.Frame):
     """
     Reserves the space for a main frame (3 in total) by creating a frame
     """
@@ -16,66 +20,108 @@ class ModelFrame(tk.Frame):
         tk.Frame.__init__(self, gui_main_frame.singleton.frame)
         self.grid(row=0, column=0, sticky="nsew")
 
-        self.heading_download = tk.Label(self,
-                                         text="Download generated data to .csv", state="normal", font=cfg["HEADING_FONT"])
-        self.heading_download.pack(pady=(25, 0))
+        frame_center = tk.Frame(self)
+        frame_center.pack()
 
-        self.btn_totalEnergyBalance = tk.Button(self, text="Total energy balance",
-                                                command=self.download_total_energy_balance)
-        self.btn_totalEnergyBalance.pack(pady=(40, 0))
+        frame_general_settings = tk.Frame(frame_center)
+        frame_general_settings.grid(row=0, column=0, columnspan=2)
 
-        self.btn_cleanedAblation = tk.Button(self, text="Cleaned Ablation",
-                                                command=self.download_cleaned_ablation)
-        self.btn_cleanedAblation.pack(pady=(40, 0))
+        # ------------------ GENERAL SETTINGS -------------------
+        self.heading_general_settings = tk.Label(frame_general_settings, text="General settings", font=cfg["HEADING_FONT"])
+        self.heading_general_settings.pack(pady=(25, 0))
 
-        self.btn_relativeAblation = tk.Button(self, text="Relative Ablation (incl. modeled Ablation)",
-                                             command=self.download_relative_ablation)
-        self.btn_relativeAblation.pack(pady=(40, 0))
+        self.lbl_use_mean = tk.Label(frame_general_settings, text="Use mean measurements", state="disabled")
+        self.lbl_use_mean.pack(pady=(10, 0))
 
-        self.btn_waterEquivalent = tk.Button(self, text="Water equivalent [Summed measurements]",
-                                             command=self.download_water_equivalent)
-        self.btn_waterEquivalent.pack(pady=(40, 0))
+        self.ckbox_use_sum_value = tk.IntVar()
+        self.ckbox_use_sum = tk.Checkbutton(frame_general_settings, variable=self.ckbox_use_sum_value, state="disabled",
+                                            command=self.use_mean_measures_callback)
+        self.ckbox_use_sum.pack()
 
-        listbox_option = [
-            "sw_radiation_in", "sw_radiation_out", "lw_radiation_in", "lw_radiation_out", "sensible_heat",
-            "latent_heat",
+        # # ------------------ ENERGY BALANCE -------------------
+
+        frame_energy_balance_and_components_plotting = tk.Frame(frame_center)
+        frame_energy_balance_and_components_plotting.grid(row=1, column=0)
+
+        self.heading_energyBalance = tk.Label(frame_energy_balance_and_components_plotting, text="Energy balance and other components", font=cfg["HEADING_FONT"])
+        self.heading_energyBalance.grid(row=0, column=0, columnspan=1)
+
+        frame_ax1 = tk.Frame(frame_energy_balance_and_components_plotting)
+        frame_ax1.grid(row=1, column=0)
+
+        self.lbox_options_single_measurement = [
+            "total_energy_balance", "sw_radiation_in", "sw_radiation_out", "lw_radiation_in", "lw_radiation_out",
+            "sensible_heat", "latent_heat",
         ]
+        self.lbox_options_mean_measurement = self.lbox_options_single_measurement.copy()
 
-        self.listbox_selectedComponents = tk.Listbox(self, selectmode="multiple")
-        for option in listbox_option:
-            self.listbox_selectedComponents.insert(tk.END, option)
+        if cfg["PRO_VERSION"]:
+            for option in ["temperature", "snow_depth_natural", "snow_depth_artificial", "total_snow_depth",
+                                 "rel_moisture", "wind_speed", "air_pressure", "measured_ice_thickness",
+                                 "cumulated_ice_thickness"]:
+                self.lbox_options_single_measurement.append(option)
+                self.lbox_options_mean_measurement.append(option)
 
-        self.listbox_selectedComponents.pack(pady=(30, 0))
+            self.lbox_options_single_measurement.extend([])  # nothing? probably
+            self.lbox_options_mean_measurement.extend(["actual_melt_water_per_sqm", "theoretical_melt_water_per_sqm"])  # some more?
 
-        self.btn_energySelectedComponents = tk.Button(self, text="Selected components",
+        self.lbl_Axis1 = tk.Label(frame_ax1, text="First axis", state="normal")
+        self.lbl_Axis1.pack()
+        self.lbl_cumulateAxis1 = tk.Label(frame_ax1, text="Cumulate components", state="normal")
+        self.lbl_cumulateAxis1.pack(pady=(25, 0))
+        self.ckbox_cumulateAxis1_value = tk.IntVar()
+        self.ckbox_cumulateAxis1 = tk.Checkbutton(frame_ax1, variable=self.ckbox_cumulateAxis1_value)
+        self.ckbox_cumulateAxis1.pack()
+        self.lbox_selectedComponentsAxis1 = tk.Listbox(frame_ax1, selectmode="multiple", height=6, exportselection=0)
+        for option in self.lbox_options_single_measurement:
+            self.lbox_selectedComponentsAxis1.insert(tk.END, option)
+        self.lbox_selectedComponentsAxis1.pack(side="left", fill="y")
+        self.lbox_selectedComponentsAxis1.selection_set(first=0)
+        scrollbar = tk.Scrollbar(frame_ax1, orient="vertical")
+        scrollbar.config(command=self.lbox_selectedComponentsAxis1.yview)
+        scrollbar.pack(side="right", fill="y")
+        self.lbox_selectedComponentsAxis1.config(yscrollcommand=scrollbar.set)
+
+        self.btn_plotSelectedComponents = tk.Button(frame_energy_balance_and_components_plotting, text="Download selected components",
                                                       command=self.download_selected_components)
-        self.btn_energySelectedComponents.pack()
+        self.btn_plotSelectedComponents.grid(row=2, column=0, columnspan=1)
 
-    @staticmethod
-    def download_total_energy_balance():
-        MeasurementHandler.download_components(["total_energy_balance"])
+        self.btn_downloadCosipyFormat = tk.Button(frame_energy_balance_and_components_plotting, text="Download cosipy format",
+                                                      command=Downloader.download_in_cosipy_format, state="disabled")
+        self.btn_downloadCosipyFormat.grid(row=3, column=0, pady=(60, 0))
 
-    @staticmethod
-    def download_cleaned_ablation():
-        MeasurementHandler.download_components(["cumulated_ice_thickness"])
+    def enable_option_to_use_mean_measures(self):
+        fc.set_widget_state([self.lbl_use_mean, self.ckbox_use_sum, self.btn_downloadCosipyFormat], "normal")
 
-    @staticmethod
-    def download_relative_ablation():
-        MeasurementHandler.download_components(["relative_ablation_measured",
-                                                             "relative_ablation_modeled"],
-                                               use_summed_measurements=True)
+    def use_mean_measures_callback(self):
+        current_selectionsAxis1 = [self.lbox_selectedComponentsAxis1.get(opt) for opt in
+                                   self.lbox_selectedComponentsAxis1.curselection()]
 
+        self.lbox_selectedComponentsAxis1.delete(0, 'end')
 
-    @staticmethod
-    def download_water_equivalent():
-        MeasurementHandler.download_components(["actual_mm_we_per_d",
-                                                             "theoretical_mm_we_per_d"],
-                                               use_mean_measures=True)
+        if self.ckbox_use_sum_value.get():
+            for i, option in enumerate(self.lbox_options_mean_measurement):
+                self.lbox_selectedComponentsAxis1.insert(tk.END, option)
+                if option in current_selectionsAxis1:
+                    self.lbox_selectedComponentsAxis1.selection_set(first=i)
+        else:
+            for i, option in enumerate(self.lbox_options_single_measurement):
+                self.lbox_selectedComponentsAxis1.insert(tk.END, option)
+                if option in current_selectionsAxis1:
+                    self.lbox_selectedComponentsAxis1.selection_set(first=i)
 
     def download_selected_components(self):
-        MeasurementHandler.download_components(
-            [self.listbox_selectedComponents.get(opt) for opt in self.listbox_selectedComponents.curselection()]
-        )
+        chosen_components = [self.lbox_selectedComponentsAxis1.get(opt) for opt in
+                         self.lbox_selectedComponentsAxis1.curselection()]
+
+        selected_path = tk.filedialog.asksaveasfile(
+            defaultextension=".csv", initialdir="downloads",
+            initialfile=f"data_download_{'cumulated_' if self.ckbox_cumulateAxis1_value.get() else ''}" + '_'.join(chosen_components),
+            filetypes=(("Csv Files", "*.csv"), ("all files", "*.*")))
+
+        Downloader.download_components(
+            components=chosen_components, cumulate_components=self.ckbox_cumulateAxis1_value.get(),
+            save_name=selected_path)
 
 
 singleton = None
@@ -83,4 +129,4 @@ singleton = None
 
 def create_singleton():
     global singleton
-    singleton = ModelFrame()  # yet to be initialized
+    singleton = DownloadFrame()  # yet to be initialized
