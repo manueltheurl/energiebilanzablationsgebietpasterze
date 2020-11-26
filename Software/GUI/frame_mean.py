@@ -16,6 +16,7 @@ import datetime as dt
 import measurement
 from config_handler import cfg
 import frame_energy_balance
+import frame_download
 
 
 class MeanFrame(tk.Frame):
@@ -60,10 +61,22 @@ class MeanFrame(tk.Frame):
         self.ckbox_meanByTimeInterval.pack(padx=10)
 
         self.ckbox_fixInvalid_value = tk.IntVar()
-        self.ckbox_fixInvalid = tk.Checkbutton(self, variable=self.ckbox_fixInvalid_value)
-        self.ckbox_fixInvalid.pack(pady=(45, 0))
+        self.ckbox_fixInvalid = tk.Checkbutton(
+            self, variable=self.ckbox_fixInvalid_value,
+            command=lambda: fc.set_widget_state([self.lbox_selectedOptionsToFix], self.ckbox_fixInvalid_value.get()))
+        self.ckbox_fixInvalid.pack(pady=(25, 0))
         self.lbl_fixInvalid = tk.Label(self, text="Fix invalid measurements by mean of other years")
         self.lbl_fixInvalid.pack()
+
+        self.lbox_selectedOptionsToFix = tk.Listbox(self, selectmode="multiple", height=10, exportselection=0)
+        options_to_fix = ("temperature", "rel_moisture", "air_pressure", "wind_speed", "sw_radiation_in", "sw_radiation_out",
+                      "lw_radiation_in", "lw_radiation_out", "snow_delta", "relative_ablation_measured")
+        for option in options_to_fix:
+            self.lbox_selectedOptionsToFix.insert(tk.END, option)
+        self.lbox_selectedOptionsToFix.pack()
+        for i in range(len(options_to_fix)):
+            self.lbox_selectedOptionsToFix.selection_set(first=i)
+        self.lbox_selectedOptionsToFix["state"] = "disabled"
 
         self.btn_meanMeasurements = tk.Button(self, text="Average measurements",
                                              command=self.create_averaged_measurement, state="disabled")
@@ -156,8 +169,8 @@ class MeanFrame(tk.Frame):
             return  # shouldnt get here
 
         if self.ckbox_fixInvalid_value.get():
-            # todo drop down list to choose which measurements to fix .. currently just everything by default
-            percentage_replaced = MeasurementHandler.fix_invalid_mean_measurements()
+            optionsToFix = [self.lbox_selectedOptionsToFix.get(opt) for opt in self.lbox_selectedOptionsToFix.curselection()]
+            percentage_replaced = MeasurementHandler.fix_invalid_mean_measurements(optionsToFix)
             if percentage_replaced < 100:
                 info_bar.singleton.change_error_message("Not all measurements can be fixed, can you take a longer time span?")
             else:
@@ -168,6 +181,7 @@ class MeanFrame(tk.Frame):
         info_bar.singleton.change_mean_info(info_bar_text)
         frame_plot.singleton.enable_option_to_use_mean_measures()
         frame_energy_balance.singleton.enable_option_to_use_mean_measures()
+        frame_download.singleton.enable_option_to_use_mean_measures()
 
         if frame_energy_balance.singleton.energy_balance_calculated:
             navigation_bar.singleton.btn_conversionframe["state"] = "normal"

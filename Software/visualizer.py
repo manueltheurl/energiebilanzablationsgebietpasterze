@@ -134,47 +134,7 @@ class Visualizer:
 
     @classmethod
     def modify_axes(cls):
-        years = mdates.YearLocator()
-        months = mdates.MonthLocator()
-        year_labels = mdates.DateFormatter('%Y')
-        month_labels = mdates.DateFormatter('%b')  # Jan, Feb, ..
-        mondays = mdates.WeekdayLocator(mdates.MONDAY)
-
-        # calculate time_spawn between first and last measurement
-        time_spawn = dt.timedelta(days=cls.ax.get_xlim()[1] - cls.ax.get_xlim()[0])
-
-        time_border_1 = dt.timedelta(days=3*365)
-        time_border_2 = dt.timedelta(days=2*365)
-        time_border_3 = dt.timedelta(days=150)
-        time_border_4 = dt.timedelta(days=60)
-
-        # major and ax title
-        if time_spawn >= time_border_1:
-            cls.ax.set_xlabel("Year")
-            cls.ax.xaxis.set_major_locator(years)
-            cls.ax.xaxis.set_major_formatter(year_labels)
-        elif time_border_3 <= time_spawn <= time_border_1:  # 1 till 3 beware
-            cls.ax.xaxis.set_major_locator(years)
-            cls.ax.xaxis.set_major_formatter(year_labels)
-            cls.ax.set_xlabel("Year")
-            cls.ax.xaxis.set_tick_params(rotation=45, pad=15)  # only major are rotated
-            cls.ax.xaxis.set_tick_params(which="minor", labelsize=float(cfg["plot_text_size_minor"]))  # only major are rotated
-            cls.ax.xaxis.set_minor_locator(months)
-
-            if time_border_3 <= time_spawn <= time_border_2:
-                cls.ax.xaxis.set_minor_formatter(month_labels)
-        elif time_border_4 <= time_spawn <= time_border_3:
-            cls.ax.xaxis.set_major_locator(months)
-            cls.ax.xaxis.set_major_formatter(month_labels)
-            cls.ax.set_xlabel("Month")
-            # cls.ax.xaxis.set_tick_params()  # only major are rotated
-            cls.ax.xaxis.set_tick_params(which="minor")  # only major are rotated
-            cls.ax.xaxis.set_minor_locator(mondays)
-
-        # else even smaller take month as major, and days as minor maybe?
-
-        # ELSE just take default tick and ticklabels
-
+        cls.fig.autofmt_xdate()  # good stuff
         cls.ax.grid(linestyle="--", alpha=0.5, which='major')
         cls.ax.grid(linestyle="--", alpha=0.4, which='minor')
 

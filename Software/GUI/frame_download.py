@@ -121,7 +121,7 @@ class DownloadFrame(tk.Frame):
 
         Downloader.download_components(
             components=chosen_components, cumulate_components=self.ckbox_cumulateAxis1_value.get(),
-            save_name=selected_path)
+            use_mean_measures=self.ckbox_use_sum_value.get(), save_name=selected_path)
 
 
 singleton = None

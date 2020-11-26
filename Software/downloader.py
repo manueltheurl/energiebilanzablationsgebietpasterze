@@ -1,37 +1,13 @@
 import os
-import matplotlib.pyplot as plt
-from config_handler import cfg
-import matplotlib.dates
-import matplotlib.cm
-import matplotlib.dates as mdates
-import matplotlib.ticker as ticker
-from matplotlib.markers import MarkerStyle
-import os
-from matplotlib import patches
-from operator import sub
 import datetime as dt
-# from matplotlib import rc
-# rc('text', usetex=True)
-from measurement_handler import MeasurementHandler
-import scipy
-import scipy.stats
-import numpy as np
-from scipy import optimize
-import misc as fc
-import calendar
-from height_level import HeightLevel
-import shapefile as shp
-from descartes import PolygonPatch
-import matplotlib.colors
 import matplotlib.colorbar
-from hydrologic_year import HydrologicYear
-from matplotlib.ticker import MaxNLocator
-from measurement import MeanStationMeasurement
-import copy
 import csv
 import locale
-from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
-import matplotlib.font_manager as fm
+
+from measurement_handler import MeasurementHandler
+from measurement import MeanStationMeasurement
+from config_handler import cfg
+
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
 matplotlib.rcParams['axes.formatter.use_locale'] = True
