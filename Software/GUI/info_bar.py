@@ -15,7 +15,8 @@ class InfoBar:
 
         self.read = tk.Label(gui_main_frame.singleton, anchor="w")
         self.scope = tk.Label(gui_main_frame.singleton, anchor="w")
-        self.sum = tk.Label(gui_main_frame.singleton, anchor="w")
+        self.mean = tk.Label(gui_main_frame.singleton, anchor="w")
+        self.error_message = tk.Label(gui_main_frame.singleton, anchor="w", fg="red")
 
     @staticmethod
     def pack_if_not_empty_else_forget(label, text):
@@ -32,12 +33,13 @@ class InfoBar:
         self.scope["text"] = "Scope info:\t" + text
         self.pack_if_not_empty_else_forget(self.scope, text)
 
-    def change_sum_info(self, text):
-        self.sum["text"] = "Sum info:\t" + text
-        self.pack_if_not_empty_else_forget(self.sum, text)
+    def change_mean_info(self, text):
+        self.mean["text"] = "Mean info:\t" + text
+        self.pack_if_not_empty_else_forget(self.mean, text)
 
-
-
+    def change_error_message(self, text):
+        self.error_message["text"] = "Error:\t" + text
+        self.pack_if_not_empty_else_forget(self.error_message, text)
 
 
 singleton = None

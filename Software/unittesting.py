@@ -1,5 +1,5 @@
 import unittest
-import energy_balance
+from energy_balance import EnergyBalance
 
 
 class Test(unittest.TestCase):
@@ -14,7 +14,7 @@ class Test(unittest.TestCase):
         z = 1.5  # m
         z_0 = 0.002  # m  # for ice in ablation zone (higher value will cause failing of the test)
 
-        c_star = energy_balance.singleton.calculate_c_star(z, z_0)
+        c_star = EnergyBalance.calculate_c_star(z, z_0)
         self.assertTrue(0.002 < c_star < 0.004)
 
     def test_given_values_for_sensible_heat(self):
@@ -25,21 +25,22 @@ class Test(unittest.TestCase):
         pressure = 80000  # Pa
         windspeed = 5  # m per second
         air_temperature = 5  # degree celcius
-        energy_balance.singleton.c_star = 0.002
         longwave_out = 1000  # "to a melting surface"  -> ice temp will be 0 then
 
-        sensible_heat = energy_balance.singleton.calculate_sensible_heat(pressure,
-                                                                         windspeed, air_temperature, longwave_out)
+        EnergyBalance.c_star["ice"] = 0.002  # in test setup this is the value given, and with arg snow_depth=0 we force that
+
+        sensible_heat = EnergyBalance.calculate_sensible_heat(pressure,
+                                                                         windspeed, air_temperature, longwave_out, snow_depth=0)
         self.assertTrue(47 < sensible_heat < 53)
 
     def test_high_values_for_sensible_heat(self):
         pressure = 80000  # Pa
         windspeed = 14.7  # m per second
         temperature = 12.1  # degree celcius
-        energy_balance.singleton.c_star = 0.002
+        EnergyBalance.c_star = 0.002
         longwave_out = 1000
 
-        sensible_heat = energy_balance.singleton.calculate_sensible_heat(pressure,
+        sensible_heat = EnergyBalance.calculate_sensible_heat(pressure,
                                                                          windspeed, temperature, longwave_out)
 
         self.assertTrue(True)
