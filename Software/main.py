@@ -423,8 +423,15 @@ class NoGuiManager:
             save_name=f"pegel_vs_measured (allow {max_est_measures}% est. measures)",
             max_estimated_ablation_measures_percent=max_est_measures)
 
-    def compare_measured_ablation_measured_pegel_and_modeled(self, type_, pegel_tuples, max_est_measures=0,
+    def compare_measured_ablation_measured_pegel_and_modeled(self, pegel_tuples, max_est_measures=0,
                                                              recalculate=True):
+        """
+
+        :param pegel_tuples:
+        :param max_est_measures: Maximum estimated measures in percent
+        :param recalculate:
+        :return:
+        """
         Visualizer.show_plots = False
 
         if recalculate:
@@ -433,7 +440,7 @@ class NoGuiManager:
             self.combined_preparing_of_measurements(sum_hourly_resolution=24)
 
         for i, rs in enumerate([(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]):
-            f_name = f"tmp/picklsave_{rs[0]}_z0snow{rs[1]}_type{type_}"
+            f_name = f"tmp/picklsave_{rs[0]}_z0_snow{rs[1]}_{cfg['CLEAN_ICE_ALBEDO']}"
             if recalculate:
                 EnergyBalance.set_new_roughness_parameters(rs[0], rs[1])
                 MeasurementHandler.reset_scope_to_all()
@@ -442,26 +449,21 @@ class NoGuiManager:
             self.load_handler(f_name)
 
             # """ Statistics """
+            # Statistics.compare_pegel_measured_and_modeled_for_time_intervals(
+            #     pegel_tuples, heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}) max est. abl. measures {max_est_measures}",
+            #     max_estimated_ablation_measures_percent=max_est_measures)
 
-            # StatsPrinter.compare_pegel_measured_and_modeled_for_time_intervals(
 
-            #     pegel_tuples, heading=f"\nSetup: z0 ice: {rs[0]} z0 snow {rs[1]}, {type_}) max est. abl. measures {max_estimated_ablation_measures_percent}",
-            #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent)
-
-            """ Plotting """
+            # """ Plotting difference between measured and modeled """
             # Visualizer.plot_scatter_measured_modeled_ablation(
-            #     pegel_tuples, save_name=f"z0ice{rs[0]}z0 snow{rs[1]} ({max_estimated_ablation_measures_percent}% est. abl. measures)",
-            #     max_estimated_ablation_measures_percent=max_estimated_ablation_measures_percent, measured_per_day_has_to_be_above_mm=1)
+            #     pegel_tuples, save_name=f"measured_vs_modeled_z0-ice={rs[0]}_z0-snow={rs[1]}_ice-albedo-{cfg['CLEAN_ICE_ALBEDO']}_{max_est_measures}p-estimated",
+            #     max_estimated_ablation_measures_percent=max_est_measures, measured_per_day_has_to_be_above_mm=1)
 
-            """ Plotting """
+            """ Plotting difference between pegel vs modeled"""
             Visualizer.plot_scatter_pegel_vs_X(
                 pegel_tuples,
-                save_name=f"pegel_vs_modeled_z0-ice={rs[0]}_z0-snow={rs[1]} (allow {max_est_measures}% est. measures)",
+                save_name=f"pegel_vs_modeled_z0-ice={rs[0]}_z0-snow={rs[1]}_ice-albedo-{cfg['CLEAN_ICE_ALBEDO']}_{max_est_measures}p-estimated",
                 max_estimated_ablation_measures_percent=max_est_measures)
-
-            # if not i:
-            #     Visualizer.plot_components(("total_snow_depth",), "m", use_mean_measures=False,
-            #                                          save_name=f"total_snow_depth")
 
     def ablation_cumulation_test(self, recalculate=True):
         Visualizer.change_result_plot_subfolder(f"ablation_cumulation")
@@ -744,7 +746,8 @@ if __name__ == "__main__":
             "height_level_calc_and_vis_for_paper": False,
             "calculations_bachelor": False,
             "ablation_cumulation_methods_test": False,
-            "pegel_vs_measured_scatter_compare": True,
+            "pegel_vs_measured_scatter_compare": False,
+            "pegel_vs_modeled_scatter_compare": True,
         }
 
         no_gui_manager = NoGuiManager()
@@ -778,7 +781,7 @@ if __name__ == "__main__":
         if tasks["ablation_cumulation_methods_test"]:
             no_gui_manager.ablation_cumulation_test()
 
-        if tasks["pegel_vs_measured_scatter_compare"]:
+        if tasks["pegel_vs_measured_scatter_compare"] or tasks["pegel_vs_modeled_scatter_compare"]:
             """ Comparison of measured and modeled ablation and pegel measurement """
             pegel_time_spans = [
                 (dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95),
@@ -807,10 +810,15 @@ if __name__ == "__main__":
 
             Visualizer.change_result_plot_subfolder(f"scatter_compare")
 
-            no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
-                pegel_time_spans, max_est_measures=0, recalculate=False)
-            no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
-                pegel_time_spans, max_est_measures=100, recalculate=False)
+            if tasks["pegel_vs_measured_scatter_compare"]:
+                no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
+                    pegel_time_spans, max_est_measures=0, recalculate=False)
+                no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
+                    pegel_time_spans, max_est_measures=100, recalculate=False)
+
+            if tasks["pegel_vs_modeled_scatter_compare"]:
+                no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled(
+                    pegel_time_spans, max_est_measures=0, recalculate=False)
 
     else:
         """

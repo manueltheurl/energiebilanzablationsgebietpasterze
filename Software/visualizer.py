@@ -31,6 +31,7 @@ import copy
 import locale
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 import matplotlib.font_manager as fm
+from scipy.stats.stats import pearsonr
 
 
 matplotlib.rcParams.update({'font.size': float(cfg["plot_text_size"])})
@@ -326,6 +327,9 @@ class Visualizer:
                                                orientation='vertical', extend="max")
         cb.set_label(r'Period length [d]')
 
+        # TODO maybe one flag per measurement if modeled is valid or not
+        validities_compare = vs if vs == "relative_ablation_measured" else "sw_radiation_in"
+
         for tup in tups:
             start_time = tup[0]
             end_time = tup[1]
@@ -333,7 +337,7 @@ class Visualizer:
             MeasurementHandler.change_measurement_resolution_by_start_end_time(start_time, end_time)
 
             measurement_validities_valid = [
-                x[vs] == MeanStationMeasurement.valid_states["valid"]
+                x[validities_compare] == MeanStationMeasurement.valid_states["valid"]
                 for x in MeasurementHandler.get_all_of("measurement_validity", use_mean_measurements=True)]
 
             measured_percentage_estimated = (1 - sum(measurement_validities_valid) / len(
@@ -347,21 +351,24 @@ class Visualizer:
             pegel_time_frame = tup[2] / 100  # in cm
             time_spawn_in_days = (end_time - start_time).total_seconds() / 60 / 60 / 24
 
-            pgel_mm = pegel_time_frame / time_spawn_in_days * 1000
+            pegel_mm = pegel_time_frame / time_spawn_in_days * 1000
             modeled_mm = sum(modeled_ablations) / time_spawn_in_days * 1000
 
-            all_pegel_mm.append(pgel_mm)
+            all_pegel_mm.append(pegel_mm)
             all_modeled_mm.append(modeled_mm)
 
-            cls.ax.scatter(pgel_mm, modeled_mm, color=snr_cmap(norm((end_time-start_time).total_seconds()/60/60/24)), s=10, zorder=10)
-
-        # cls.ax.scatter(None, None, color="blue", s=2.5, label="no snow laying")
-        # cls.ax.scatter(None, None, color="red", s=2.5, label="snow laying")
+            cls.ax.scatter(pegel_mm, modeled_mm, color=snr_cmap(norm((end_time-start_time).total_seconds()/60/60/24)), s=10, zorder=10)
 
         z = np.polyfit(all_pegel_mm, all_modeled_mm, 1)
         p = np.poly1d(z)
 
-        cls.ax.plot([min(all_pegel_mm), max(all_pegel_mm)], [min(p(all_pegel_mm)), max(p(all_pegel_mm))], color="orange", ls="--", label="Trendline")
+        # Calculation of RMSE and correlation after pearson
+        pearson_correlation_coefficient = pearsonr(all_pegel_mm, all_modeled_mm)
+        rmse = np.sqrt(np.mean((np.array(all_pegel_mm)-np.array(all_modeled_mm))**2))
+
+        cls.ax.plot([min(all_pegel_mm), max(all_pegel_mm)], [min(p(all_pegel_mm)), max(p(all_pegel_mm))],
+                    color="orange", ls="--",
+                    label=f"Trendline (r={round(pearson_correlation_coefficient[0], 2)}, RMSE={round(rmse, 2)})")
 
         cls.ax.set_xlabel("Pegel measure [mm/d]")
         if vs == "relative_ablation_measured":

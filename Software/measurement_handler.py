@@ -180,7 +180,7 @@ class MeasurementHandler:
     @classmethod
     def correct_short_wave_measurements_for_single_measures(cls):
         """
-        todo
+        If no snow is laying, then set fixed ice albedo. If albedo is below min ice albedo, set to min ice albedo
         """
         for obj in [cls.all_single_measures[i] for i in sorted(cls.current_single_index_scope)]:
             if obj.sw_radiation_in is not None:
@@ -188,11 +188,11 @@ class MeasurementHandler:
                     obj.sw_radiation_in = 0
 
                 if obj.sw_radiation_out is not None:
-                    if obj.albedo is not None and obj.albedo < 0.35:
-                        obj.sw_radiation_out = -0.35 * obj.sw_radiation_in
+                    if obj.albedo is not None and obj.albedo < cfg["CLEAN_ICE_ALBEDO"]:
+                        obj.sw_radiation_out = -cfg["CLEAN_ICE_ALBEDO"] * obj.sw_radiation_in
 
-                    if not obj.total_snow_depth:  # why?
-                        obj.sw_radiation_out = -0.35*obj.sw_radiation_in
+                    if not obj.total_snow_depth:
+                        obj.sw_radiation_out = -cfg["CLEAN_ICE_ALBEDO"]*obj.sw_radiation_in
 
     @classmethod
     def correct_snow_measurements_for_single_measures(cls):
