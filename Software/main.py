@@ -21,7 +21,6 @@ from importlib import reload
 
 sys.path.append("GUI")
 
-
 # The gui is constructed as singletons .. this order therefor has to be maintained
 import gui_main_frame as gui_main
 import navigation_bar
@@ -41,6 +40,7 @@ from hydrologic_year import HydrologicYear
 from energy_balance import EnergyBalance
 from stats_printer import Statistics
 from measurement_handler import MeasurementHandler
+from downloader import Downloader
 
 
 class NoGuiManager:
@@ -50,8 +50,10 @@ class NoGuiManager:
         """
         self.path_to_meteorologic_measurements = "../Meteorologic_data/PAS_10min.csv"
         self.hydrologic_years_looked_at = [2012, 2013, 2014, 2016, 2017, 2018]  # 2015 is baad
-        self.startTime = dt.datetime(self.hydrologic_years_looked_at[0], 10, 1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
-        self.endTime = dt.datetime(self.hydrologic_years_looked_at[-1]+1, 9, 30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
+        self.startTime = dt.datetime(self.hydrologic_years_looked_at[0], 10,
+                                     1)  # "2018-10-18 13:30:00"  # "2012-10-18 05:30:00"
+        self.endTime = dt.datetime(self.hydrologic_years_looked_at[-1] + 1, 9,
+                                   30)  # "2019-01-27 09:00:00"  # "2019-06-27 09:00:00"
         self.simulation_accuracy = 0.0001
         self.use_tongue_only = True
         self.no_debris = False
@@ -100,20 +102,19 @@ class NoGuiManager:
         MeasurementHandler.save_me2(fname)  # its not even saving correctly
 
     @staticmethod
-    def load_handler( fname):
+    def load_handler(fname):
         one, two, three, fore = MeasurementHandler.load_me(fname)
         MeasurementHandler.current_single_index_scope = one
         MeasurementHandler.all_single_measures = two
         MeasurementHandler.current_mean_index_scope = three
         MeasurementHandler.all_mean_measures = fore
 
-    def run_calculations_height_levels(self):
+    def run_calculations_height_levels(self, recalculate=True):
         """
 
         :return:
         """
         print("STARTING WITH THE CALCULATIONS")
-        recalculate = True
 
         Reader.add_file_path(self.path_to_meteorologic_measurements)
 
@@ -127,12 +128,13 @@ class NoGuiManager:
             self.load_handler(self.pickle_multiple_measurement_singleton)
 
         radiations_at_station = pickle.load(open(f"outputData/{self.pickle_radiations_at_station}", "rb"))
-        height_level_objects = pickle.load(open(f"outputData/{self.subfolder_name}/{self.pickle_height_levels_objects}", "rb"))
+        height_level_objects = pickle.load(
+            open(f"outputData/{self.subfolder_name}/{self.pickle_height_levels_objects}", "rb"))
 
         snowings_per_day_for_height_levels_starting_value = list(
             reversed(np.linspace(0.01, 0.1, len(height_level_objects) // 2)))
         snowings_per_day_for_height_levels_starting_value += [0] * (
-                    len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
+                len(height_level_objects) - len(snowings_per_day_for_height_levels_starting_value))
 
         hydrologic_years = dict()
 
@@ -141,7 +143,7 @@ class NoGuiManager:
             hydrologic_years[year] = HydrologicYear(copy.deepcopy(height_level_objects))
             MeasurementHandler.reset_scope_to_all()
             MeasurementHandler.change_measurement_resolution_by_start_end_time(
-                dt.datetime(year, 10, 1), dt.datetime(year+1, 9, 30))
+                dt.datetime(year, 10, 1), dt.datetime(year + 1, 9, 30))
 
             for i, height_level in enumerate(hydrologic_years[year].height_level_objects):
                 """ Lets try to find the optimum amount of snowing for not loosing mass """
@@ -150,11 +152,12 @@ class NoGuiManager:
                 current_delta = None
 
                 while True:
-                    print("Snowing per day", round(current_snowing_per_day*1000, 1), "mm", current_delta)
+                    print("Snowing per day", round(current_snowing_per_day * 1000, 1), "mm", current_delta)
                     height_level.clear_simulated_measurements()
                     height_level.artificial_snowing_per_day = current_snowing_per_day
 
-                    liters_melted_anyways = MeasurementHandler.overall_height_level_simulation(height_level, radiations_at_station)
+                    liters_melted_anyways = MeasurementHandler.overall_height_level_simulation(height_level,
+                                                                                               radiations_at_station)
                     swe_in_liters_at_end = height_level.get_swe_of_last_measurement_and_constantly_laying_snow()
 
                     if swe_in_liters_at_end > liters_melted_anyways:
@@ -167,8 +170,10 @@ class NoGuiManager:
                                 # reduced snowing and it is still too much -> stick with the bigger delta value
                                 pass
                         if abs(current_delta) < self.simulation_accuracy:
-                            print("Found good enough estimate:", round(current_snowing_per_day*1000, 1), "mm snowing per day needed")
-                            print(f"Compensated {int(liters_melted_anyways)} liters/m^2 from beginning of meteorological year")
+                            print("Found good enough estimate:", round(current_snowing_per_day * 1000, 1),
+                                  "mm snowing per day needed")
+                            print(
+                                f"Compensated {int(liters_melted_anyways)} liters/m^2 from beginning of meteorological year")
                             break  # found good enough estimation
                         elif current_snowing_per_day <= 0:
                             print("No snowing needed at all")
@@ -188,7 +193,8 @@ class NoGuiManager:
                     if current_snowing_per_day < 0:
                         current_snowing_per_day = 0
 
-            print("Overall water needed:", round(hydrologic_years[year].overall_amount_of_water_needed_in_liters/1000, 1), "m^3")
+            print("Overall water needed:",
+                  round(hydrologic_years[year].overall_amount_of_water_needed_in_liters / 1000, 1), "m^3")
 
         with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", "wb") as f:
             pickle.dump(hydrologic_years, f)
@@ -207,10 +213,6 @@ class NoGuiManager:
 
         with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", 'rb') as f:
             meteorologic_years = pickle.load(f)
-        # height_level_objects = pickle.load(
-        #     open(f"outputData/{self.subfolder_name}/pickle_height_level_objects_filled.pkl", "rb"))
-        # with open("multiple_measurements_singleton_filled.pkl", 'rb') as f:
-        #     MeasurementHandler = pickle.load(f)
 
         self.load_handler(self.pickle_multiple_measurement_singleton_filled)
 
@@ -225,19 +227,18 @@ class NoGuiManager:
         # Visualizer.plot_day_of_ice_exposures_for_years_at_height(meteorologic_years, cfg["AWS_STATION_HEIGHT"], radiations_at_station,
         #                                                                    save_name=f"day_of_ice_exposure_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
 
-
         fix_lower_limit = 3 if self.use_tongue_only else 0
         fix_upper_limit = 7.5
         # # TODO for whole pasterze, equality_line_2018 from all hast to be taken
         Visualizer.plot_pasterze(meteorologic_years, self.hydrologic_years_looked_at, "inputData/AWS_Station.shp",
-                                           "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
-                                           fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
-                                           save_name=f"pasterze_water_needed_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_")
+                                 "inputData/equality_line_2018.shp", only_tongue=self.use_tongue_only,
+                                 fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
+                                 save_name=f"pasterze_water_needed_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}_")
 
         exit()
 
         Visualizer.plot_compare_water_and_height(self.hydrologic_years_looked_at, meteorologic_years,
-                                                           save_name=f"water_vs_height_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
+                                                 save_name=f"water_vs_height_{self.hydrologic_years_looked_at[0]}_{self.hydrologic_years_looked_at[-1]}")
 
         for year in self.hydrologic_years_looked_at:
             MeasurementHandler.reset_scope_to_all()
@@ -247,37 +248,54 @@ class NoGuiManager:
             Visualizer.plot_components_lvls([
                 meteorologic_years[year].get_height_level_close_to_height(cfg["AWS_STATION_HEIGHT"])],
                 ("total_snow_water_equivalent", "artificial_snow_water_equivalent", "natural_snow_water_equivalent"),
-                "m w. e.", factor=1/1000, stack_fill=True,
+                "m w. e.", factor=1 / 1000, stack_fill=True,
                 use_mean_measures=True, show_estimated_measurement_areas=True,
                 save_name=f"all_snow_water_equivalents_{year}_for_height_{int(cfg['AWS_STATION_HEIGHT'])}")
 
             Visualizer.plot_compare_water_and_height([year], meteorologic_years,
-                                                               save_name=f"water_vs_height_{year}")
+                                                     save_name=f"water_vs_height_{year}")
 
             Visualizer.plot_day_of_ice_exposures_for_year(year, meteorologic_years, radiations_at_station,
-                                                           save_name=f"day_of_ice_exposure_{year}")
+                                                          save_name=f"day_of_ice_exposure_{year}")
 
             Visualizer.plot_pasterze(meteorologic_years, [year], "inputData/AWS_Station.shp",
-                                            f"inputData/equality_line_{year}.shp", only_tongue=self.use_tongue_only,
-                                               fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
-                                               save_name=f"pasterze_water_needed_{year}")
+                                     f"inputData/equality_line_{year}.shp", only_tongue=self.use_tongue_only,
+                                     fix_lower_limit=fix_lower_limit, fix_upper_limit=fix_upper_limit,
+                                     save_name=f"pasterze_water_needed_{year}")
 
-            Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("natural_snow_water_equivalent",), "m w. e.",
-                                                      use_mean_measures=True, show_estimated_measurement_areas=True, factor=1/1000,
-                                                      save_name=f"natural_snow_water_equivalent_{year}")
+            Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5),
+                                            ("natural_snow_water_equivalent",), "m w. e.",
+                                            use_mean_measures=True, show_estimated_measurement_areas=True,
+                                            factor=1 / 1000,
+                                            save_name=f"natural_snow_water_equivalent_{year}")
 
-            Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("artificial_snow_water_equivalent",), "m w. e.",
-                                                      use_mean_measures=True, show_estimated_measurement_areas=True, factor=1/1000,
-                                                      save_name=f"artificial_snow_water_equivalent_{year}")
+            Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5),
+                                            ("artificial_snow_water_equivalent",), "m w. e.",
+                                            use_mean_measures=True, show_estimated_measurement_areas=True,
+                                            factor=1 / 1000,
+                                            save_name=f"artificial_snow_water_equivalent_{year}")
 
-            Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("total_snow_water_equivalent",), "m w. e.",
-                                                      use_mean_measures=True, show_estimated_measurement_areas=True, factor=1/1000,
-                                                      save_name=f"total_snow_water_equivalent_{year}")
+            Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5),
+                                            ("total_snow_water_equivalent",), "m w. e.",
+                                            use_mean_measures=True, show_estimated_measurement_areas=True,
+                                            factor=1 / 1000,
+                                            save_name=f"total_snow_water_equivalent_{year}")
 
             # albedo  TODO take a look at this again .. sometimes albedo > 100%? how is that possible, and if swe in is 0 zerodivision error
             # Visualizer.plot_components_lvls(meteorologic_years[year].get_distributed_amount_of_height_levels(5), ("albedo",), "",
             #                                           use_mean_measures=True, show_estimated_measurement_areas=True,
             #                                           save_name=f"albedo{year}")
+
+    def sum_up_paper_values(self):
+        with open(f"outputData/{self.subfolder_name}/{self.pickle_meteorological_years}", 'rb') as f:
+            hydrologic_years = pickle.load(f)
+
+        # self.load_handler(self.pickle_multiple_measurement_singleton_filled)
+
+        print("Year", "Water[m3]", "ArtificialSnow[m3]")
+        for year in self.hydrologic_years_looked_at:
+            water_l = hydrologic_years[year].overall_amount_of_water_needed_in_liters
+            print(year, int(water_l / 1000), int(water_l / cfg["ARTIFICIAL_SNOW_SWE_FACTOR"] / 1000))
 
     def run_calculations_bachelor(self, startime: dt.datetime, endtime: dt.datetime, pegel_measure, type_="new"):
         """
@@ -288,7 +306,8 @@ class NoGuiManager:
         :param type_:
         :return:
         """
-        print(f"\nRunning bachelor calaculations {type_} for {startime.strftime('%d.%m.%Y')} till {endtime.strftime('%d.%m.%Y')}:")
+        print(
+            f"\nRunning bachelor calaculations {type_} for {startime.strftime('%d.%m.%Y')} till {endtime.strftime('%d.%m.%Y')}:")
         Reader.add_file_path(self.path_to_meteorologic_measurements)
 
         Reader.read_meterologic_file_to_objects(starttime=startime, endtime=endtime)
@@ -341,8 +360,8 @@ class NoGuiManager:
         modeled_ablation = sum(modeled_ablations)
         measured_ablation = sum(measured_ablations)
         reality_factor_ablation = measured_ablation / modeled_ablation
-        reality_factor_pegel = (pegel_measure/100) / modeled_ablation
-        print("Measured ablation", round(measured_ablation, 2), "Pegel measure", pegel_measure/100)
+        reality_factor_pegel = (pegel_measure / 100) / modeled_ablation
+        print("Measured ablation", round(measured_ablation, 2), "Pegel measure", pegel_measure / 100)
         print("modeled ablation",
               round(modeled_ablation, 2))  # measured stays the same .. cause thats wont be affected
         print("Reality factor ablation:", round(reality_factor_ablation, 2))
@@ -351,9 +370,9 @@ class NoGuiManager:
     @staticmethod
     def combined_preparing_of_measurements(sum_hourly_resolution=24, type_="new",
                                            measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
-                                                             "wind_speed", "sw_radiation_in", "sw_radiation_out",
-                                                             "lw_radiation_in", "lw_radiation_out", "snow_delta",
-                                                             "relative_ablation_measured")):
+                                                                "wind_speed", "sw_radiation_in", "sw_radiation_out",
+                                                                "lw_radiation_in", "lw_radiation_out", "snow_delta",
+                                                                "relative_ablation_measured")):
         """
         Basic steps that are used to prepare the measurements.
         :param sum_hourly_resolution:
@@ -386,10 +405,9 @@ class NoGuiManager:
             MeasurementHandler.mean_measurements_by_time_interval(dt.timedelta(days=1))
             MeasurementHandler.calculate_measured_and_theoretical_ablation_values_for_summed()
 
-
-    def compare_measured_ablation_measured_pegel_and_measured(self, pegel_tuples, max_est_measures=0):
+    def compare_measured_ablation_measured_pegel_and_measured(self, pegel_tuples, max_est_measures=0, recalculate=True):
         Visualizer.show_plots = False
-        recalculate = False
+
         fname = f"outputData/scatter_compare_measured_pegel.pkl"
 
         if recalculate:
@@ -405,9 +423,9 @@ class NoGuiManager:
             save_name=f"pegel_vs_measured (allow {max_est_measures}% est. measures)",
             max_estimated_ablation_measures_percent=max_est_measures)
 
-    def compare_measured_ablation_measured_pegel_and_modeled(self, type_, pegel_tuples, max_est_measures=0):
+    def compare_measured_ablation_measured_pegel_and_modeled(self, type_, pegel_tuples, max_est_measures=0,
+                                                             recalculate=True):
         Visualizer.show_plots = False
-        recalculate = True
 
         if recalculate:
             Reader.add_file_path(self.path_to_meteorologic_measurements)
@@ -437,32 +455,34 @@ class NoGuiManager:
 
             """ Plotting """
             Visualizer.plot_scatter_pegel_vs_X(
-                pegel_tuples, save_name=f"pegel_vs_modeled_z0-ice={rs[0]}_z0-snow={rs[1]} (allow {max_est_measures}% est. measures)",
+                pegel_tuples,
+                save_name=f"pegel_vs_modeled_z0-ice={rs[0]}_z0-snow={rs[1]} (allow {max_est_measures}% est. measures)",
                 max_estimated_ablation_measures_percent=max_est_measures)
-
 
             # if not i:
             #     Visualizer.plot_components(("total_snow_depth",), "m", use_mean_measures=False,
             #                                          save_name=f"total_snow_depth")
 
-    def ablation_cumulation_test(self):
+    def ablation_cumulation_test(self, recalculate=True):
         Visualizer.change_result_plot_subfolder(f"ablation_cumulation")
         Visualizer.show_plots = False
 
-        # Reader.add_file_path(self.path_to_meteorologic_measurements)
-        # Reader.read_meterologic_file_to_objects()
-        # MeasurementHandler.change_measurement_resolution_by_start_end_time(dt.datetime(2016, 1, 1), dt.datetime(2019, 1, 1))
-        #
-        # with open("tmp/tmpi.pkl", 'wb') as f:
-        #     pickle.dump(MeasurementHandler, f)
+        f_name = "outputData/ablation_cumulation_test.pkl"
 
-        with open("tmp/tmpi.pkl", 'rb') as f:
-            MeasurementHandler = pickle.load(f)
+        Reader.add_file_path(self.path_to_meteorologic_measurements)
+        Reader.read_meterologic_file_to_objects()
 
-        MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method="SameLevelPositiveFix")
+        if recalculate:
+            MeasurementHandler.change_measurement_resolution_by_start_end_time(dt.datetime(2016, 1, 1),
+                                                                               dt.datetime(2019, 1, 1))
+            MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method="SameLevelPositiveFix")
 
-        Visualizer.plot_components(("cumulated_ice_thickness",), "m",  use_mean_measures=False,
-                                             save_name=f"cum_ice")
+            self.save_handler(f_name)
+        else:
+            self.load_handler(f_name)
+
+        Visualizer.plot_components(("cumulated_ice_thickness",), use_mean_measures=False,
+                                   save_name=f"cum_ice")
 
     def cosipy_compare_mass_bilance_plot(self):
         f_name = f"tmp/picklsave_cosipy_prep"
@@ -519,12 +539,11 @@ class NoGuiManager:
 
             diff = []
             for i in range(len(cosipy_cumulated)):
-                diff.append(modeled_cumulated[i]-cosipy_cumulated[i])
+                diff.append(modeled_cumulated[i] - cosipy_cumulated[i])
 
             for compare_value in ("sw_radiation_in", "sw_radiation_out", "lw_radiation_in", "lw_radiation_out",
                                   "total_snow_depth", "rel_moisture", "wind_speed", "air_pressure", "sensible_heat",
                                   "latent_heat"):
-
                 plt.figure(figsize=(10, 6))
                 ax1 = plt.subplot()
                 ax2 = ax1.twinx()
@@ -554,7 +573,6 @@ class NoGuiManager:
                 plt.close()
 
             exit()
-
 
     def cosipy_compare_mass_bilance_plot_snow_height(self):
         f_name = f"tmp/picklsave_cosipy_prep"
@@ -597,7 +615,6 @@ class NoGuiManager:
                     modeled_data_no_neg.append(0)
                 else:
                     modeled_data_no_neg.append(x)
-
 
             cur_modeled = 0
             for mod in modeled_data_no_neg:
@@ -663,7 +680,6 @@ class NoGuiManager:
                 else:
                     modeled_data_no_neg.append(x)
 
-
             cur_modeled = 0
             for mod in modeled_data_no_neg:
                 cur_modeled += mod
@@ -679,9 +695,8 @@ class NoGuiManager:
 
             plt.show()
 
+    def demo_cosipy_data_format_downloader(self, recalculate=True):
 
-    def demo_cosipy_data_format_downloader(self):
-        recalculate = True
         f_name = f"tmp/picklsave_cosipy_prep"
 
         # WARNING! Please check the data, its seems they are out of a reasonable range G MAX: 1199.98 MIN: -0.94
@@ -691,15 +706,16 @@ class NoGuiManager:
             Reader.read_meterologic_file_to_objects()
             self.combined_preparing_of_measurements(sum_hourly_resolution=1,
                                                     measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
-                                                             "wind_speed", "sw_radiation_in",
-                                                             "lw_radiation_in", "snow_delta"))
+                                                                         "wind_speed", "sw_radiation_in",
+                                                                         "lw_radiation_in", "snow_delta"))
 
             self.combined_calculation_of_energy_balance_and_all_associated_values()
             self.save_handler(f_name)
         else:
             self.load_handler(f_name)
 
-        MeasurementHandler.download_in_cosipy_format()
+        Downloader.download_in_cosipy_format()
+        # MeasurementHandler.download_in_cosipy_format()
 
     def verify_with_cosipy(self):
         f_name = f"tmp/picklsave_cosipy_prep"
@@ -723,77 +739,78 @@ class NoGuiManager:
 
 if __name__ == "__main__":
     if not cfg["GUI"]:
+        tasks = {
+            "cosipy_verification": False,  # not working currently
+            "height_level_calc_and_vis_for_paper": False,
+            "calculations_bachelor": False,
+            "ablation_cumulation_methods_test": False,
+            "pegel_vs_measured_scatter_compare": True,
+        }
+
         no_gui_manager = NoGuiManager()
-        # no_gui_manager.verify_with_cosipy()
-        # exit()
 
-        # no_gui_manager.cosipy_compare_mass_bilance_plot_energy()
-        no_gui_manager.cosipy_compare_mass_bilance_plot_snow_height()
-        no_gui_manager.cosipy_compare_mass_bilance_plot()
+        if tasks["cosipy_verification"]:
+            no_gui_manager.demo_cosipy_data_format_downloader()  # inside this saving the pickle file for the following cosipy related tasks?
+            no_gui_manager.verify_with_cosipy()
 
-        exit()
+            no_gui_manager.cosipy_compare_mass_bilance_plot_energy()  # this was just for verifying the model with cosipy
+            no_gui_manager.cosipy_compare_mass_bilance_plot_snow_height()
+            no_gui_manager.cosipy_compare_mass_bilance_plot()
 
-        no_gui_manager.demo_cosipy_data_format_downloader()
-        # exit()
-        # exit()
-        #
-        # """ Height level calculations with visualizations """
-        # # no_gui_manager.run_calculations_height_levels()
-        # no_gui_manager.run_visualizations_height_levels()
-        #
-        # exit()
+        """ Height level calculations with visualizations """
+        if tasks["height_level_calc_and_vis_for_paper"]:
+            # no_gui_manager.run_calculations_height_levels(recalculate=False)  #
+            no_gui_manager.sum_up_paper_values()
+            # no_gui_manager.run_visualizations_height_levels()
 
         """ Single time frame comparison with measurement fixing """
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 7, 7), dt.datetime(2017, 7, 26), 132)
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 7, 26), dt.datetime(2017, 10, 14), 246)
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 10, 14), dt.datetime(2018, 6, 22), 223)
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 6, 22), dt.datetime(2018, 7, 16), 135)
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 7, 16), dt.datetime(2018, 9, 30), 393)
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 9, 30), dt.datetime(2019, 6, 24), 182)
-        # no_gui_manager.run_calculations_bachelor(dt.datetime(2019, 6, 24), dt.datetime(2019, 7, 17), 179)
+        if tasks["calculations_bachelor"]:
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95)
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 7, 7), dt.datetime(2017, 7, 26), 132)
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 7, 26), dt.datetime(2017, 10, 14), 246)
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2017, 10, 14), dt.datetime(2018, 6, 22), 223)
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 6, 22), dt.datetime(2018, 7, 16), 135)
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 7, 16), dt.datetime(2018, 9, 30), 393)
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2018, 9, 30), dt.datetime(2019, 6, 24), 182)
+            no_gui_manager.run_calculations_bachelor(dt.datetime(2019, 6, 24), dt.datetime(2019, 7, 17), 179)
 
         """ Combined time frame comparison with measurement fixing """
+        if tasks["ablation_cumulation_methods_test"]:
+            no_gui_manager.ablation_cumulation_test()
 
-        # no_gui_manager.ablation_cumulation_test()
-        # exit()
+        if tasks["pegel_vs_measured_scatter_compare"]:
+            """ Comparison of measured and modeled ablation and pegel measurement """
+            pegel_time_spans = [
+                (dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95),
+                (dt.datetime(2013, 9, 25), dt.datetime(2014, 8, 6), 424),
+                (dt.datetime(2014, 8, 6), dt.datetime(2014, 9, 23), 151),
+                (dt.datetime(2014, 9, 23), dt.datetime(2015, 6, 22), 193),
+                (dt.datetime(2015, 6, 22), dt.datetime(2015, 6, 26), 12),
+                (dt.datetime(2015, 6, 26), dt.datetime(2015, 7, 28), 283),
+                (dt.datetime(2015, 7, 28), dt.datetime(2015, 8, 2), 27),
+                (dt.datetime(2015, 8, 2), dt.datetime(2015, 10, 12), 292),
+                # (dt.datetime(2015, 10, 12), dt.datetime(2016, 5, 27), -5),  # bad snow measurements for that frame
+                # (dt.datetime(2016, 5, 27), dt.datetime(2016, 6, 30), 176),  # bad snow measurements for that frame
+                (dt.datetime(2016, 6, 30), dt.datetime(2016, 7, 21), 129),
+                (dt.datetime(2016, 7, 21), dt.datetime(2016, 9, 14), 317),
+                (dt.datetime(2016, 9, 14), dt.datetime(2016, 10, 17), 48),
+                (dt.datetime(2016, 10, 17), dt.datetime(2017, 7, 7), 294),
+                (dt.datetime(2017, 7, 7), dt.datetime(2017, 7, 26), 132),
+                (dt.datetime(2017, 7, 26), dt.datetime(2017, 10, 14), 246),
+                (dt.datetime(2017, 10, 14), dt.datetime(2018, 6, 22), 223),
+                (dt.datetime(2018, 6, 22), dt.datetime(2018, 7, 16), 135),
+                (dt.datetime(2018, 7, 16), dt.datetime(2018, 9, 30), 393),
+                (dt.datetime(2018, 9, 30), dt.datetime(2019, 6, 24), 182),
+                (dt.datetime(2019, 6, 24), dt.datetime(2019, 7, 17), 179),
+                (dt.datetime(2019, 7, 17), dt.datetime(2019, 10, 4), 370)]
+            # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
 
-        """ Comparison of measured and modeled ablation and pegel measurement """
-        tups = [
-            (dt.datetime(2013, 8, 29), dt.datetime(2013, 9, 25), 95),
-            (dt.datetime(2013, 9, 25), dt.datetime(2014, 8, 6), 424),
-            (dt.datetime(2014, 8, 6), dt.datetime(2014, 9, 23), 151),
-            (dt.datetime(2014, 9, 23), dt.datetime(2015, 6, 22), 193),
-            (dt.datetime(2015, 6, 22), dt.datetime(2015, 6, 26), 12),
-            (dt.datetime(2015, 6, 26), dt.datetime(2015, 7, 28), 283),
-            (dt.datetime(2015, 7, 28), dt.datetime(2015, 8, 2), 27),
-            (dt.datetime(2015, 8, 2), dt.datetime(2015, 10, 12), 292),
-            # (dt.datetime(2015, 10, 12), dt.datetime(2016, 5, 27), -5),  # bad snow measurements for that frame
-            # (dt.datetime(2016, 5, 27), dt.datetime(2016, 6, 30), 176),  # bad snow measurements for that frame
-            (dt.datetime(2016, 6, 30), dt.datetime(2016, 7, 21), 129),
-            (dt.datetime(2016, 7, 21), dt.datetime(2016, 9, 14), 317),
-            (dt.datetime(2016, 9, 14), dt.datetime(2016, 10, 17), 48),
-            (dt.datetime(2016, 10, 17), dt.datetime(2017, 7, 7), 294),
-            (dt.datetime(2017, 7, 7), dt.datetime(2017, 7, 26), 132),
-            (dt.datetime(2017, 7, 26), dt.datetime(2017, 10, 14), 246),
-            (dt.datetime(2017, 10, 14), dt.datetime(2018, 6, 22), 223),
-            (dt.datetime(2018, 6, 22), dt.datetime(2018, 7, 16), 135),
-            (dt.datetime(2018, 7, 16), dt.datetime(2018, 9, 30), 393),
-            (dt.datetime(2018, 9, 30), dt.datetime(2019, 6, 24), 182),
-            (dt.datetime(2019, 6, 24), dt.datetime(2019, 7, 17), 179),
-            (dt.datetime(2019, 7, 17), dt.datetime(2019, 10, 4), 370)]
-        # (dt.datetime(2019, 10, 4), dt.datetime(2020, 7, 21), 362)]
+            Visualizer.change_result_plot_subfolder(f"scatter_compare")
 
-        Visualizer.change_result_plot_subfolder(f"scatter_compare")
-
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=0)
-        no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=100)
-
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=0)
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(tups, max_est_measures=100)
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled("adapted", tups, max_est_measures=0)
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled("adapted", tups, max_est_measures=75)
-        # no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled("adapted", tups, max_est_measures=100)
+            no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
+                pegel_time_spans, max_est_measures=0, recalculate=False)
+            no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
+                pegel_time_spans, max_est_measures=100, recalculate=False)
 
     else:
         """
@@ -815,32 +832,4 @@ if __name__ == "__main__":
         frame_read.create_singleton()
         version_bar.create_singleton()
 
-        if False:
-            recalculate = False
-            no_gui_manager = NoGuiManager()
-            fname = "tmp/download_test"
-            if recalculate:
-                Reader.add_file_path(no_gui_manager.path_to_meteorologic_measurements)
-                Reader.read_meterologic_file_to_objects()
-                MeasurementHandler.change_measurement_resolution_by_start_end_time(
-                    dt.datetime(2017, 10, 1), dt.datetime(2018 + 1, 9, 30))
-                no_gui_manager.combined_preparing_of_measurements(sum_hourly_resolution=24)
-                no_gui_manager.combined_calculation_of_energy_balance_and_all_associated_values()
-                no_gui_manager.save_handler(fname)
-            else:
-                no_gui_manager.load_handler(fname)
-            navigation_bar.singleton.show_plot_frame()
-            navigation_bar.singleton.show_download_frame()
-
-        # navigation_bar.singleton.show_sum_frame()
-        # navigation_bar.singleton.show_prepare_frame()
-        # navigation_bar.singleton.show_energy_balance_frame()
-        # navigation_bar.singleton.show_plot_frame()
-        # navigation_bar.singleton.show_scope_frame()
-        # navigation_bar.singleton.show_read_frame()
-
         gui_main.singleton.mainloop()
-
-        # gui_thread = threading.Thread(target=)
-        # gui_thread.start()
-        # gui_main.singleton.mainloop()

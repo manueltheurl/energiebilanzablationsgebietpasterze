@@ -345,8 +345,6 @@ class Visualizer:
                                                                use_mean_measurements=True)
 
             pegel_time_frame = tup[2] / 100  # in cm
-            # for i in range(len(modeled_ablations)):
-            #     modeled_ablations[i] = 0 if modeled_ablations[i] is None else modeled_ablations[i]
             time_spawn_in_days = (end_time - start_time).total_seconds() / 60 / 60 / 24
 
             pgel_mm = pegel_time_frame / time_spawn_in_days * 1000
@@ -362,7 +360,8 @@ class Visualizer:
 
         z = np.polyfit(all_pegel_mm, all_modeled_mm, 1)
         p = np.poly1d(z)
-        cls.ax.plot(all_pegel_mm, p(all_pegel_mm), color="orange", ls="--", label="Trendline")
+
+        cls.ax.plot([min(all_pegel_mm), max(all_pegel_mm)], [min(p(all_pegel_mm)), max(p(all_pegel_mm))], color="orange", ls="--", label="Trendline")
 
         cls.ax.set_xlabel("Pegel measure [mm/d]")
         if vs == "relative_ablation_measured":
@@ -370,8 +369,8 @@ class Visualizer:
         else:
             cls.ax.set_ylabel("Measured [mm/d]")
 
-        cls.ax.set_xlim(-3, ax_range)
-        cls.ax.set_ylim(-3, ax_range)
+        cls.ax.set_xlim(0, ax_range)
+        cls.ax.set_ylim(0, ax_range)
         cls.ax.plot([0, ax_range], [0, ax_range], color='green')
         cls.ax.grid()
         cls.ax.legend()
