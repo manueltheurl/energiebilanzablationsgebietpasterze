@@ -1,11 +1,12 @@
 import sys
 from qgis.core import QgsApplication
 
-QgsApplication.setPrefixPath('/usr', True)
+QgsApplication.setPrefixPath('/usr', True)  # will be different in windows
 qgs = QgsApplication([], False)
 qgs.initQgis()
 
-sys.path.append("/usr/share/qgis/python/plugins")
+sys.path.append("/usr/share/qgis/python/plugins")  # will be different in windows
+
 import processing
 from processing.core.Processing import Processing
 Processing.initialize()
@@ -18,8 +19,6 @@ import os
 import shutil
 import pickle
 from qgis.core import QgsVectorLayer, QgsCoordinateReferenceSystem
-
-from height_level import HeightLevel
 
 
 ONLY_TONGUE = True
@@ -45,6 +44,15 @@ class QGisHandler:
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
+    """
+    TODO ADD
+        a = QgsRasterLayer(f'NETCDF:\"/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/KlimaMittel/RR/RR{year}.nc\":RR', 'mylayername')
+    QgsProject().instance().addMapLayer(a)
+    to add a layer
+    add_layer_to_view
+    so a netcdf can be used for example
+    """
+
     @classmethod
     def run_resample_radiation_grids(cls):
         for day in tqdm.tqdm(range(1, 366)):
@@ -56,6 +64,8 @@ class QGisHandler:
     @classmethod
     def run_creating_height_levels(cls, height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
                                    path_to_directory_with_radiations):
+        from height_level import HeightLevel
+
         subfolder_name = f"height_level_step_width_{height_level_step_width}"
 
         if ONLY_TONGUE:
