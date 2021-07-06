@@ -743,11 +743,11 @@ if __name__ == "__main__":
     if not cfg["GUI"]:
         tasks = {
             "cosipy_verification": False,  # not working currently
-            "height_level_calc_and_vis_for_paper": False,
+            "height_level_calc_and_vis_for_paper": True,
             "calculations_bachelor": False,
             "ablation_cumulation_methods_test": False,
             "pegel_vs_measured_scatter_compare": False,
-            "pegel_vs_modeled_scatter_compare": True,
+            "pegel_vs_modeled_scatter_compare": False,
         }
 
         no_gui_manager = NoGuiManager()
@@ -762,9 +762,9 @@ if __name__ == "__main__":
 
         """ Height level calculations with visualizations """
         if tasks["height_level_calc_and_vis_for_paper"]:
-            # no_gui_manager.run_calculations_height_levels(recalculate=False)  #
+            no_gui_manager.run_calculations_height_levels(recalculate=True)  #
             no_gui_manager.sum_up_paper_values()
-            # no_gui_manager.run_visualizations_height_levels()
+            no_gui_manager.run_visualizations_height_levels()
 
         """ Single time frame comparison with measurement fixing """
         if tasks["calculations_bachelor"]:
