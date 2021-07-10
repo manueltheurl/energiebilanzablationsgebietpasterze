@@ -762,8 +762,8 @@ if __name__ == "__main__":
 
         """ Height level calculations with visualizations """
         if tasks["height_level_calc_and_vis_for_paper"]:
-            no_gui_manager.run_calculations_height_levels(recalculate=True)  #
-            no_gui_manager.sum_up_paper_values()
+            # no_gui_manager.run_calculations_height_levels(recalculate=False)  #
+            # no_gui_manager.sum_up_paper_values()
             no_gui_manager.run_visualizations_height_levels()
 
         """ Single time frame comparison with measurement fixing """

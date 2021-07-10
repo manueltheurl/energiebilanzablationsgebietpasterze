@@ -691,7 +691,7 @@ class Visualizer:
             cb1 = matplotlib.colorbar.ColorbarBase(ax_colorbar, cmap=snr_cmap,
                                                    norm=norm,
                                                    orientation='vertical', extend="both")
-            cb1.set_label(r'Elevation-averaged specific ASP necessary for neutral balance [m w.e.]')
+            cb1.set_label(r'elevation-averaged specific AS production [m w.e.]')
 
         for ax, year in zip(axes, years):
             meteorological_year: HydrologicYear
