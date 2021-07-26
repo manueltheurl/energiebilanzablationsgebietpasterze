@@ -761,6 +761,7 @@ if __name__ == "__main__":
             "ablation_cumulation_methods_test": False,
             "pegel_vs_measured_scatter_compare": False,
             "pegel_vs_modeled_scatter_compare": False,  # with multiple snow and ice roughness parameters
+
         }
 
         no_gui_manager = NoGuiManager()
