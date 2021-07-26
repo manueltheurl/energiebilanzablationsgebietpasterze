@@ -372,18 +372,29 @@ class NoGuiManager:
                                            measurements_to_fix=("temperature", "rel_moisture", "air_pressure",
                                                                 "wind_speed", "sw_radiation_in", "sw_radiation_out",
                                                                 "lw_radiation_in", "lw_radiation_out", "snow_delta",
-                                                                "relative_ablation_measured")):
+                                                                "relative_ablation_measured"), correct_snow=True,
+                                           correct_lwi=False, correct_swi=True,
+                                           ice_cumulation_method="SameLevelPositiveFix"):
         """
         Basic steps that are used to prepare the measurements.
+        :param correct_snow:
+        :param ice_cumulation_method:
+        :param correct_swi:
+        :param correct_lwi:
+        :param measurements_to_fix:
         :param sum_hourly_resolution:
         :param type_:
         :return:
         """
         # Preparations of measurements
-        MeasurementHandler.correct_snow_measurements_for_single_measures()
-        # MeasurementHandler.correct_long_wave_measurements_for_scope()
-        MeasurementHandler.correct_short_wave_measurements_for_single_measures()
-        MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method="SameLevelPositiveFix")
+        if correct_snow:
+            MeasurementHandler.correct_snow_measurements_for_single_measures()
+        if correct_lwi:
+            MeasurementHandler.correct_long_wave_measurements_for_single_measures()
+        if correct_swi:
+            MeasurementHandler.correct_short_wave_measurements_for_single_measures()
+
+        MeasurementHandler.cumulate_ice_thickness_measures_for_single_measures(method=ice_cumulation_method)
 
         MeasurementHandler.calculate_snow_height_deltas_for_single_measures()
 
@@ -423,10 +434,12 @@ class NoGuiManager:
             save_name=f"pegel_vs_measured (allow {max_est_measures}% est. measures)",
             max_estimated_ablation_measures_percent=max_est_measures)
 
-    def compare_measured_ablation_measured_pegel_and_modeled(self, pegel_tuples, max_est_measures=0,
-                                                             recalculate=True):
+    def compare_measured_ablation_measured_pegel_and_modeled(
+            self, pegel_tuples, max_est_measures=0, recalculate=True,
+            ice_snow_scenarious_to_test=((0.001, 0.001), (0.0012, 0.0013), (0.002, 0.0013), (0.002, 0.001), (0.002, 0.003), (0.003, 0.001), (0.004, 0.001))):
         """
 
+        :param snow_ice_scenarious_to_test:
         :param pegel_tuples:
         :param max_est_measures: Maximum estimated measures in percent
         :param recalculate:
@@ -439,7 +452,7 @@ class NoGuiManager:
             Reader.read_meterologic_file_to_objects()
             self.combined_preparing_of_measurements(sum_hourly_resolution=24)
 
-        for i, rs in enumerate([(0.001, 0.001), (0.002, 0.001), (0.003, 0.001), (0.004, 0.001)]):
+        for i, rs in enumerate(ice_snow_scenarious_to_test):
             f_name = f"tmp/picklsave_{rs[0]}_z0_snow{rs[1]}_{cfg['CLEAN_ICE_ALBEDO']}"
             if recalculate:
                 EnergyBalance.set_new_roughness_parameters(rs[0], rs[1])
@@ -743,11 +756,11 @@ if __name__ == "__main__":
     if not cfg["GUI"]:
         tasks = {
             "cosipy_verification": False,  # not working currently
-            "height_level_calc_and_vis_for_paper": False,
+            "height_level_calc_and_vis_for_paper": True,
             "calculations_bachelor": False,
             "ablation_cumulation_methods_test": False,
             "pegel_vs_measured_scatter_compare": False,
-            "pegel_vs_modeled_scatter_compare": True,
+            "pegel_vs_modeled_scatter_compare": False,  # with multiple snow and ice roughness parameters
         }
 
         no_gui_manager = NoGuiManager()
@@ -762,9 +775,9 @@ if __name__ == "__main__":
 
         """ Height level calculations with visualizations """
         if tasks["height_level_calc_and_vis_for_paper"]:
-            # no_gui_manager.run_calculations_height_levels(recalculate=False)  #
+            no_gui_manager.run_calculations_height_levels(recalculate=True)
             no_gui_manager.sum_up_paper_values()
-            # no_gui_manager.run_visualizations_height_levels()
+            no_gui_manager.run_visualizations_height_levels()
 
         """ Single time frame comparison with measurement fixing """
         if tasks["calculations_bachelor"]:
@@ -813,8 +826,6 @@ if __name__ == "__main__":
             if tasks["pegel_vs_measured_scatter_compare"]:
                 no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
                     pegel_time_spans, max_est_measures=0, recalculate=False)
-                no_gui_manager.compare_measured_ablation_measured_pegel_and_measured(
-                    pegel_time_spans, max_est_measures=100, recalculate=False)
 
             if tasks["pegel_vs_modeled_scatter_compare"]:
                 no_gui_manager.compare_measured_ablation_measured_pegel_and_modeled(
