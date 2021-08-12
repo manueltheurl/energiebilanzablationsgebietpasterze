@@ -7,9 +7,6 @@ from statistics import mean
 import numpy as np
 from WetBulb import WetBulb
 
-# TODO maybe make another subclass "ArtificialMeasurement"  or better not?  with just the artificial methods
-# TODO get rid off all those properties, this makes it so unreadable, just use them if really necessary
-
 
 class StationMeasurement:
     def __init__(self, temperature, rel_moisture, wind_speed, wind_direction, air_pressure, sw_radiation_in,

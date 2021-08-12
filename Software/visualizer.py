@@ -798,7 +798,8 @@ class Visualizer:
 
         if not y_dates or y_dates[-1] - y_dates[0] < days_365:
             print("Cant trend eliminate for data range less than one year")
-            return
+            plt.close()
+            return False
 
         diff_vals, diff_dates = cls.do_periodic_trend_elimination(x_vals, y_dates, keep_trend)
 

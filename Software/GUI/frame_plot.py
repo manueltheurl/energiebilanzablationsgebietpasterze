@@ -3,6 +3,7 @@ import tkinter as tk
 import sys
 sys.path.append("GUI")
 import gui_main_frame
+import info_bar
 from visualizer import Visualizer
 from tkinter import ttk
 import misc as fc
@@ -152,10 +153,11 @@ class PlotFrame(tk.Frame):
         )
 
     def plot_trend_eliminate_selected_components(self):
-        Visualizer.plot_periodic_trend_eliminated_selected_option(
+        if not Visualizer.plot_periodic_trend_eliminated_selected_option(
             [self.lbox_selectedComponentsAxis1.get(opt) for opt in self.lbox_selectedComponentsAxis1.curselection()],
             bool(self.ckbox_use_sum_value.get())
-        )
+        ):
+            info_bar.singleton.change_warning_message("Cant trend eliminate for data range less than one year")
 
 
 singleton = None

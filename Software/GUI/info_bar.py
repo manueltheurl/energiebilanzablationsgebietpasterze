@@ -16,6 +16,7 @@ class InfoBar:
         self.read = tk.Label(gui_main_frame.singleton, anchor="w")
         self.scope = tk.Label(gui_main_frame.singleton, anchor="w")
         self.mean = tk.Label(gui_main_frame.singleton, anchor="w")
+        self.warning_message = tk.Label(gui_main_frame.singleton, anchor="w", fg="darkorange")
         self.error_message = tk.Label(gui_main_frame.singleton, anchor="w", fg="red")
 
     @staticmethod
@@ -36,6 +37,10 @@ class InfoBar:
     def change_mean_info(self, text):
         self.mean["text"] = "Mean info:\t" + text
         self.pack_if_not_empty_else_forget(self.mean, text)
+
+    def change_warning_message(self, text):
+        self.warning_message["text"] = "Warning:\t" + text
+        self.pack_if_not_empty_else_forget(self.warning_message, text)
 
     def change_error_message(self, text):
         self.error_message["text"] = "Error:\t" + text

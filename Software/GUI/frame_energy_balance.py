@@ -56,17 +56,17 @@ class EnergyBalanceFrame(tk.Frame):
         if self.ckbox_useSummed_value.get():
             if not MeasurementHandler.calculate_energy_balance_for_mean_measures(
                     self.scale_simulate_dimming_brightening.get()):
-                info_bar.singleton.change_error_message("Cannot compute energy balance for all measures, did you "
+                info_bar.singleton.change_warning_message("Cannot compute energy balance for all measures, did you "
                                                         "consider fixing invalid measures?")
             else:
-                info_bar.singleton.change_error_message("")
+                info_bar.singleton.change_warning_message("")
             MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_mean_measures()
         else:
             if not MeasurementHandler.calculate_energy_balance_for_single_measures(
                     self.scale_simulate_dimming_brightening.get()):
-                info_bar.singleton.change_error_message("Cannot compute energy balance for all measures")
+                info_bar.singleton.change_warning_message("Cannot compute energy balance for all measures")
             else:
-                info_bar.singleton.change_error_message("")
+                info_bar.singleton.change_warning_message("")
             MeasurementHandler.convert_energy_balance_to_water_rate_equivalent_for_single_measures()
         # todo maybe make labels that describe what will be done and the button says just process
 

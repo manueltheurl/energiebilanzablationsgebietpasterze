@@ -38,7 +38,6 @@ import frame_mean
 from visualizer import Visualizer
 from hydrologic_year import HydrologicYear
 from energy_balance import EnergyBalance
-from stats_printer import Statistics
 from measurement_handler import MeasurementHandler
 from downloader import Downloader
 
@@ -76,26 +75,6 @@ class NoGuiManager:
             self.subfolder_name += "_noDebris"
         if self.high_res_rad_grid:  # this could be removed some day, if always the high rad grids are taken TODO
             self.subfolder_name += "_radGridHighRes"
-
-    # def save_current_session(self):
-    #     self.filename = 'outputData/session.out'
-    #     my_shelf = shelve.open(self.filename, 'n')  # 'n' for new
-    #
-    #     for key in dir():
-    #         try:
-    #             my_shelf[key] = globals()[key]
-    #         except TypeError:
-    #             #
-    #             # __builtins__, my_shelf, and imported modules can not be shelved.
-    #             #
-    #             print('ERROR shelving: {0}'.format(key))
-    #     my_shelf.close()
-    #
-    # def restore_current_session(self):
-    #     my_shelf = shelve.open(self.filename)
-    #     for key in my_shelf:
-    #         globals()[key] = my_shelf[key]
-    #     my_shelf.close()
 
     @staticmethod
     def save_handler(fname):

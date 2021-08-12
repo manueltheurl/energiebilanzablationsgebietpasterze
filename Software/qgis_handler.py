@@ -416,27 +416,27 @@ class QGisHandler:
 if __name__ == "__main__":
     # QGisHandler().run_resample_radiation_grids()
     # input()
-    path_to_aws_station_point = "inputData/AWS_Station.shp"
-    path_to_dem = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/DEMS/DEM_Pasterze_2012_1m/DGM_1m_BMNM31_Gebiet_3_1.asc"
-    if ONLY_TONGUE and not NO_DEBRIS:
-        path_to_glacier_shape = "inputData/pas_tongue_2018.shp"
-    elif ONLY_TONGUE and NO_DEBRIS:
-        path_to_glacier_shape = "inputData/pas_tongue_2018_no_debris18.shp"
-    else:
-        path_to_glacier_shape = "inputData/pasterze_2018.shp"
-
-    # path_to_winter_balance = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/massenbilanzen/Winterbilanz_2016/wb_2016.tif"
-    path_to_directory_with_radiations = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/Tägliche Gitter der mittleren direkten Sonneneinstrahlung/pasterze_grid"
-    height_level_step_width = int(input("Enter height level step width: "))
-    QGisHandler.run_creating_height_levels(height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
-                                             path_to_directory_with_radiations)
+    # path_to_aws_station_point = "inputData/AWS_Station.shp"
+    # path_to_dem = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/DEMS/DEM_Pasterze_2012_1m/DGM_1m_BMNM31_Gebiet_3_1.asc"
+    # if ONLY_TONGUE and not NO_DEBRIS:
+    #     path_to_glacier_shape = "inputData/pas_tongue_2018.shp"
+    # elif ONLY_TONGUE and NO_DEBRIS:
+    #     path_to_glacier_shape = "inputData/pas_tongue_2018_no_debris18.shp"
+    # else:
+    #     path_to_glacier_shape = "inputData/pasterze_2018.shp"
+    #
+    # # path_to_winter_balance = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/massenbilanzen/Winterbilanz_2016/wb_2016.tif"
+    # path_to_directory_with_radiations = "../../Data_for_Germ/Pasterze_Data/2020_Daten_Pasterze/Tägliche Gitter der mittleren direkten Sonneneinstrahlung/pasterze_grid"
+    # height_level_step_width = int(input("Enter height level step width: "))
+    # QGisHandler.run_creating_height_levels(height_level_step_width, path_to_aws_station_point, path_to_dem, path_to_glacier_shape,
+    #                                          path_to_directory_with_radiations)
 
     # QGisHandler().run_creating_dvol_file(
     #     "/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/Data_for_Germ/auto_dvol_generation/inputData",
     #     (1850, 1969, 1998, 2012))
 
     # print(QGisHandler().get_area_of_shapes("/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/GitRepo/Software/inputData/pasterze_2018.shp"))
-    # print(QGisHandler().get_area_of_shapes("/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/GitRepo/Software/inputData/pas_tongue_2018.shp"))
+    print(QGisHandler().get_area_of_shapes("/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/GitRepo/Software/inputData/pas_tongue_2018.shp"))
     #
     # params_rasterlayerstatistics = {
     #     'INPUT': "/mnt/hdd/Data/Geodaesie/6_semester/Project_Pasterze/GitRepo/Software/inputData/DEL_Ras_shape_tongue.tif",
