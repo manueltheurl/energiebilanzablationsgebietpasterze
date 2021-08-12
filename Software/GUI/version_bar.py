@@ -8,8 +8,8 @@ import frame_energy_balance
 import frame_download
 import frame_plot
 import gui_main_frame
-import frame_sum
-from manage_config import cfg
+import frame_mean
+from config_handler import cfg
 
 
 class VersionBar(tk.Frame):
@@ -30,7 +30,7 @@ class VersionBar(tk.Frame):
         else:
             version_appendix = "Community Edition:"
 
-        self.__lbl_version_number = tk.Label(self, text=version_appendix + ' Version ' + cfg["VERSION"])
+        self.__lbl_version_number = tk.Label(self, text=version_appendix + ' Version ' + str(cfg["VERSION"]))
         self.__lbl_version_number.pack(side="left", padx=5, pady=2)
 
         self.grid_propagate(False)

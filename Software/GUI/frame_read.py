@@ -2,17 +2,18 @@ import tkinter as tk
 from tkinter import filedialog
 import sys
 sys.path.append("GUI")
-import reader
-import multiple_measurements
+from reader import Reader
+from measurement_handler import MeasurementHandler
 from tkinter import ttk
 import datetime as dt
 import info_bar as info_bar
 import gui_main_frame as gui_main_frame
 import frame_plot as frame_plot
-import functions as fc
+import misc as fc
 import navigation_bar as navigation_bar
-import frame_energy_balance as frame_energy_balance
-from manage_config import cfg
+import frame_scope
+import frame_energy_balance
+from config_handler import cfg
 
 
 class ReadFrame(tk.Frame):
@@ -118,7 +119,7 @@ class ReadFrame(tk.Frame):
         if type(selected_path) != tuple:  # no file selected then
             self.file_path = selected_path
             self.lbl_chosenFile['text'] = selected_path
-            reader.singleton.add_file_path(selected_path)
+            Reader.add_file_path(selected_path)
 
             fc.set_widget_state([
                 self.ckbox_startTime,
@@ -134,17 +135,17 @@ class ReadFrame(tk.Frame):
                 self.entry_percentToRead
             ], "normal")
 
-            reader.singleton.fetch_file_metadata()
+            Reader.fetch_file_metadata()
 
             self.entry_startTime.delete(0, 'end')
             self.entry_startTime.insert(
                 0,
-                reader.singleton.get_single_file_metadata("time_of_first_measurement"))
+                Reader.get_single_file_metadata("time_of_first_measurement"))
 
             self.entry_endTime.delete(0, 'end')
             self.entry_endTime.insert(
                 0,
-                reader.singleton.get_single_file_metadata("time_of_last_measurement"))
+                Reader.get_single_file_metadata("time_of_last_measurement"))
 
             self.entry_percentToRead.delete(0, 'end')
             self.entry_percentToRead.insert(0, "100")
@@ -152,7 +153,7 @@ class ReadFrame(tk.Frame):
             self.entry_timeInterval.delete(0, 'end')
             self.entry_timeInterval.insert(
                 0,  # no minutes available for next line .. only seconds
-                int(reader.singleton.get_single_file_metadata("time_resolution").total_seconds() // 60))
+                int(Reader.get_single_file_metadata("time_resolution").total_seconds() // 60))
 
             self.cmbobox_timeIntervalUnit.current(0)  # possible here without state normal first
 
@@ -197,7 +198,7 @@ class ReadFrame(tk.Frame):
                 elif time_interval_unit == "Years":
                     resolution_by_years = int(self.entry_timeInterval.get())
 
-        reader.singleton.read_meterologic_file_to_objects(start_time,
+        Reader.read_meterologic_file_to_objects(start_time,
                                                           end_time,
                                                           resolution_by_percentage,
                                                           resolution_by_time_interval,
@@ -206,18 +207,18 @@ class ReadFrame(tk.Frame):
                                                           )
 
         info_bar_text_list = [
-            "Measurements: " + str(multiple_measurements.singleton.get_measurement_amount()),
-            "First: " + str(multiple_measurements.singleton.get_date_of_first_measurement()),
-            "Last: " + str(multiple_measurements.singleton.get_date_of_last_measurement()),
-            "Time resolution: " + multiple_measurements.singleton.get_time_resolution(as_beautiful_string=True)
+            "Measurements: " + str(MeasurementHandler.get_measurement_amount()),
+            "First: " + str(MeasurementHandler.get_date_of_first_measurement()),
+            "Last: " + str(MeasurementHandler.get_date_of_last_measurement()),
+            "Time resolution: " + MeasurementHandler.get_time_resolution(as_beautiful_string=True)
         ]
 
         info_bar.singleton.change_read_info("\t".join(info_bar_text_list))
         info_bar.singleton.change_scope_info("")
-        info_bar.singleton.change_sum_info("")
+        info_bar.singleton.change_mean_info("")
 
-        frame_energy_balance.singleton.fill_fields_with_read_in_values()
-        navigation_bar.singleton.show_energy_balance_frame()
+        frame_scope.singleton.fill_fields_with_read_in_values()
+        navigation_bar.singleton.show_scope_frame()
 
 
 singleton = None
